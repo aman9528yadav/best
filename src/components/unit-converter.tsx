@@ -177,7 +177,7 @@ export function UnitConverter() {
                   <SelectTrigger className="w-full">
                      <div className="flex items-center gap-2">
                       {React.createElement(activeCategory.icon, { className: 'h-4 w-4' })}
-                      <SelectValue placeholder="Category" />
+                      <SelectValue placeholder="Category">{category}</SelectValue>
                     </div>
                   </SelectTrigger>
                   <SelectContent>
