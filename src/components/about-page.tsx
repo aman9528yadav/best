@@ -29,10 +29,12 @@ import {
   Mail,
   Flag,
   Icon as LucideIcon,
+  ChevronDown,
 } from 'lucide-react';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { useMaintenance } from '@/context/MaintenanceContext';
 import { Badge } from '@/components/ui/badge';
+import { cn } from '@/lib/utils';
 
 const roadmapIconMap: { [key: string]: LucideIcon } = {
   GitBranch,
@@ -105,44 +107,59 @@ export function AboutPage() {
                 </Card>
             </section>
 
-            <section className="space-y-4">
-                <h2 className="text-xl font-bold text-center">Release Plan & Roadmap</h2>
-                 <Accordion type="single" collapsible className="w-full space-y-3" defaultValue="item-0">
+            <section className="space-y-6">
+                <div className="text-center">
+                    <h2 className="text-2xl font-bold flex items-center justify-center gap-2">
+                        <Sparkles className="h-5 w-5 text-pink-500" />
+                        Release Plan & Roadmap
+                    </h2>
+                </div>
+                 <Accordion type="single" collapsible className="w-full" defaultValue="item-0">
                     {roadmap.map((item, index) => {
                         const ItemIcon = roadmapIconMap[item.icon] || GitBranch;
                         return (
-                        <Card key={item.id} className="overflow-hidden">
-                             <AccordionItem value={`item-${index}`} className="border-none">
-                                <AccordionTrigger className="p-4 bg-accent/30 hover:no-underline data-[state=open]:bg-accent/50 data-[state=open]:border-b">
-                                    <div className='flex items-center gap-3'>
-                                        <ItemIcon className="h-4 w-4 text-primary" />
-                                        <span className="font-semibold">{item.title}</span>
+                        <AccordionItem value={`item-${index}`} key={item.id} className="border-b-0">
+                            <div className="flex">
+                                <div className="flex flex-col items-center mr-4">
+                                    <div>
+                                        <div className={cn("w-4 h-4 rounded-full", index % 2 === 0 ? "bg-primary" : "bg-pink-500")} />
                                     </div>
-                                </AccordionTrigger>
-                                <AccordionContent className="p-4 space-y-3">
-                                    <div className="flex justify-between text-sm">
-                                        <div className="flex gap-2">
-                                            <span className="font-medium">Version:</span>
-                                            <Badge variant="outline">{item.version}</Badge>
+                                    {index < roadmap.length - 1 && <div className="w-px h-full bg-border" />}
+                                </div>
+                                <div className="flex-1 pb-8">
+                                    <AccordionTrigger className="flex justify-between items-center w-full py-1 hover:no-underline">
+                                        <div className="text-left">
+                                            <p className="font-semibold text-base">{item.title}</p>
+                                            <p className="text-xs text-muted-foreground">{item.date}</p>
                                         </div>
-                                         <div className="flex gap-2">
-                                            <span className="font-medium">Status:</span>
-                                            <Badge variant={item.status === 'completed' ? 'default' : 'secondary'}>{item.status}</Badge>
+                                        <ChevronDown className="h-4 w-4 shrink-0 transition-transform duration-200" />
+                                    </AccordionTrigger>
+                                    <AccordionContent className="pt-4">
+                                        <div className="space-y-3">
+                                            <div className="flex justify-between text-sm">
+                                                <div className="flex gap-2 items-center">
+                                                    <span className="font-medium">Version:</span>
+                                                    <Badge variant="outline">{item.version}</Badge>
+                                                </div>
+                                                 <div className="flex gap-2 items-center">
+                                                    <span className="font-medium">Status:</span>
+                                                    <Badge variant={item.status === 'completed' ? 'default' : 'secondary'} className={item.status === 'completed' ? 'bg-green-500/10 text-green-700 border-green-500/50' : ''}>{item.status}</Badge>
+                                                </div>
+                                            </div>
+                                            <p className="text-sm text-muted-foreground mt-1 mb-2">{item.description}</p>
+                                            <ul className="text-sm text-muted-foreground space-y-1">
+                                                {item.details.map((detail, i) => (
+                                                    <li key={i} className="flex items-center gap-2">
+                                                        <CheckCircle className="h-3 w-3 text-green-500" />
+                                                        {detail}
+                                                    </li>
+                                                ))}
+                                            </ul>
                                         </div>
-                                    </div>
-                                    <p className="text-xs text-muted-foreground">{item.date}</p>
-                                    <p className="text-sm text-muted-foreground mt-1 mb-2">{item.description}</p>
-                                    <ul className="text-sm text-muted-foreground space-y-1">
-                                        {item.details.map((detail, i) => (
-                                            <li key={i} className="flex items-center gap-2">
-                                                <CheckCircle className="h-3 w-3 text-green-500" />
-                                                {detail}
-                                            </li>
-                                        ))}
-                                    </ul>
-                                </AccordionContent>
-                            </AccordionItem>
-                        </Card>
+                                    </AccordionContent>
+                                </div>
+                            </div>
+                        </AccordionItem>
                     )})}
                 </Accordion>
                 <Button variant="outline" className="w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white border-none">
