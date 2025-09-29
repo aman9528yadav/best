@@ -11,6 +11,7 @@ import {
 export type Unit = {
   name: string;
   symbol: string;
+  isStandard?: boolean;
 };
 
 export type Category = {
@@ -24,7 +25,7 @@ export const CATEGORIES: Category[] = [
     name: 'Length',
     icon: Ruler,
     units: [
-      { name: 'Meters', symbol: 'm' },
+      { name: 'Meters', symbol: 'm', isStandard: true },
       { name: 'Kilometers', symbol: 'km' },
       { name: 'Centimeters', symbol: 'cm' },
       { name: 'Millimeters', symbol: 'mm' },
@@ -39,7 +40,7 @@ export const CATEGORIES: Category[] = [
     name: 'Weight',
     icon: Weight,
     units: [
-      { name: 'Grams', symbol: 'g' },
+      { name: 'Grams', symbol: 'g', isStandard: true },
       { name: 'Kilograms', symbol: 'kg' },
       { name: 'Milligrams', symbol: 'mg' },
       { name: 'Pounds', symbol: 'lb' },
@@ -53,14 +54,14 @@ export const CATEGORIES: Category[] = [
     units: [
       { name: 'Celsius', symbol: '°C' },
       { name: 'Fahrenheit', symbol: '°F' },
-      { name: 'Kelvin', symbol: 'K' },
+      { name: 'Kelvin', symbol: 'K', isStandard: true },
     ],
   },
   {
     name: 'Area',
     icon: LandPlot,
     units: [
-      { name: 'Square Meters', symbol: 'm²' },
+      { name: 'Square Meters', symbol: 'm²', isStandard: true },
       { name: 'Square Kilometers', symbol: 'km²' },
       { name: 'Acres', symbol: 'ac' },
       { name: 'Hectares', symbol: 'ha' },
@@ -71,7 +72,7 @@ export const CATEGORIES: Category[] = [
     name: 'Volume',
     icon: Beaker,
     units: [
-      { name: 'Liters', symbol: 'L' },
+      { name: 'Liters', symbol: 'L', isStandard: true },
       { name: 'Milliliters', symbol: 'mL' },
       { name: 'Gallons (US)', symbol: 'gal' },
     ],
@@ -80,7 +81,7 @@ export const CATEGORIES: Category[] = [
     name: 'Speed',
     icon: GaugeCircle,
     units: [
-      { name: 'Meters per second', symbol: 'm/s' },
+      { name: 'Meters per second', symbol: 'm/s', isStandard: true },
       { name: 'Kilometers per hour', symbol: 'km/h' },
       { name: 'Miles per hour', symbol: 'mph' },
     ],

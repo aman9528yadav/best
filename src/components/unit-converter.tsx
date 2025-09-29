@@ -54,6 +54,17 @@ export function UnitConverter() {
   );
   const units = useMemo(() => activeCategory.units, [activeCategory]);
   const fromUnitDetails = useMemo(() => units.find(u => u.name === fromUnit), [units, fromUnit]);
+  const toUnitDetails = useMemo(() => units.find(u => u.name === toUnit), [units, toUnit]);
+
+  const conversionInfo = useMemo(() => {
+    if (!fromUnitDetails || !toUnitDetails) return '';
+    const oneUnitConversion = convert(1, fromUnit, toUnit, category);
+    if (oneUnitConversion !== null) {
+      const formattedResult = Number(oneUnitConversion.toPrecision(5));
+      return `1 ${fromUnitDetails.symbol} = ${formattedResult} ${toUnitDetails.symbol}`;
+    }
+    return '';
+  }, [fromUnit, toUnit, category, fromUnitDetails, toUnitDetails]);
 
   const handleConversion = useCallback(() => {
     const value = parseFloat(inputValue);
@@ -191,7 +202,7 @@ export function UnitConverter() {
                   <SelectTrigger className="w-full">
                      <div className="flex items-center gap-2">
                       {React.createElement(activeCategory.icon, { className: 'h-4 w-4' })}
-                      <SelectValue placeholder="Category">{category}</SelectValue>
+                      <span>{category}</span>
                     </div>
                   </SelectTrigger>
                   <SelectContent>
@@ -234,14 +245,18 @@ export function UnitConverter() {
           </div>
 
           <div className="grid grid-cols-2 gap-2 text-xs">
-            <div className="bg-accent text-accent-foreground p-2 rounded-md flex items-center gap-2">
-              <Info className="h-4 w-4" />
-              <span>It is the standard unit</span>
-            </div>
-             <div className="bg-accent text-accent-foreground p-2 rounded-md flex items-center gap-2">
-              <Info className="h-4 w-4" />
-              <span>1km = 1000 m</span>
-            </div>
+            {fromUnitDetails?.isStandard && (
+                <div className="bg-accent text-accent-foreground p-2 rounded-md flex items-center gap-2">
+                <Info className="h-4 w-4" />
+                <span>{fromUnitDetails.name} is a standard unit.</span>
+                </div>
+            )}
+            {conversionInfo && (
+                <div className="bg-accent text-accent-foreground p-2 rounded-md flex items-center gap-2 col-span-full">
+                <Info className="h-4 w-4" />
+                <span>{conversionInfo}</span>
+                </div>
+            )}
           </div>
 
           <div className="bg-accent p-4 rounded-lg flex items-center justify-between">
