@@ -38,7 +38,6 @@ export function DevPanel() {
   const router = useRouter();
   const { toast } = useToast();
   const {
-    isMaintenanceMode,
     setMaintenanceMode,
     maintenanceConfig,
     setMaintenanceConfig,
@@ -343,10 +342,16 @@ export function DevPanel() {
                     </div>
                   </AccordionTrigger>
                 </CardHeader>
-                 <AccordionContent className="px-4 pb-4">
+                 <AccordionContent className="px-4 pb-4 space-y-2">
                     <Button asChild variant="outline" className="w-full justify-between">
                         <Link href="/dev/manage-updates">
                             Manage "What's New"
+                            <ChevronRight className="h-4 w-4" />
+                        </Link>
+                    </Button>
+                    <Button asChild variant="outline" className="w-full justify-between">
+                        <Link href="/dev/manage-about">
+                            Manage "About" Page
                             <ChevronRight className="h-4 w-4" />
                         </Link>
                     </Button>

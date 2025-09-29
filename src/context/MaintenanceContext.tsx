@@ -4,7 +4,7 @@
 
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
-import { Wrench, Rocket, User, Languages, Bug } from 'lucide-react';
+import { Wrench, Rocket, User, Languages, Bug, Icon as LucideIcon } from 'lucide-react';
 
 
 export type UpdateItem = {
@@ -15,6 +15,36 @@ export type UpdateItem = {
     description: string;
     tags: string[];
 };
+
+export type RoadmapItem = {
+    id: string;
+    version: string;
+    date: string;
+    title: string;
+    description: string;
+    details: string[];
+    icon: 'GitBranch' | 'Sparkles';
+    status: 'completed' | 'upcoming';
+};
+
+type AboutPageContent = {
+    stats: {
+        happyUsers: string;
+        calculationsDone: string;
+    };
+    ownerInfo: {
+        name: string;
+        photoId: string;
+    };
+    appInfo: {
+        version: string;
+        build: string;
+        channel: string;
+        license: string;
+    };
+    roadmap: RoadmapItem[];
+};
+
 
 type Countdown = {
     days: number;
@@ -40,6 +70,7 @@ export type MaintenanceConfig = {
     };
     globalNotification: string;
     updateItems: UpdateItem[];
+    aboutPageContent: AboutPageContent;
 };
 
 
@@ -54,6 +85,9 @@ type MaintenanceContextType = {
   addUpdateItem: (item: Omit<UpdateItem, 'id'>) => void;
   editUpdateItem: (item: UpdateItem) => void;
   deleteUpdateItem: (id: string) => void;
+  addRoadmapItem: (item: Omit<RoadmapItem, 'id'>) => void;
+  editRoadmapItem: (item: RoadmapItem) => void;
+  deleteRoadmapItem: (id: string) => void;
 };
 
 const MaintenanceContext = createContext<MaintenanceContextType | undefined>(undefined);
@@ -73,7 +107,7 @@ const defaultMaintenanceConfig: MaintenanceConfig = {
     successMessage: 'The update was successful! We will be back shortly.',
     failureMessage: 'The update failed. Please try again later.',
     dashboardBanner: {
-        show: true,
+        show: false,
         countdown: {
             days: 0,
             hours: 10,
@@ -117,7 +151,65 @@ const defaultMaintenanceConfig: MaintenanceConfig = {
             description: 'The entire app is now available in Hindi.',
             tags: ['New Feature', 'Beta 1.2'],
         }
-    ]
+    ],
+    aboutPageContent: {
+        stats: {
+            happyUsers: "500",
+            calculationsDone: "10k+"
+        },
+        ownerInfo: {
+            name: "Aman Yadav",
+            photoId: "founder-avatar"
+        },
+        appInfo: {
+            version: "beta 1.5",
+            build: "Sutradhaar1",
+            channel: "Website",
+            license: "Yes"
+        },
+        roadmap: [
+            {
+                id: 'roadmap-1',
+                version: 'Beta 1.1',
+                date: '12 Aug, 2024',
+                title: 'First Beta Release',
+                description: 'Our journey begins! You may face some bugs🐞, but we\'re improving every day. Thanks for testing 🙏.',
+                details: ['Unit converter added', 'Notes app added'],
+                icon: 'GitBranch',
+                status: 'completed',
+            },
+            {
+                id: 'roadmap-2',
+                version: 'Beta 1.2',
+                date: '18 Nov, 2024',
+                title: 'Calculator & History',
+                description: 'Introducing a powerful scientific calculator and persistent history for all your activities.',
+                details: ['Scientific calculator', 'Conversion & calculation history'],
+                icon: 'GitBranch',
+                status: 'completed',
+            },
+            {
+                id: 'roadmap-3',
+                version: 'Beta 1.3',
+                date: '26 Jan, 2025',
+                title: 'Profile & Themes',
+                description: 'Personalize your experience with user profiles and custom themes.',
+                details: ['User profile page', 'Theme customization'],
+                icon: 'GitBranch',
+                status: 'completed',
+            },
+            {
+                id: 'roadmap-4',
+                version: 'Beta 2.0',
+                date: '10 Mar, 2025',
+                title: 'AI Features & Cloud Sync',
+                description: 'The next big leap! Get ready for AI-powered suggestions and seamless cloud synchronization.',
+                details: ['AI unit suggestions', 'Cloud backup & sync'],
+                icon: 'Sparkles',
+                status: 'upcoming',
+            }
+        ]
+    }
 };
 
 export const MaintenanceProvider = ({ children }: { children: ReactNode }) => {
@@ -203,6 +295,36 @@ export const MaintenanceProvider = ({ children }: { children: ReactNode }) => {
     }));
   };
 
+  const addRoadmapItem = (item: Omit<RoadmapItem, 'id'>) => {
+    setMaintenanceConfig(prev => ({
+      ...prev,
+      aboutPageContent: {
+        ...prev.aboutPageContent,
+        roadmap: [{ ...item, id: new Date().toISOString() }, ...prev.aboutPageContent.roadmap]
+      }
+    }));
+  };
+
+  const editRoadmapItem = (updatedItem: RoadmapItem) => {
+    setMaintenanceConfig(prev => ({
+      ...prev,
+      aboutPageContent: {
+        ...prev.aboutPageContent,
+        roadmap: prev.aboutPageContent.roadmap.map(item => item.id === updatedItem.id ? updatedItem : item)
+      }
+    }));
+  };
+
+  const deleteRoadmapItem = (id: string) => {
+    setMaintenanceConfig(prev => ({
+      ...prev,
+      aboutPageContent: {
+        ...prev.aboutPageContent,
+        roadmap: prev.aboutPageContent.roadmap.filter(item => item.id !== id)
+      }
+    }));
+  };
+
 
   return (
     <MaintenanceContext.Provider value={{ 
@@ -212,7 +334,10 @@ export const MaintenanceProvider = ({ children }: { children: ReactNode }) => {
         resetMaintenanceConfig,
         addUpdateItem,
         editUpdateItem,
-        deleteUpdateItem
+        deleteUpdateItem,
+        addRoadmapItem,
+        editRoadmapItem,
+        deleteRoadmapItem
     }}>
       {children}
     </MaintenanceContext.Provider>
@@ -234,7 +359,7 @@ export const MaintenanceWrapper = ({ children }: { children: ReactNode }) => {
 
     const allowedPaths = ['/maintenance'];
     if (isDevMode) {
-      allowedPaths.push('/dev', '/settings', '/profile/edit', '/dev/manage-updates');
+      allowedPaths.push('/dev', '/settings', '/profile/edit', '/dev/manage-updates', '/dev/manage-about');
     }
     
     const isIndividuallyMaintained = maintenanceConfig.individualPages.includes(pathname);
