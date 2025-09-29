@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import React, { useState, useEffect } from 'react';
@@ -10,8 +11,9 @@ import {
   User,
   Languages,
   Bug,
+  Icon,
 } from 'lucide-react';
-import { useMaintenance } from '@/context/MaintenanceContext';
+import { useMaintenance, UpdateItem } from '@/context/MaintenanceContext';
 
 
 const CountdownBox = ({ value, label }: { value: string; label: string }) => (
@@ -21,36 +23,13 @@ const CountdownBox = ({ value, label }: { value: string; label: string }) => (
   </div>
 );
 
-const updateItems = [
-    {
-        icon: Wrench,
-        title: 'Bug fix and stable',
-        date: '10 September, 2025',
-        description: 'Here we fix some bugs and make a stable and also give a lag free experience',
-        tags: ['Bug Fix', 'Beta 1.3'],
-    },
-    {
-        icon: Rocket,
-        title: 'Live sync by email',
-        date: '7 September, 2025',
-        description: 'Now user can sync data live like history stats etc',
-        tags: ['New Feature', 'Beta 1.3'],
-    },
-    {
-        icon: User,
-        title: 'Profile Management',
-        date: '1 October, 2024',
-        description: 'Manage your profile, track stats, and view your premium membership progress.',
-        tags: ['New Feature', 'Beta 1.2'],
-    },
-    {
-        icon: Languages,
-        title: 'Language Support: Hindi',
-        date: '25 September, 2024',
-        description: 'The entire app is now available in Hindi.',
-        tags: ['New Feature', 'Beta 1.2'],
-    }
-];
+const iconMap: { [key: string]: Icon } = {
+    Wrench,
+    Rocket,
+    User,
+    Languages,
+    Bug,
+};
 
 export function WhatsNewPage() {
   const { maintenanceConfig } = useMaintenance();
@@ -101,7 +80,7 @@ export function WhatsNewPage() {
                 </div>
                  <Badge variant="outline" className="text-primary bg-primary/10 border-primary/50">
                     <Bug className="mr-2 h-4 w-4" />
-                    Bug Fix
+                    {maintenanceConfig.bannerCategory}
                 </Badge>
             </CardContent>
         </Card>
@@ -109,20 +88,19 @@ export function WhatsNewPage() {
         <Card className="bg-accent/50">
             <CardContent className="p-4">
                 <h3 className="font-semibold mb-2">What to expect:</h3>
-                <ul className="list-disc list-inside text-sm text-muted-foreground">
-                    <li>bug fix</li>
-                    <li>may be some feature not working</li>
-                </ul>
+                <p className="text-sm text-muted-foreground whitespace-pre-line">{maintenanceConfig.upcomingFeatureDetails}</p>
             </CardContent>
         </Card>
 
         <div className="space-y-4">
-            {updateItems.map((item, index) => (
+            {maintenanceConfig.updateItems.map((item, index) => {
+                const ItemIcon = iconMap[item.icon] || Bug;
+                return (
                 <Card key={index}>
                     <CardContent className="p-4">
                         <div className="flex items-start gap-4">
                             <div className="p-2.5 bg-accent rounded-lg mt-1">
-                                <item.icon className="h-5 w-5 text-primary" />
+                                <ItemIcon className="h-5 w-5 text-primary" />
                             </div>
                             <div className="flex-1">
                                 <h3 className="font-bold text-lg">{item.title}</h3>
@@ -137,7 +115,7 @@ export function WhatsNewPage() {
                         </div>
                     </CardContent>
                 </Card>
-            ))}
+            )})}
         </div>
 
     </div>

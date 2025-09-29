@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import React from 'react';
@@ -27,10 +28,11 @@ import {
 } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
-import { ArrowLeft, Clock, FileText, Wrench, Info, Tv, Send, FileEdit, Crown, Shield, Trash } from 'lucide-react';
+import { ArrowLeft, Clock, FileText, Wrench, Info, Tv, Send, FileEdit, Crown, Shield, Trash, ChevronRight } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useMaintenance } from '@/context/MaintenanceContext';
 import { useToast } from '@/hooks/use-toast';
+import Link from 'next/link';
 
 export function DevPanel() {
   const router = useRouter();
@@ -273,7 +275,12 @@ export function DevPanel() {
                   </AccordionTrigger>
                 </CardHeader>
                  <AccordionContent className="px-4 pb-4">
-                     <p className="text-sm text-muted-foreground">Content management options will be available here.</p>
+                    <Button asChild variant="outline" className="w-full justify-between">
+                        <Link href="/dev/manage-updates">
+                            Manage "What's New"
+                            <ChevronRight className="h-4 w-4" />
+                        </Link>
+                    </Button>
                 </AccordionContent>
               </Card>
             </AccordionItem>
