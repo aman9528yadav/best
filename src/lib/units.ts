@@ -6,6 +6,10 @@ import {
   GaugeCircle,
   LandPlot,
   Beaker,
+  Clock,
+  Database,
+  Wind,
+  DollarSign,
 } from 'lucide-react';
 
 export type Unit = {
@@ -86,6 +90,49 @@ export const CATEGORIES: Category[] = [
       { name: 'Miles per hour', symbol: 'mph' },
     ],
   },
+  {
+    name: 'Time',
+    icon: Clock,
+    units: [
+      { name: 'Seconds', symbol: 's', isStandard: true },
+      { name: 'Minutes', symbol: 'min' },
+      { name: 'Hours', symbol: 'h' },
+      { name: 'Days', symbol: 'd' },
+      { name: 'Weeks', symbol: 'wk' },
+    ],
+  },
+  {
+    name: 'Data',
+    icon: Database,
+    units: [
+      { name: 'Bytes', symbol: 'B', isStandard: true },
+      { name: 'Kilobytes', symbol: 'KB' },
+      { name: 'Megabytes', symbol: 'MB' },
+      { name: 'Gigabytes', symbol: 'GB' },
+      { name: 'Terabytes', symbol: 'TB' },
+    ],
+  },
+  {
+    name: 'Pressure',
+    icon: Wind,
+    units: [
+      { name: 'Pascal', symbol: 'Pa', isStandard: true },
+      { name: 'Bar', symbol: 'bar' },
+      { name: 'Atmosphere', symbol: 'atm' },
+      { name: 'PSI', symbol: 'psi' },
+    ],
+  },
+  {
+    name: 'Currency',
+    icon: DollarSign,
+    units: [
+      { name: 'USD', symbol: '$' },
+      { name: 'EUR', symbol: '€' },
+      { name: 'GBP', symbol: '£' },
+      { name: 'JPY', symbol: '¥' },
+      { name: 'INR', symbol: '₹' },
+    ],
+  },
 ];
 
 const conversionFactors: Record<string, Record<string, number>> = {
@@ -120,6 +167,29 @@ const conversionFactors: Record<string, Record<string, number>> = {
   'Meters per second': 1,
   'Kilometers per hour': 0.277778,
   'Miles per hour': 0.44704,
+  // Time to base (Seconds)
+  Seconds: 1,
+  Minutes: 60,
+  Hours: 3600,
+  Days: 86400,
+  Weeks: 604800,
+  // Data to base (Bytes)
+  Bytes: 1,
+  Kilobytes: 1024,
+  Megabytes: 1048576,
+  Gigabytes: 1073741824,
+  Terabytes: 1099511627776,
+  // Pressure to base (Pascal)
+  Pascal: 1,
+  Bar: 100000,
+  Atmosphere: 101325,
+  PSI: 6894.76,
+  // Currency - These are placeholders, a real app would use an API
+  USD: 1, // Base
+  EUR: 0.92,
+  GBP: 0.79,
+  JPY: 157.2,
+  INR: 83.5,
 };
 
 export function convert(
