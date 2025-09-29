@@ -58,8 +58,10 @@ export const MaintenanceWrapper = ({ children }: { children: ReactNode }) => {
     const router = useRouter();
     const pathname = usePathname();
 
+    const allowedPaths = ['/maintenance', '/settings', '/profile/edit'];
+
     useEffect(() => {
-        if (isMaintenanceMode && pathname !== '/maintenance') {
+        if (isMaintenanceMode && !allowedPaths.includes(pathname)) {
             router.replace('/maintenance');
         }
         if (!isMaintenanceMode && pathname === '/maintenance') {
@@ -67,7 +69,7 @@ export const MaintenanceWrapper = ({ children }: { children: ReactNode }) => {
         }
     }, [isMaintenanceMode, pathname, router]);
 
-    if (isMaintenanceMode && pathname !== '/maintenance') {
+    if (isMaintenanceMode && !allowedPaths.includes(pathname)) {
         return null; // Render nothing while redirecting
     }
     
