@@ -213,8 +213,8 @@ export default function DashboardPage() {
               <CardTitle className="text-base font-medium">
                 Weekly Summary
               </CardTitle>
-              <Button variant="link" size="sm" className="text-primary pr-0">
-                View Analytics
+              <Button asChild variant="link" size="sm" className="text-primary pr-0">
+                <Link href="/analytics">View Analytics</Link>
               </Button>
             </CardHeader>
             <CardContent>
