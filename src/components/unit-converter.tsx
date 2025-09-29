@@ -26,7 +26,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { CATEGORIES, convert } from '@/lib/units';
+import { CATEGORIES, convert, Unit } from '@/lib/units';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { AdPlaceholder } from './ad-placeholder';
@@ -50,7 +50,14 @@ export function UnitConverter() {
     () => CATEGORIES.find((c) => c.name === category)!,
     [category]
   );
-  const units = useMemo(() => activeCategory.units, [activeCategory]);
+  
+  const units = useMemo(() => {
+    if (region === 'Local') {
+      return activeCategory.units.filter(u => !u.region || u.region === 'Indian');
+    }
+    return activeCategory.units.filter(u => !u.region);
+  }, [activeCategory, region]);
+  
   const fromUnitDetails = useMemo(() => units.find(u => u.name === fromUnit), [units, fromUnit]);
   const toUnitDetails = useMemo(() => units.find(u => u.name === toUnit), [units, toUnit]);
 
@@ -91,6 +98,15 @@ export function UnitConverter() {
     }
     return null;
   }, [inputValue, fromUnit, toUnit, category]);
+  
+  useEffect(() => {
+    if (!units.find(u => u.name === fromUnit)) {
+      setFromUnit(units[0].name);
+    }
+    if (!units.find(u => u.name === toUnit)) {
+      setToUnit(units[1]?.name || units[0].name);
+    }
+  }, [units, fromUnit, toUnit]);
 
   useEffect(() => {
     handleConversion();
@@ -100,9 +116,18 @@ export function UnitConverter() {
   const handleCategoryChange = (newCategory: string) => {
     setCategory(newCategory);
     const newCategoryData = CATEGORIES.find((c) => c.name === newCategory);
-    if (newCategoryData && newCategoryData.units.length >= 2) {
-      setFromUnit(newCategoryData.units[0].name);
-      setToUnit(newCategoryData.units[1].name);
+    if (newCategoryData) {
+      const newUnits = region === 'Local'
+        ? newCategoryData.units.filter(u => !u.region || u.region === 'Indian')
+        : newCategoryData.units.filter(u => !u.region);
+
+      if (newUnits.length >= 2) {
+        setFromUnit(newUnits[0].name);
+        setToUnit(newUnits[1].name);
+      } else if (newUnits.length === 1) {
+        setFromUnit(newUnits[0].name);
+        setToUnit(newUnits[0].name);
+      }
     }
   };
 
@@ -164,8 +189,8 @@ export function UnitConverter() {
     }
   };
 
-  const UnitSelector = ({ value, onChange, label }: { value: string; onChange: (v: string) => void; label: string; }) => {
-    const unitDetails = units.find(u => u.name === value);
+  const UnitSelector = ({ value, onChange, label, availableUnits }: { value: string; onChange: (v: string) => void; label: string; availableUnits: Unit[] }) => {
+    const unitDetails = availableUnits.find(u => u.name === value);
     return (
       <Select value={value} onValueChange={onChange}>
         <SelectTrigger className="w-full bg-card border-none text-muted-foreground">
@@ -174,7 +199,7 @@ export function UnitConverter() {
           </SelectValue>
         </SelectTrigger>
         <SelectContent>
-            {units.map((unit) => (
+            {availableUnits.map((unit) => (
               <SelectItem key={unit.name} value={unit.name}>
                 {`${unit.name} (${unit.symbol})`}
               </SelectItem>
@@ -204,7 +229,7 @@ export function UnitConverter() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="International">International</SelectItem>
-                    <SelectItem value="Local">Local</SelectItem>
+                    <SelectItem value="Local">Local (Indian)</SelectItem>
                   </SelectContent>
                 </Select>
              </div>
@@ -247,7 +272,7 @@ export function UnitConverter() {
 
           <div className="relative flex items-center">
             <div className="flex-1 bg-muted/50 p-2 rounded-md">
-                <UnitSelector value={fromUnit} onChange={setFromUnit} label="Meters (m)" />
+                <UnitSelector value={fromUnit} onChange={setFromUnit} label="From Unit" availableUnits={units} />
             </div>
             <div className="px-2">
                 <Button variant="outline" size="icon" className="z-10 rounded-full bg-background w-8 h-8" onClick={handleSwap}>
@@ -255,7 +280,7 @@ export function UnitConverter() {
                 </Button>
             </div>
             <div className="flex-1 bg-muted/50 p-2 rounded-md">
-                <UnitSelector value={toUnit} onChange={setToUnit} label="Kilometers.." />
+                <UnitSelector value={toUnit} onChange={setToUnit} label="To Unit" availableUnits={units} />
             </div>
           </div>
 

@@ -16,6 +16,7 @@ export type Unit = {
   name: string;
   symbol: string;
   isStandard?: boolean;
+  region?: 'Indian';
 };
 
 export type Category = {
@@ -37,7 +38,7 @@ export const CATEGORIES: Category[] = [
       { name: 'Inches', symbol: 'in' },
       { name: 'Yards', symbol: 'yd' },
       { name: 'Miles', symbol: 'mi' },
-      { name: 'Gaj (Indian)', symbol: 'gaj' },
+      { name: 'Gaj', symbol: 'gaj', region: 'Indian' },
     ],
   },
   {
@@ -49,7 +50,9 @@ export const CATEGORIES: Category[] = [
       { name: 'Milligrams', symbol: 'mg' },
       { name: 'Pounds', symbol: 'lb' },
       { name: 'Ounces', symbol: 'oz' },
-      { name: 'Tola (Indian)', symbol: 'tola' },
+      { name: 'Tola', symbol: 'tola', region: 'Indian' },
+      { name: 'Sher', symbol: 'sher', region: 'Indian' },
+      { name: 'Maund', symbol: 'maund', region: 'Indian' },
     ],
   },
   {
@@ -69,7 +72,9 @@ export const CATEGORIES: Category[] = [
       { name: 'Square Kilometers', symbol: 'km²' },
       { name: 'Acres', symbol: 'ac' },
       { name: 'Hectares', symbol: 'ha' },
-      { name: 'Bigha (Indian)', symbol: 'bigha' },
+      { name: 'Square Gaj', symbol: 'sq gaj', region: 'Indian' },
+      { name: 'Bigha', symbol: 'bigha', region: 'Indian' },
+      { name: 'Kanal', symbol: 'kanal', region: 'Indian' },
     ],
   },
   {
@@ -145,20 +150,24 @@ const conversionFactors: Record<string, Record<string, number>> = {
   Inches: 0.0254,
   Yards: 0.9144,
   Miles: 1609.34,
-  'Gaj (Indian)': 0.9144, // Same as Yard
+  Gaj: 0.9144, // Same as Yard
   // Weight to base (Grams)
   Grams: 1,
   Kilograms: 1000,
   Milligrams: 0.001,
   Pounds: 453.592,
   Ounces: 28.3495,
-  'Tola (Indian)': 11.6638,
+  Tola: 11.6638,
+  Sher: 933.1, // 1 Sher = 80 Tola
+  Maund: 37324, // 1 Maund = 40 Sher
   // Area to base (Square Meters)
   'Square Meters': 1,
   'Square Kilometers': 1000000,
   Acres: 4046.86,
   Hectares: 10000,
-  'Bigha (Indian)': 2529.29, // Varies, using a common value
+  'Square Gaj': 0.836127,
+  Bigha: 2529.29, // Varies, using a common value for UP/Rajasthan
+  Kanal: 505.857,
   // Volume to base (Liters)
   Liters: 1,
   Milliliters: 0.001,
