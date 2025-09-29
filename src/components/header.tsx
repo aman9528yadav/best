@@ -1,4 +1,4 @@
-import { Menu, Search, Bell, CircleUser } from 'lucide-react';
+import { Menu, Search, Bell, CircleUser, Home } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Sidebar } from './sidebar';
@@ -15,6 +15,11 @@ export function Header() {
           <span className="font-bold text-lg">Sutradhaar</span>
         </div>
         <div className="flex items-center justify-end space-x-1">
+          <Button asChild variant="ghost" size="icon" aria-label="Home">
+            <Link href="/">
+              <Home className="h-5 w-5" />
+            </Link>
+          </Button>
           <Button variant="ghost" size="icon" aria-label="Search">
             <Search className="h-5 w-5" />
           </Button>
