@@ -132,7 +132,6 @@ export function AboutPage() {
                                             <p className="font-semibold text-base">{item.title}</p>
                                             <p className="text-xs text-muted-foreground">{item.date}</p>
                                         </div>
-                                        <ChevronDown className="h-4 w-4 shrink-0 transition-transform duration-200" />
                                     </AccordionTrigger>
                                     <AccordionContent className="pt-4">
                                         <div className="space-y-3">
