@@ -2,6 +2,7 @@ import { Menu, Search, Bell, CircleUser } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Sidebar } from './sidebar';
+import Link from 'next/link';
 
 export function Header() {
   return (
@@ -20,8 +21,10 @@ export function Header() {
           <Button variant="ghost" size="icon" aria-label="Notifications">
             <Bell className="h-5 w-5" />
           </Button>
-          <Button variant="ghost" size="icon" aria-label="Profile">
-            <CircleUser className="h-5 w-5" />
+          <Button asChild variant="ghost" size="icon" aria-label="Profile">
+            <Link href="/profile">
+              <CircleUser className="h-5 w-5" />
+            </Link>
           </Button>
         </div>
       </div>
