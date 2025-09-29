@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { ChevronUp, Divide, Equal, Minus, Plus, X, Percent, PlusMinus } from 'lucide-react';
+import { ChevronUp, Divide, Equal, Minus, Plus, X, Percent, Baseline } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 const CalculatorButton = ({
@@ -135,7 +135,7 @@ export function Calculator() {
 
   const basicButtons = [
     { label: 'AC', onClick: handleAllClear, className: 'bg-muted text-foreground' },
-    { label: <PlusMinus size={24} />, onClick: handlePlusMinus, className: 'bg-muted text-foreground' },
+    { label: <Baseline size={24} />, onClick: handlePlusMinus, className: 'bg-muted text-foreground' },
     { label: <Percent size={24} />, onClick: handlePercent, className: 'bg-muted text-foreground' },
     { label: <Divide size={24} />, onClick: () => handleOperator('÷'), variant: 'default' },
     { label: '7', onClick: () => handleInput('7') },
