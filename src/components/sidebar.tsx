@@ -93,10 +93,9 @@ export function Sidebar() {
           <Menu className="h-5 w-5" />
         </Button>
       </SheetTrigger>
-      <SheetContent side="left" className="w-[300px] p-0">
+      <SheetContent side="left" className="w-[300px] p-0 flex flex-col">
         <SheetHeader className="p-4 flex flex-row items-center justify-between border-b">
-           <SheetTitle className="sr-only">Sutradhaar</SheetTitle>
-           <span className="font-bold text-lg">Sutradhaar</span>
+           <SheetTitle>Sutradhaar</SheetTitle>
             <Button
               variant="ghost"
               size="icon"
@@ -106,8 +105,7 @@ export function Sidebar() {
               <span className="sr-only">Close</span>
             </Button>
           </SheetHeader>
-        <div className="flex h-full flex-col bg-background text-foreground">
-          <ScrollArea className="flex-1">
+        <ScrollArea className="flex-1">
             <div className="p-6 space-y-8">
               <Link href="/profile" onClick={() => setIsOpen(false)}>
                 <div className="flex items-center gap-4 p-4 bg-card rounded-xl shadow-sm hover:bg-accent transition-colors">
@@ -147,10 +145,9 @@ export function Sidebar() {
               </nav>
             </div>
           </ScrollArea>
-          <div className="p-6 border-t text-center text-sm text-muted-foreground space-y-4">
+          <div className="p-6 border-t text-center text-sm text-muted-foreground">
              <p>Made by Aman Yadav</p>
           </div>
-        </div>
       </SheetContent>
     </Sheet>
   );

@@ -18,10 +18,12 @@ export default function Profile() {
   }, []);
 
   return (
-    <div className="flex min-h-screen w-full flex-col bg-background text-foreground items-center p-4">
-      <div className="w-full max-w-[412px]">
-        <Header />
-        <main className="flex flex-1 flex-col items-center py-6">
+    <div className="flex flex-col items-center w-full min-h-screen bg-background text-foreground">
+      <div className="w-full max-w-[412px] flex flex-col flex-1">
+        <div className="p-4 pt-0">
+          <Header />
+        </div>
+        <main className="flex-1 overflow-y-auto p-4 pt-0 space-y-4">
           {isLoading ? <ProfilePageSkeleton /> : <ProfilePage />}
         </main>
       </div>

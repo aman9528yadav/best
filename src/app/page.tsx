@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useMemo, useState, useEffect } from 'react';
@@ -151,13 +152,16 @@ export default function DashboardPage() {
 
 
   return (
-    <div className="flex min-h-screen w-full flex-col bg-background text-foreground items-center p-4">
-      <div className="w-full max-w-[412px] space-y-4">
-        <Header />
+    <div className="flex flex-col items-center w-full min-h-screen bg-background text-foreground">
+      <div className="w-full max-w-[412px] flex flex-col flex-1">
+        <div className="p-4 pt-0">
+          <Header />
+        </div>
+        <main className="flex-1 overflow-y-auto p-4 pt-0 space-y-4">
          {isLoading ? (
           <DashboardSkeleton />
         ) : (
-        <main className="space-y-6 pb-8">
+        <div className="space-y-6 pb-8">
           <div className="grid grid-cols-3 gap-2 text-center">
             <Card className="bg-accent/50">
               <CardContent className="p-3">
@@ -355,8 +359,9 @@ export default function DashboardPage() {
               </AccordionContent>
             </AccordionItem>
           </Accordion>
-        </main>
+        </div>
         )}
+      </main>
       </div>
     </div>
   );

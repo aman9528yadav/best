@@ -6,7 +6,7 @@ import Link from 'next/link';
 
 export function Header() {
   return (
-    <Card className="sticky top-0 z-50 w-full rounded-full shadow-md">
+    <Card className="sticky top-4 z-50 w-full rounded-full shadow-md mt-4">
       <div className="flex h-14 items-center px-4">
         <div className="flex items-center space-x-2">
           <Sidebar />
