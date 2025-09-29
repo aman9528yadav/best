@@ -63,12 +63,12 @@ const sidebarNavItems = [
   {
     icon: Timer,
     label: 'Timer',
-    href: '#',
+    href: '/timer',
   },
   {
     icon: Hourglass,
     label: 'Stopwatch',
-    href: '#',
+    href: '/stopwatch',
   },
   {
     icon: Info,

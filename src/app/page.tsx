@@ -64,8 +64,8 @@ const quickAccessItems = [
   { icon: Newspaper, label: 'News' },
   { icon: Languages, label: 'Translator' },
   { icon: Calendar, label: 'Date Calc', href: '/date-calculator' },
-  { icon: Timer, label: 'Timer' },
-  { icon: Hourglass, label: 'Stopwatch' },
+  { icon: Timer, label: 'Timer', href: '/timer' },
+  { icon: Hourglass, label: 'Stopwatch', href: '/stopwatch' },
   { icon: Settings, label: 'Settings', href: '/settings' },
 ];
 
