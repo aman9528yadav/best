@@ -127,10 +127,13 @@ export function AboutPage() {
                                     {index < roadmap.length - 1 && <div className="w-px h-full bg-border" />}
                                 </div>
                                 <div className="flex-1 pb-8">
-                                    <AccordionTrigger className="flex justify-between items-center w-full py-1 hover:no-underline">
-                                        <div className="text-left">
-                                            <p className="font-semibold text-base">{item.title}</p>
-                                            <p className="text-xs text-muted-foreground">{item.date}</p>
+                                    <AccordionTrigger className="w-full py-1 hover:no-underline">
+                                        <div className="flex justify-between items-start w-full">
+                                            <div className="text-left">
+                                                <p className="font-semibold text-base">{item.title}</p>
+                                                <p className="text-xs text-muted-foreground">{item.date}</p>
+                                            </div>
+                                            <Badge variant="outline" className="ml-4 shrink-0">{item.version}</Badge>
                                         </div>
                                     </AccordionTrigger>
                                     <AccordionContent className="pt-4">
