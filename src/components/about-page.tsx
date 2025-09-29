@@ -107,31 +107,42 @@ export function AboutPage() {
 
             <section className="space-y-4">
                 <h2 className="text-xl font-bold text-center">Release Plan & Roadmap</h2>
-                <Accordion type="single" collapsible className="w-full" defaultValue="item-0">
+                 <Accordion type="single" collapsible className="w-full space-y-3" defaultValue="item-0">
                     {roadmap.map((item, index) => {
                         const ItemIcon = roadmapIconMap[item.icon] || GitBranch;
                         return (
-                        <AccordionItem value={`item-${index}`} key={item.id}>
-                            <AccordionTrigger>
-                                <div className='flex items-center gap-3'>
-                                     <ItemIcon className="h-4 w-4 text-primary" />
-                                     <span className="font-semibold">{item.version} - {item.title}</span>
-                                     <Badge variant={item.status === 'completed' ? 'default' : 'secondary'}>{item.status}</Badge>
-                                </div>
-                            </AccordionTrigger>
-                            <AccordionContent className="pl-9">
-                                 <p className="text-xs text-muted-foreground mb-2">{item.date}</p>
-                                 <p className="text-sm text-muted-foreground mt-1 mb-2">{item.description}</p>
-                                <ul className="text-sm text-muted-foreground space-y-1">
-                                    {item.details.map((detail, i) => (
-                                        <li key={i} className="flex items-center gap-2">
-                                            <CheckCircle className="h-3 w-3 text-green-500" />
-                                            {detail}
-                                        </li>
-                                    ))}
-                                </ul>
-                            </AccordionContent>
-                        </AccordionItem>
+                        <Card key={item.id} className="overflow-hidden">
+                             <AccordionItem value={`item-${index}`} className="border-none">
+                                <AccordionTrigger className="p-4 bg-accent/30 hover:no-underline data-[state=open]:bg-accent/50 data-[state=open]:border-b">
+                                    <div className='flex items-center gap-3'>
+                                        <ItemIcon className="h-4 w-4 text-primary" />
+                                        <span className="font-semibold">{item.title}</span>
+                                    </div>
+                                </AccordionTrigger>
+                                <AccordionContent className="p-4 space-y-3">
+                                    <div className="flex justify-between text-sm">
+                                        <div className="flex gap-2">
+                                            <span className="font-medium">Version:</span>
+                                            <Badge variant="outline">{item.version}</Badge>
+                                        </div>
+                                         <div className="flex gap-2">
+                                            <span className="font-medium">Status:</span>
+                                            <Badge variant={item.status === 'completed' ? 'default' : 'secondary'}>{item.status}</Badge>
+                                        </div>
+                                    </div>
+                                    <p className="text-xs text-muted-foreground">{item.date}</p>
+                                    <p className="text-sm text-muted-foreground mt-1 mb-2">{item.description}</p>
+                                    <ul className="text-sm text-muted-foreground space-y-1">
+                                        {item.details.map((detail, i) => (
+                                            <li key={i} className="flex items-center gap-2">
+                                                <CheckCircle className="h-3 w-3 text-green-500" />
+                                                {detail}
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </AccordionContent>
+                            </AccordionItem>
+                        </Card>
                     )})}
                 </Accordion>
                 <Button variant="outline" className="w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white border-none">
