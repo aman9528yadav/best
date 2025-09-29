@@ -205,14 +205,18 @@ export function UnitConverter() {
             />
           </div>
 
-          <div className="relative grid grid-cols-2 gap-2 items-center bg-muted/50 p-2 rounded-md">
-            <UnitSelector value={fromUnit} onChange={setFromUnit} label="Meters (m)" />
-            <div className="absolute w-full flex items-center justify-center">
-              <Button variant="outline" size="icon" className="z-10 rounded-full bg-background" onClick={handleSwap}>
-                <ArrowRightLeft className="h-4 w-4" />
-              </Button>
+          <div className="relative flex items-center">
+            <div className="flex-1 bg-muted/50 p-2 rounded-md">
+                <UnitSelector value={fromUnit} onChange={setFromUnit} label="Meters (m)" />
             </div>
-            <UnitSelector value={toUnit} onChange={setToUnit} label="Kilometers.." />
+            <div className="px-2">
+                <Button variant="outline" size="icon" className="z-10 rounded-full bg-background w-8 h-8" onClick={handleSwap}>
+                    <ArrowRightLeft className="h-3 w-3" />
+                </Button>
+            </div>
+            <div className="flex-1 bg-muted/50 p-2 rounded-md">
+                <UnitSelector value={toUnit} onChange={setToUnit} label="Kilometers.." />
+            </div>
           </div>
 
           <div className="grid grid-cols-2 gap-2 text-xs">
