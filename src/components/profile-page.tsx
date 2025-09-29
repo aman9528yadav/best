@@ -33,6 +33,8 @@ import { Badge } from '@/components/ui/badge';
 import Image from 'next/image';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import Link from 'next/link';
+import { useProfile } from '@/context/ProfileContext';
+import { useHistory } from '@/context/HistoryContext';
 
 const DetailItem = ({ icon: Icon, label, value }: { icon: React.ElementType, label: string, value: string }) => (
     <div className="flex justify-between items-center text-sm py-3 border-b border-border/50">
@@ -52,7 +54,12 @@ const QuickActionButton = ({ icon: Icon, label }: { icon: React.ElementType, lab
 );
 
 export function ProfilePage() {
+    const { profile } = useProfile();
+    const { history } = useHistory();
     const userAvatar = PlaceHolderImages.find(p => p.id === 'user-avatar');
+    
+    const totalConversions = history.filter(item => item.type === 'conversion').length;
+    const daysActive = new Set(history.map(item => new Date(item.timestamp).toDateString())).size;
 
     return (
         <div className="w-full space-y-6 pb-12">
@@ -66,9 +73,9 @@ export function ProfilePage() {
                      </Button>
                     <div className="flex justify-center mb-4 pt-8">
                         <Avatar className="h-24 w-24 border-4 border-background shadow-md">
-                            {userAvatar && <AvatarImage src={userAvatar.imageUrl} alt="Aman Yadav" />}
+                            {userAvatar && <AvatarImage src={userAvatar.imageUrl} alt={profile.name} />}
                             <div className="h-full w-full rounded-full bg-gradient-to-br from-primary to-purple-400 flex items-center justify-center">
-                                <span className="text-4xl font-bold text-primary-foreground">A</span>
+                                <span className="text-4xl font-bold text-primary-foreground">{profile.name.charAt(0)}</span>
                             </div>
                         </Avatar>
                         <div className="absolute bottom-5 right-[calc(50%-2.7rem)] transform translate-x-1/2 bg-primary rounded-full p-1.5 shadow-md">
@@ -77,20 +84,20 @@ export function ProfilePage() {
                     </div>
 
                     <div className="space-y-1">
-                        <h2 className="text-2xl font-bold">Aman Yadav</h2>
+                        <h2 className="text-2xl font-bold">{profile.name}</h2>
                         <div className="flex items-center justify-center gap-2">
                              <Badge variant="outline" className="border-yellow-500 text-yellow-500">Owner</Badge>
                         </div>
-                        <p className="text-sm text-muted-foreground">amanyadavyadav9458@gmail.com</p>
+                        <p className="text-sm text-muted-foreground">{profile.email}</p>
                     </div>
                 </CardContent>
             </Card>
 
             <Card>
                 <CardContent className="p-4 space-y-1">
-                   <DetailItem icon={Phone} label="Phone" value="+91 7037652730" />
-                   <DetailItem icon={MapPin} label="Address" value="Manirampur bewar" />
-                   <DetailItem icon={Cake} label="Birthday" value="December 5th" />
+                   <DetailItem icon={Phone} label="Phone" value={profile.phone} />
+                   <DetailItem icon={MapPin} label="Address" value={profile.address} />
+                   <DetailItem icon={Cake} label="Birthday" value={profile.birthday} />
                 </CardContent>
             </Card>
             
@@ -118,7 +125,7 @@ export function ProfilePage() {
             <div className="grid grid-cols-3 gap-4 text-center">
                 <Card>
                     <CardContent className="p-3">
-                        <div className="text-xl font-bold">34</div>
+                        <div className="text-xl font-bold">{totalConversions}</div>
                         <div className="text-xs text-muted-foreground">Conversions</div>
                     </CardContent>
                 </Card>
@@ -130,7 +137,7 @@ export function ProfilePage() {
                 </Card>
                 <Card>
                     <CardContent className="p-3">
-                        <div className="text-xl font-bold">3</div>
+                        <div className="text-xl font-bold">{daysActive}</div>
                         <div className="text-xs text-muted-foreground">Days Active</div>
                     </CardContent>
                 </Card>
@@ -162,8 +169,7 @@ export function ProfilePage() {
                         Skills & Interests
                     </h3>
                     <div className="flex flex-wrap gap-2">
-                        <Badge>React</Badge>
-                        <Badge>developed</Badge>
+                        {profile.skills.map(skill => <Badge key={skill}>{skill}</Badge>)}
                     </div>
                  </CardContent>
             </Card>
@@ -175,10 +181,10 @@ export function ProfilePage() {
                        Social Links
                     </h3>
                     <div className="flex items-center gap-4 text-muted-foreground">
-                        <a href="#" className="flex items-center gap-1.5 hover:text-primary"><Linkedin className="h-4 w-4" /> <span className='text-sm'>LinkedIn</span></a>
-                        <a href="#" className="flex items-center gap-1.5 hover:text-primary"><Twitter className="h-4 w-4" /> <span className='text-sm'>Twitter</span></a>
-                        <a href="#" className="flex items-center gap-1.5 hover:text-primary"><Github className="h-4 w-4" /> <span className='text-sm'>GitHub</span></a>
-                        <a href="#" className="flex items-center gap-1.5 hover:text-primary"><Instagram className="h-4 w-4" /> <span className='text-sm'>Instagram</span></a>
+                        <a href={profile.socialLinks.linkedin} className="flex items-center gap-1.5 hover:text-primary"><Linkedin className="h-4 w-4" /> <span className='text-sm'>LinkedIn</span></a>
+                        <a href={profile.socialLinks.twitter} className="flex items-center gap-1.5 hover:text-primary"><Twitter className="h-4 w-4" /> <span className='text-sm'>Twitter</span></a>
+                        <a href={profile.socialLinks.github} className="flex items-center gap-1.5 hover:text-primary"><Github className="h-4 w-4" /> <span className='text-sm'>GitHub</span></a>
+                        <a href={profile.socialLinks.instagram} className="flex items-center gap-1.5 hover:text-primary"><Instagram className="h-4 w-4" /> <span className='text-sm'>Instagram</span></a>
                     </div>
                  </CardContent>
             </Card>

@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
 import { HistoryProvider } from '@/context/HistoryContext';
+import { ProfileProvider } from '@/context/ProfileContext';
 
 export const metadata: Metadata = {
   title: 'UnitWise',
@@ -24,10 +25,12 @@ export default function RootLayout({
         />
       </head>
       <body className="font-body antialiased">
-        <HistoryProvider>
-          {children}
-          <Toaster />
-        </HistoryProvider>
+        <ProfileProvider>
+          <HistoryProvider>
+            {children}
+            <Toaster />
+          </HistoryProvider>
+        </ProfileProvider>
       </body>
     </html>
   );

@@ -1,7 +1,7 @@
 
 "use client";
 
-import React from 'react';
+import React, { useState } from 'react';
 import {
   Card,
   CardContent,
@@ -30,19 +30,55 @@ import {
   Mail,
 } from 'lucide-react';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
+import { useProfile } from '@/context/ProfileContext';
+import { useToast } from '@/hooks/use-toast';
+import { useRouter } from 'next/navigation';
 
-const InputField = ({ icon: Icon, label, id, value, placeholder }: { icon: React.ElementType, label: string, id: string, value: string, placeholder?: string }) => (
+
+const InputField = ({ icon: Icon, label, id, value, onChange }: { icon?: React.ElementType, label: string, id: string, value: string, placeholder?: string, onChange: (e: React.ChangeEvent<HTMLInputElement>) => void }) => (
     <div className="space-y-2">
         <Label htmlFor={id} className="flex items-center gap-2 text-muted-foreground">
-            <Icon className="h-4 w-4" />
+            {Icon && <Icon className="h-4 w-4" />}
             <span>{label}</span>
         </Label>
-        <Input id={id} defaultValue={value} placeholder={placeholder} />
+        <Input id={id} name={id} value={value} onChange={onChange} />
     </div>
 );
 
 export function EditProfilePage() {
+    const { profile, setProfile } = useProfile();
+    const [formData, setFormData] = useState(profile);
     const userAvatar = PlaceHolderImages.find(p => p.id === 'user-avatar');
+    const { toast } = useToast();
+    const router = useRouter();
+
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+        const { name, value } = e.target;
+        setFormData(prev => ({
+            ...prev,
+            [name]: value,
+        }));
+    };
+    
+    const handleSocialChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const { name, value } = e.target;
+        setFormData(prev => ({
+            ...prev,
+            socialLinks: {
+                ...prev.socialLinks,
+                [name]: value,
+            }
+        }));
+    };
+
+    const handleSaveChanges = () => {
+        setProfile(formData);
+        toast({
+            title: "Profile Updated",
+            description: "Your changes have been saved successfully.",
+        });
+        router.push('/profile');
+    };
 
     return (
         <div className="w-full space-y-6 pb-12">
@@ -62,41 +98,39 @@ export function EditProfilePage() {
                                 <Avatar className="h-24 w-24 border-4 border-background shadow-md">
                                     {userAvatar && <AvatarImage src={userAvatar.imageUrl} alt="Aman Yadav" />}
                                     <div className="h-full w-full rounded-full bg-gradient-to-br from-primary to-purple-400 flex items-center justify-center">
-                                        <span className="text-4xl font-bold text-primary-foreground">A</span>
+                                        <span className="text-4xl font-bold text-primary-foreground">{profile.name.charAt(0)}</span>
                                     </div>
                                 </Avatar>
                                 <Button variant="link" className="text-primary">Change Photo</Button>
                             </div>
                             
                             <div className="space-y-6 text-left mt-8">
-                                 <div className="space-y-2">
-                                    <Label htmlFor="full-name">Full Name</Label>
-                                    <Input id="full-name" defaultValue="Aman Yadav" />
-                                </div>
+                                 <InputField label="Full Name" id="name" value={formData.name} onChange={handleChange} />
+                                
                                 <div className="space-y-2">
                                     <Label htmlFor="email" className="flex items-center gap-2 text-muted-foreground">Email</Label>
-                                    <Input id="email" defaultValue="amanyadavyadav9458@gmail.com" readOnly className="bg-muted/50" />
+                                    <Input id="email" value={formData.email} readOnly className="bg-muted/50" />
                                 </div>
                                 
-                                <InputField icon={Phone} label="Phone Number" id="phone" value="+91 7037652730" />
-                                <InputField icon={MapPin} label="Address" id="address" value="Manirampur bewar" />
+                                <InputField icon={Phone} label="Phone Number" id="phone" value={formData.phone} onChange={handleChange} />
+                                <InputField icon={MapPin} label="Address" id="address" value={formData.address} onChange={handleChange} />
 
                                 <div className="space-y-2">
                                     <Label htmlFor="dob" className="flex items-center gap-2 text-muted-foreground"><Cake className="h-4 w-4" />Date of Birth</Label>
-                                    <Input id="dob" type="text" defaultValue="December 5th, 2025" />
+                                    <Input id="birthday" name="birthday" type="text" value={formData.birthday} onChange={handleChange} />
                                 </div>
 
                                 <div className="space-y-2">
                                     <Label htmlFor="skills" className="flex items-center gap-2 text-muted-foreground"><Star className="h-4 w-4" />Skills & Interests</Label>
-                                    <Textarea id="skills" defaultValue="React, developed" />
+                                    <Textarea id="skills" name="skills" value={formData.skills.join(', ')} onChange={(e) => setFormData(prev => ({...prev, skills: e.target.value.split(',').map(s => s.trim())}))} />
                                 </div>
 
-                                <InputField icon={Linkedin} label="LinkedIn" id="linkedin" value="65vf" />
-                                <InputField icon={Twitter} label="Twitter" id="twitter" value="hjjkkk" />
-                                <InputField icon={Github} label="GitHub" id="github" value="hhgg" />
-                                <InputField icon={Instagram} label="Instagram" id="instagram" value="yygcfcnmm" />
+                                <InputField icon={Linkedin} label="LinkedIn" id="linkedin" value={formData.socialLinks.linkedin} onChange={handleSocialChange} />
+                                <InputField icon={Twitter} label="Twitter" id="twitter" value={formData.socialLinks.twitter} onChange={handleSocialChange} />
+                                <InputField icon={Github} label="GitHub" id="github" value={formData.socialLinks.github} onChange={handleSocialChange} />
+                                <InputField icon={Instagram} label="Instagram" id="instagram" value={formData.socialLinks.instagram} onChange={handleSocialChange} />
 
-                                <Button size="lg" className="w-full">Save Changes</Button>
+                                <Button size="lg" className="w-full" onClick={handleSaveChanges}>Save Changes</Button>
                             </div>
                         </TabsContent>
                     </Tabs>
