@@ -61,7 +61,7 @@ const quickAccessItems = [
   { icon: Calendar, label: 'Date Calc' },
   { icon: Timer, label: 'Timer' },
   { icon: Hourglass, label: 'Stopwatch' },
-  { icon: Settings, label: 'Settings', href: '/profile' },
+  { icon: Settings, label: 'Settings', href: '/settings' },
 ];
 
 const comingSoonItems = [
