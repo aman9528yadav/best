@@ -1,0 +1,16 @@
+{
+  "placeholderImages": [
+    {
+      "id": "ad-car",
+      "description": "A sleek, modern car on a scenic road.",
+      "imageUrl": "https://picsum.photos/seed/carAd/400/150",
+      "imageHint": "modern car"
+    },
+    {
+      "id": "ad-vacation",
+      "description": "A beautiful tropical beach with clear water.",
+      "imageUrl": "https://picsum.photos/seed/vacationAd/400/150",
+      "imageHint": "tropical beach"
+    }
+  ]
+}
