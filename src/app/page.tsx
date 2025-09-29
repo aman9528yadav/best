@@ -38,6 +38,9 @@ import {
   Timer,
   Hourglass,
   Settings,
+  Bug,
+  User,
+  Icon as LucideIcon,
 } from 'lucide-react';
 import Link from 'next/link';
 import { AdPlaceholder } from '@/components/ad-placeholder';
@@ -78,18 +81,13 @@ const comingSoonItems = [
   },
 ];
 
-const whatsNewItems = [
-  {
-    icon: Wrench,
-    title: 'Bug fix and stable',
-    description: 'Here we fix some bugs and make a stable and also give a lag free experience',
-  },
-  {
-    icon: Rocket,
-    title: 'Live sync by email',
-    description: 'Now user can sync data live like history stats etc',
-  },
-];
+const iconMap: { [key: string]: LucideIcon } = {
+  Wrench,
+  Rocket,
+  User,
+  Languages,
+  Bug,
+};
 
 const discoverItems = [
   {
@@ -115,7 +113,7 @@ const discoverItems = [
 export default function DashboardPage() {
   const { history } = useHistory();
   const { maintenanceConfig } = useMaintenance();
-  const { appInfo, ownerInfo } = maintenanceConfig.aboutPageContent;
+  const { appInfo, ownerInfo, updateItems } = maintenanceConfig;
   const [isLoading, setIsLoading] = useState(true);
   const [showMore, setShowMore] = useState(false);
 
@@ -164,6 +162,7 @@ export default function DashboardPage() {
   }, [conversionHistory]);
 
   const visibleQuickAccessItems = showMore ? quickAccessItems : quickAccessItems.slice(0, 6);
+  const whatsNewItems = updateItems.slice(0, 2);
 
 
   return (
@@ -291,11 +290,13 @@ export default function DashboardPage() {
               </Button>
             </div>
             <div className="space-y-3">
-              {whatsNewItems.map((item) => (
-                <Card key={item.title}>
+              {whatsNewItems.map((item) => {
+                const ItemIcon = iconMap[item.icon] || Bug;
+                return (
+                <Card key={item.id}>
                   <CardContent className="p-3 flex items-start gap-3">
                     <div className="p-2.5 bg-accent rounded-lg">
-                      <item.icon className="h-5 w-5 text-primary" />
+                      <ItemIcon className="h-5 w-5 text-primary" />
                     </div>
                     <div>
                       <div className="font-medium">{item.title}</div>
@@ -305,7 +306,7 @@ export default function DashboardPage() {
                     </div>
                   </CardContent>
                 </Card>
-              ))}
+              )})}
             </div>
           </section>
 
@@ -383,6 +384,8 @@ export default function DashboardPage() {
     </div>
   );
 }
+
+    
 
     
 

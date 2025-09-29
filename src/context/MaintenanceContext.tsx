@@ -4,7 +4,7 @@
 
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
-import { Wrench, Rocket, User, Languages, Bug, Icon as LucideIcon } from 'lucide-react';
+import { Wrench, Rocket, User, Languages, Bug, Icon as LucideIcon, GitBranch, Sparkles } from 'lucide-react';
 
 
 export type UpdateItem = {
@@ -71,6 +71,8 @@ export type MaintenanceConfig = {
     globalNotification: string;
     updateItems: UpdateItem[];
     aboutPageContent: AboutPageContent;
+    appInfo: { version: string; };
+    ownerInfo: { name: string; };
 };
 
 
@@ -209,6 +211,12 @@ const defaultMaintenanceConfig: MaintenanceConfig = {
                 status: 'upcoming',
             }
         ]
+    },
+    appInfo: {
+        version: "beta 1.5"
+    },
+    ownerInfo: {
+        name: "Aman Yadav"
     }
 };
 
@@ -381,3 +389,6 @@ export const MaintenanceWrapper = ({ children }: { children: ReactNode }) => {
     
     return <>{children}</>;
 };
+
+
+    
