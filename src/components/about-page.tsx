@@ -7,6 +7,12 @@ import {
   Card,
   CardContent,
 } from '@/components/ui/card';
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@/components/ui/accordion';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import {
@@ -26,6 +32,7 @@ import {
 } from 'lucide-react';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { useMaintenance } from '@/context/MaintenanceContext';
+import { Badge } from '@/components/ui/badge';
 
 const roadmapIconMap: { [key: string]: LucideIcon } = {
   GitBranch,
@@ -100,21 +107,21 @@ export function AboutPage() {
 
             <section className="space-y-4">
                 <h2 className="text-xl font-bold text-center">Release Plan & Roadmap</h2>
-                <div className="relative pl-6">
-                    <div className="absolute left-[35px] top-0 bottom-0 w-0.5 bg-border -translate-x-1/2"></div>
+                <Accordion type="single" collapsible className="w-full" defaultValue="item-0">
                     {roadmap.map((item, index) => {
                         const ItemIcon = roadmapIconMap[item.icon] || GitBranch;
                         return (
-                        <div key={index} className="relative mb-8">
-                            <div className={`absolute left-0 top-1.5 w-4 h-4 rounded-full -translate-x-1/2 ${item.status === 'completed' ? 'bg-primary' : 'bg-muted-foreground'}`}></div>
-                            <div className="pl-8">
-                                <p className="text-xs text-muted-foreground">{item.date}</p>
-                                <h3 className="font-semibold text-lg flex items-center gap-2">
-                                    <ItemIcon className="h-4 w-4 text-primary" />
-                                    {item.version}
-                                </h3>
-                                <p className="text-sm font-medium">{item.title}</p>
-                                <p className="text-sm text-muted-foreground mt-1 mb-2">{item.description}</p>
+                        <AccordionItem value={`item-${index}`} key={item.id}>
+                            <AccordionTrigger>
+                                <div className='flex items-center gap-3'>
+                                     <ItemIcon className="h-4 w-4 text-primary" />
+                                     <span className="font-semibold">{item.version} - {item.title}</span>
+                                     <Badge variant={item.status === 'completed' ? 'default' : 'secondary'}>{item.status}</Badge>
+                                </div>
+                            </AccordionTrigger>
+                            <AccordionContent className="pl-9">
+                                 <p className="text-xs text-muted-foreground mb-2">{item.date}</p>
+                                 <p className="text-sm text-muted-foreground mt-1 mb-2">{item.description}</p>
                                 <ul className="text-sm text-muted-foreground space-y-1">
                                     {item.details.map((detail, i) => (
                                         <li key={i} className="flex items-center gap-2">
@@ -123,10 +130,10 @@ export function AboutPage() {
                                         </li>
                                     ))}
                                 </ul>
-                            </div>
-                        </div>
+                            </AccordionContent>
+                        </AccordionItem>
                     )})}
-                </div>
+                </Accordion>
                 <Button variant="outline" className="w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white border-none">
                     <Sparkles className="mr-2 h-4 w-4"/> Click for WOW!
                 </Button>
