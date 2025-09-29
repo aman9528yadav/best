@@ -11,6 +11,8 @@ import {
   Grid3x3,
   History,
   Power,
+  Undo2,
+  Trash2,
 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
@@ -120,6 +122,18 @@ export function UnitConverter() {
       handleConversion(); // Trigger conversion on button click as well
     }
   };
+  
+  const handleRestoreHistory = (itemToRestore: Conversion) => {
+    setInputValue(itemToRestore.fromValue);
+    setCategory(itemToRestore.category);
+    setFromUnit(itemToRestore.fromUnit);
+    setToUnit(itemToRestore.toUnit);
+  };
+
+  const handleDeleteHistory = (idToDelete: string) => {
+    setHistory(history.filter(item => item.id !== idToDelete));
+  };
+
 
   const handleCopy = () => {
     if (result) {
@@ -256,10 +270,20 @@ export function UnitConverter() {
             </div>
             <ul className="space-y-1">
               {history.map((item) => (
-                <li key={item.id} className="p-3 rounded-lg bg-accent flex justify-center items-center text-sm text-accent-foreground">
-                  <span>{`${item.fromValue} ${item.fromUnit.split(' ')[0]}`}</span>
-                  <ArrowRightLeft className="h-3 w-3 mx-3" />
-                  <span className="font-semibold">{`${item.toValue} ${item.toUnit.split(' ')[0]}`}</span>
+                <li key={item.id} className="p-2 rounded-lg bg-accent flex justify-between items-center text-sm text-accent-foreground">
+                    <div className='flex items-center'>
+                      <span>{`${item.fromValue} ${item.fromUnit.split(' ')[0]}`}</span>
+                      <ArrowRightLeft className="h-3 w-3 mx-3" />
+                      <span className="font-semibold">{`${item.toValue} ${item.toUnit.split(' ')[0]}`}</span>
+                    </div>
+                    <div className="flex items-center">
+                      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleRestoreHistory(item)}>
+                        <Undo2 className="h-4 w-4" />
+                      </Button>
+                      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleDeleteHistory(item.id)}>
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
                 </li>
               ))}
             </ul>
