@@ -32,6 +32,7 @@ import { cn } from '@/lib/utils';
 import { AdPlaceholder } from './ad-placeholder';
 import { useHistory, ConversionHistoryItem, FavoriteItem } from '@/context/HistoryContext';
 import Link from 'next/link';
+import { ConversionComparisonDialog } from './conversion-comparison-dialog';
 
 export function UnitConverter() {
   const { toast } = useToast();
@@ -39,10 +40,11 @@ export function UnitConverter() {
 
   const [region, setRegion] = useState('International');
   const [category, setCategory] = useState(CATEGORIES[0].name);
-  const [inputValue, setInputValue] = useState('112');
+  const [inputValue, setInputValue] = useState('1');
   const [fromUnit, setFromUnit] = useState(CATEGORIES[0].units[0].name);
   const [toUnit, setToUnit] = useState(CATEGORIES[0].units[1].name);
   const [result, setResult] = useState('');
+  const [isCompareDialogOpen, setIsCompareDialogOpen] = useState(false);
 
   const activeCategory = useMemo(
     () => CATEGORIES.find((c) => c.name === category)!,
@@ -284,7 +286,7 @@ export function UnitConverter() {
           </div>
 
           <div className="grid grid-cols-2 gap-4">
-            <Button variant="outline" size="lg"><ArrowRightLeft className='mr-2 h-4 w-4'/>Compare</Button>
+            <Button variant="outline" size="lg" onClick={() => setIsCompareDialogOpen(true)}><ArrowRightLeft className='mr-2 h-4 w-4'/>Compare</Button>
             <Button size="lg" onClick={handleAddToHistory}><Power className='mr-2 h-4 w-4' />Convert</Button>
           </div>
 
@@ -324,6 +326,17 @@ export function UnitConverter() {
       )}
 
       <AdPlaceholder className="mt-4 w-full" />
+
+      {fromUnitDetails && (
+        <ConversionComparisonDialog
+          open={isCompareDialogOpen}
+          onOpenChange={setIsCompareDialogOpen}
+          category={category}
+          fromUnit={fromUnit}
+          fromUnitDetails={fromUnitDetails}
+          inputValue={inputValue}
+        />
+      )}
     </div>
   );
 }
