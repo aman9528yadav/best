@@ -50,6 +50,7 @@ import { useHistory } from '@/context/HistoryContext';
 import { isToday, differenceInCalendarDays, startOfDay } from 'date-fns';
 import { DashboardSkeleton } from '@/components/dashboard-skeleton';
 import { useMaintenance } from '@/context/MaintenanceContext';
+import { DashboardBanner } from '@/components/dashboard-banner';
 
 const quickAccessItems = [
   {
@@ -176,6 +177,7 @@ export default function DashboardPage() {
           <DashboardSkeleton />
         ) : (
         <div className="space-y-6 pb-8">
+           <DashboardBanner />
           <div className="grid grid-cols-3 gap-2 text-center">
             <Card className="bg-accent/50">
               <CardContent className="p-3">
