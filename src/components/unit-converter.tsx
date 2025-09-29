@@ -28,6 +28,7 @@ import {
 import { CATEGORIES, convert } from '@/lib/units';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
+import { AdPlaceholder } from './ad-placeholder';
 
 type Conversion = {
   id: string;
@@ -305,6 +306,8 @@ export function UnitConverter() {
           </CardContent>
         </Card>
       )}
+
+      <AdPlaceholder className="mt-4 w-full" />
     </div>
   );
 }
