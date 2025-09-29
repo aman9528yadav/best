@@ -55,9 +55,9 @@ export function ProfilePage() {
 
     return (
         <div className="w-full space-y-6 pb-12">
-            <Card className="overflow-hidden shadow-lg">
-                <CardContent className="p-6 pt-0 text-center">
-                    <div className="flex justify-center -mt-12 mb-4 relative">
+            <Card className="shadow-lg">
+                <CardContent className="p-6 text-center">
+                    <div className="flex justify-center mb-4 relative">
                         <Avatar className="h-24 w-24 border-4 border-background shadow-md">
                             {userAvatar && <AvatarImage src={userAvatar.imageUrl} alt="Aman Yadav" />}
                             <div className="h-full w-full rounded-full bg-gradient-to-br from-primary to-purple-400 flex items-center justify-center">
