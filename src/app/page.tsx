@@ -40,7 +40,7 @@ const quickAccessItems = [
     label: 'Converter',
     href: '/converter',
   },
-  { icon: Calculator, label: 'Calculator' },
+  { icon: Calculator, label: 'Calculator', href: '/calculator' },
   { icon: BookText, label: 'Notes' },
   { icon: History, label: 'History' },
   { icon: Newspaper, label: 'News' },

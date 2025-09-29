@@ -30,6 +30,11 @@ export function AdPlaceholder({ className }: { className?: string }) {
           title: 'Your Dream Vacation Awaits.',
           cta: 'Book Now',
         },
+        {
+          image: PlaceHolderImages.find((img) => img.id === 'ad-calculator'),
+          title: 'Master Your Finances.',
+          cta: 'Try Premium Calculator',
+        },
       ];
       // Pick a random ad, but ensure we found the images
       const validAds = ads.filter((a) => a.image);
