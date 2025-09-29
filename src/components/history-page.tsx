@@ -18,87 +18,12 @@ import {
 } from '@/components/ui/select';
 import { Trash2, Filter, Link as LinkIcon, RotateCw } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
+import { useHistory, HistoryItem, FavoriteItem, ConversionHistoryItem } from '@/context/HistoryContext';
 
-type ConversionHistoryItem = {
-  id: string;
-  type: 'conversion';
-  fromValue: string;
-  fromUnit: string;
-  toValue: string;
-  toUnit: string;
-  category: string;
-  timestamp: Date;
-};
-
-type CalculatorHistoryItem = {
-  id: string;
-  type: 'calculator';
-  expression: string;
-  result: string;
-  timestamp: Date;
-};
-
-type FavoriteItem = {
-  id: string;
-  type: 'favorite';
-  fromUnit: string;
-  toUnit: string;
-  category: string;
-};
-
-type HistoryItem = ConversionHistoryItem | CalculatorHistoryItem;
-
-const dummyHistory: HistoryItem[] = [
-  {
-    id: '1',
-    type: 'conversion',
-    fromValue: '112',
-    fromUnit: 'm',
-    toValue: '0.112',
-    toUnit: 'km',
-    category: 'Length',
-    timestamp: new Date(Date.now() - 39 * 60 * 1000),
-  },
-  {
-    id: '2',
-    type: 'calculator',
-    expression: '12 * 5 + 3',
-    result: '63',
-    timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000),
-  },
-  {
-    id: '3',
-    type: 'conversion',
-    fromValue: '2.5',
-    fromUnit: 'kg',
-    toValue: '5.51',
-    toUnit: 'lb',
-    category: 'Weight',
-    timestamp: new Date(Date.now() - 24 * 60 * 60 * 1000),
-  },
-];
-
-const dummyFavorites: FavoriteItem[] = [
-    {
-        id: 'fav1',
-        type: 'favorite',
-        fromUnit: 'Meters',
-        toUnit: 'Kilometers',
-        category: 'Length',
-    },
-    {
-        id: 'fav2',
-        type: 'favorite',
-        fromUnit: 'USD',
-        toUnit: 'EUR',
-        category: 'Currency',
-    }
-]
 
 export function HistoryPage() {
+  const { history, favorites, clearAllHistory, clearAllFavorites, deleteHistoryItem, deleteFavorite } = useHistory();
   const [activeTab, setActiveTab] = useState('conversions');
-  const [history, setHistory] = useState<HistoryItem[]>(dummyHistory);
-  const [favorites, setFavorites] = useState<FavoriteItem[]>(dummyFavorites);
   const [filter, setFilter] = useState('All');
   
   const [isClient, setIsClient] = useState(false);
@@ -106,20 +31,22 @@ export function HistoryPage() {
     setIsClient(true);
   }, []);
 
-
   const clearHistory = () => {
     if (activeTab === 'conversions') {
-      setHistory(h => h.filter(item => item.type !== 'conversion'));
+      clearAllHistory('conversion');
     } else if (activeTab === 'calculator') {
-      setHistory(h => h.filter(item => item.type !== 'calculator'));
+      clearAllHistory('calculator');
     } else if (activeTab === 'favorites') {
-      setFavorites([]);
+      clearAllFavorites();
     }
   };
   
   const deleteItem = (id: string) => {
-    setHistory(h => h.filter(item => item.id !== id));
-    setFavorites(f => f.filter(item => item.id !== id));
+    if (activeTab === 'favorites') {
+      deleteFavorite(id);
+    } else {
+      deleteHistoryItem(id);
+    }
   };
 
 
@@ -134,7 +61,7 @@ export function HistoryPage() {
     return false;
   });
 
-  const conversionCategories = ['All', ...Array.from(new Set(history.filter(h => h.type === 'conversion').map((h: any) => h.category)))];
+  const conversionCategories = ['All', ...Array.from(new Set(history.filter(h => h.type === 'conversion').map(h => (h as ConversionHistoryItem).category)))];
 
   const renderHistoryItem = (item: HistoryItem) => {
     if (item.type === 'conversion') {
@@ -247,8 +174,8 @@ export function HistoryPage() {
         </TabsContent>
         <TabsContent value="calculator" className="space-y-4 pt-4">
            <div className="space-y-3">
-            {filteredHistory.length > 0 ? (
-              filteredHistory.map(renderHistoryItem)
+            {filteredHistory.filter(item => item.type === 'calculator').length > 0 ? (
+              filteredHistory.filter(item => item.type === 'calculator').map(renderHistoryItem)
             ) : (
               <p className="text-muted-foreground text-center py-8">No calculator history.</p>
             )}

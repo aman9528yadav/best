@@ -29,25 +29,19 @@ import { CATEGORIES, convert } from '@/lib/units';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { AdPlaceholder } from './ad-placeholder';
-
-type Conversion = {
-  id: string;
-  fromValue: string;
-  fromUnit: string;
-  toValue: string;
-  toUnit: string;
-  category: string;
-};
+import { useHistory, ConversionHistoryItem } from '@/context/HistoryContext';
+import Link from 'next/link';
 
 export function UnitConverter() {
   const { toast } = useToast();
+  const { history, addConversionToHistory, deleteHistoryItem } = useHistory();
+
   const [region, setRegion] = useState('International');
   const [category, setCategory] = useState(CATEGORIES[0].name);
   const [inputValue, setInputValue] = useState('112');
   const [fromUnit, setFromUnit] = useState(CATEGORIES[0].units[0].name);
   const [toUnit, setToUnit] = useState(CATEGORIES[0].units[1].name);
   const [result, setResult] = useState('');
-  const [history, setHistory] = useState<Conversion[]>([]);
 
   const activeCategory = useMemo(
     () => CATEGORIES.find((c) => c.name === category)!,
@@ -96,23 +90,6 @@ export function UnitConverter() {
   }, [inputValue, fromUnit, toUnit, category, handleConversion]);
 
 
-  useEffect(() => {
-    // Pre-populate history with an example
-    if (history.length === 0) {
-      setHistory([
-        {
-          id: 'initial-1',
-          fromValue: '112',
-          fromUnit: 'Meters',
-          toValue: '0.112',
-          toUnit: 'Kilometers',
-          category: 'Length',
-        },
-      ]);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
   const handleCategoryChange = (newCategory: string) => {
     setCategory(newCategory);
     const newCategoryData = CATEGORIES.find((c) => c.name === newCategory);
@@ -138,15 +115,18 @@ export function UnitConverter() {
   const handleAddToHistory = () => {
     const conversionResult = handleConversion();
     if (conversionResult) {
-       const newConversion: Conversion = {
-        id: new Date().toISOString(),
-        ...conversionResult,
-      };
-      setHistory([newConversion, ...history.slice(0, 4)]);
+      addConversionToHistory({
+        type: 'conversion',
+        fromValue: conversionResult.fromValue,
+        fromUnit: conversionResult.fromUnit,
+        toValue: conversionResult.toValue,
+        toUnit: conversionResult.toUnit,
+        category: conversionResult.category,
+      });
     }
   };
   
-  const handleRestoreHistory = (itemToRestore: Conversion) => {
+  const handleRestoreHistory = (itemToRestore: ConversionHistoryItem) => {
     setInputValue(itemToRestore.fromValue);
     setCategory(itemToRestore.category);
     setFromUnit(itemToRestore.fromUnit);
@@ -154,7 +134,7 @@ export function UnitConverter() {
   };
 
   const handleDeleteHistory = (idToDelete: string) => {
-    setHistory(history.filter(item => item.id !== idToDelete));
+    deleteHistoryItem(idToDelete);
   };
 
 
@@ -184,6 +164,10 @@ export function UnitConverter() {
       </Select>
     );
   }
+
+  const conversionHistory = history
+    .filter(item => item.type === 'conversion')
+    .slice(0, 5) as ConversionHistoryItem[];
 
   return (
     <div className="space-y-4 w-full">
@@ -288,15 +272,17 @@ export function UnitConverter() {
         </CardContent>
       </Card>
 
-      {history.length > 0 && (
+      {conversionHistory.length > 0 && (
         <Card>
           <CardContent className="p-4 space-y-2">
             <div className="flex justify-between items-center">
               <h3 className="font-semibold flex items-center gap-2"><History className='h-5 w-5 text-muted-foreground' />Recent Conversions</h3>
-              <Button variant="link" className="text-primary pr-0">See All</Button>
+              <Button asChild variant="link" className="text-primary pr-0">
+                <Link href="/history">See All</Link>
+              </Button>
             </div>
             <ul className="space-y-1">
-              {history.map((item) => (
+              {conversionHistory.map((item) => (
                 <li key={item.id} className="p-2 rounded-lg bg-accent flex justify-between items-center text-sm text-accent-foreground">
                     <div className='flex items-center'>
                       <span>{`${item.fromValue} ${item.fromUnit.split(' ')[0]}`}</span>
