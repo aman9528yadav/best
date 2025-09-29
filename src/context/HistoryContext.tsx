@@ -93,8 +93,42 @@ const dummyFavorites: FavoriteItem[] = [
 ];
 
 export const HistoryProvider = ({ children }: { children: ReactNode }) => {
+  const [isLoaded, setIsLoaded] = useState(false);
+  
   const [history, setHistory] = useState<HistoryItem[]>(dummyHistory);
   const [favorites, setFavorites] = useState<FavoriteItem[]>(dummyFavorites);
+
+  useEffect(() => {
+    try {
+      const savedHistory = localStorage.getItem('unitwise_history');
+      const savedFavorites = localStorage.getItem('unitwise_favorites');
+
+      if (savedHistory) {
+        const parsedHistory: HistoryItem[] = JSON.parse(savedHistory);
+        parsedHistory.forEach(item => item.timestamp = new Date(item.timestamp));
+        setHistory(parsedHistory);
+      }
+      
+      if (savedFavorites) {
+        setFavorites(JSON.parse(savedFavorites));
+      }
+    } catch (error) {
+      console.error("Failed to load from localStorage", error);
+    }
+    setIsLoaded(true);
+  }, []);
+
+  useEffect(() => {
+    if (isLoaded) {
+      localStorage.setItem('unitwise_history', JSON.stringify(history));
+    }
+  }, [history, isLoaded]);
+
+  useEffect(() => {
+    if (isLoaded) {
+      localStorage.setItem('unitwise_favorites', JSON.stringify(favorites));
+    }
+  }, [favorites, isLoaded]);
 
   const addConversionToHistory = (item: Omit<ConversionHistoryItem, 'id' | 'timestamp' | 'type'>) => {
     const newItem: ConversionHistoryItem = {
