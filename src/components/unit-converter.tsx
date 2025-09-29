@@ -67,8 +67,9 @@ export function UnitConverter() {
     return '';
   }, [fromUnit, toUnit, category, fromUnitDetails, toUnitDetails]);
 
-  const handleConversion = useCallback(() => {
-    const value = parseFloat(inputValue);
+  const handleConversion = useCallback((valueStr?: string) => {
+    const valueToConvert = valueStr || inputValue;
+    const value = parseFloat(valueToConvert);
     if (isNaN(value)) {
       setResult('');
       return;
@@ -77,14 +78,23 @@ export function UnitConverter() {
     if (convertedValue !== null) {
       const formattedResult = Number(convertedValue.toPrecision(5));
       setResult(formattedResult.toString());
+      return {
+        fromValue: valueToConvert,
+        fromUnit,
+        toValue: formattedResult.toString(),
+        toUnit,
+        category,
+      };
     } else {
       setResult('N/A');
     }
+    return null;
   }, [inputValue, fromUnit, toUnit, category]);
 
   useEffect(() => {
     handleConversion();
-  }, [handleConversion]);
+  }, [inputValue, fromUnit, toUnit, category, handleConversion]);
+
 
   useEffect(() => {
     // Pre-populate history with an example
@@ -100,7 +110,8 @@ export function UnitConverter() {
         },
       ]);
     }
-  }, [history.length]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleCategoryChange = (newCategory: string) => {
     setCategory(newCategory);
@@ -113,25 +124,25 @@ export function UnitConverter() {
 
   const handleSwap = () => {
     const currentFromResult = result;
-    setFromUnit(toUnit);
-    setToUnit(fromUnit);
+    const currentFromUnit = fromUnit;
+    const currentToUnit = toUnit;
+  
+    setFromUnit(currentToUnit);
+    setToUnit(currentFromUnit);
+  
     if (currentFromResult && currentFromResult !== 'N/A') {
       setInputValue(currentFromResult.replace(/,/g, ''));
     }
   };
 
   const handleAddToHistory = () => {
-    if (result && result !== 'N/A') {
-      const newConversion: Conversion = {
+    const conversionResult = handleConversion();
+    if (conversionResult) {
+       const newConversion: Conversion = {
         id: new Date().toISOString(),
-        fromValue: inputValue,
-        fromUnit,
-        toValue: result,
-        toUnit,
-        category,
+        ...conversionResult,
       };
       setHistory([newConversion, ...history.slice(0, 4)]);
-      handleConversion(); // Trigger conversion on button click as well
     }
   };
   
