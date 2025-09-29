@@ -1,10 +1,13 @@
+
 "use client";
 
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { ChevronUp, Divide, Equal, Minus, Plus, X, Percent, Baseline } from 'lucide-react';
+import { ChevronUp, Divide, Equal, Minus, Plus, X, Percent, Baseline, History, Undo2, Trash2 } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useHistory, CalculatorHistoryItem } from '@/context/HistoryContext';
+import Link from 'next/link';
 
 const CalculatorButton = ({
   onClick,
@@ -30,6 +33,7 @@ export function Calculator() {
   const [display, setDisplay] = useState('0');
   const [expression, setExpression] = useState('');
   const [isSci, setIsSci] = useState(false);
+  const { history, addCalculatorToHistory, deleteHistoryItem } = useHistory();
 
   const handleInput = (value: string) => {
     if (display === 'Error') {
@@ -37,13 +41,15 @@ export function Calculator() {
       setExpression(value);
       return;
     }
-    if (display === '0' && value !== '.') {
+    // If current display is an operator, replace it
+    if (['+', '-', '×', '÷'].includes(display)) {
+       setDisplay(value);
+    } else if (display === '0' && value !== '.') {
       setDisplay(value);
-      setExpression(value);
     } else {
       setDisplay(display + value);
-      setExpression(expression + value);
     }
+    setExpression(expression + value);
   };
 
   const handleOperator = (op: string) => {
@@ -51,20 +57,15 @@ export function Calculator() {
     const lastChar = expression.slice(-1);
     if (['+', '-', '×', '÷'].includes(lastChar)) {
       setExpression(expression.slice(0, -1) + op);
-    } else {
+    } else if (expression !== '') {
       setExpression(expression + op);
     }
     setDisplay(op);
   };
   
   const evaluateExpression = (expr: string): number => {
-    // Replace visual operators with JS-friendly ones
     const sanitizedExpr = expr.replace(/×/g, '*').replace(/÷/g, '/');
-
-    // Handle scientific notation
     const scientificExpr = sanitizedExpr.replace(/(\d+)\s*\^\s*(\d+)/g, 'Math.pow($1, $2)');
-
-    // Handle functions
     const funcExpr = scientificExpr
         .replace(/sin\(([^)]+)\)/g, (match, p1) => `Math.sin((${p1}) * Math.PI / 180)`)
         .replace(/cos\(([^)]+)\)/g, (match, p1) => `Math.cos((${p1}) * Math.PI / 180)`)
@@ -73,8 +74,6 @@ export function Calculator() {
         .replace(/ln\(([^)]+)\)/g, 'Math.log($1)')
         .replace(/sqrt\(([^)]+)\)/g, 'Math.sqrt($1)');
 
-
-    // Using Function constructor for safety instead of eval
     try {
       return new Function('return ' + funcExpr)();
     } catch (e) {
@@ -85,10 +84,16 @@ export function Calculator() {
 
 
   const handleEquals = () => {
-    if (display === 'Error') return;
+    if (display === 'Error' || expression === '') return;
     try {
       const result = evaluateExpression(expression);
       const finalResult = Number(result.toPrecision(15));
+      
+      addCalculatorToHistory({
+        expression: expression,
+        result: finalResult.toString(),
+      });
+
       setDisplay(finalResult.toString());
       setExpression(finalResult.toString());
     } catch (error) {
@@ -103,22 +108,37 @@ export function Calculator() {
   };
 
   const handlePlusMinus = () => {
-    if (display === 'Error' || display === '0') return;
-    setDisplay((prev) => (prev.startsWith('-') ? prev.slice(1) : '-' + prev));
-    setExpression((prev) => (prev.startsWith('-') ? prev.slice(1) : '-' + prev));
+    if (display === 'Error' || display === '0' || ['+', '-', '×', '÷'].includes(display)) return;
+    
+    // Find the last number entered
+    const operators = /([+\-×÷])/;
+    const parts = expression.split(operators);
+    const lastPart = parts[parts.length - 1];
+
+    if (!isNaN(parseFloat(lastPart))) {
+      const newLastPart = (parseFloat(lastPart) * -1).toString();
+      const newExpression = parts.slice(0, -1).join('') + newLastPart;
+      
+      setExpression(newExpression);
+      setDisplay(newLastPart);
+    }
   };
   
   const handlePercent = () => {
     if (display === 'Error') return;
     try {
-        const parts = expression.split(/([+\-×÷])/);
-        const lastPart = parts[parts.length - 1];
-        
-        if (!isNaN(parseFloat(lastPart))) {
-            const percentage = parseFloat(lastPart) / 100;
-            const newExpression = expression.slice(0, expression.length - lastPart.length) + percentage.toString();
-            setExpression(newExpression);
-            setDisplay(percentage.toString());
+        const value = parseFloat(display);
+        if(!isNaN(value)) {
+            const result = value / 100;
+            setDisplay(result.toString());
+
+            const operators = /([+\-×÷])/;
+            const parts = expression.split(operators);
+            const lastPart = parts[parts.length - 1];
+            if (!isNaN(parseFloat(lastPart))) {
+                 const newExpression = expression.slice(0, expression.length - lastPart.length) + result.toString();
+                 setExpression(newExpression);
+            }
         }
     } catch (e) {
       setDisplay('Error');
@@ -126,11 +146,22 @@ export function Calculator() {
     }
   };
 
-
   const handleSciFunction = (func: string) => {
     if (display === 'Error') return;
-    setDisplay(`${func}(`);
-    setExpression(`${expression}${func}(`);
+    const currentDisplayIsOperator = ['+', '-', '×', '÷'].includes(display);
+    
+    if (currentDisplayIsOperator) {
+        setDisplay(`${func}(`);
+        setExpression(`${expression}${func}(`);
+    } else {
+        setDisplay(`${func}(${display}`);
+        setExpression(`${func}(${expression}`);
+    }
+  };
+
+  const handleRestoreHistory = (item: CalculatorHistoryItem) => {
+    setExpression(item.expression);
+    setDisplay(item.result);
   };
 
   const basicButtons = [
@@ -178,47 +209,86 @@ export function Calculator() {
     </div>
   );
 
+  const calculatorHistory = history
+    .filter(item => item.type === 'calculator')
+    .slice(0, 3) as CalculatorHistoryItem[];
+
+
   return (
-    <Card className="w-full">
-      <CardContent className="p-4 space-y-4">
-        <div className="bg-muted p-4 rounded-lg text-right">
-          <div className="text-muted-foreground text-xl h-8 truncate">{expression || '0'}</div>
-          <div className="text-foreground text-5xl font-bold h-[60px] flex items-end justify-end truncate">{display}</div>
-        </div>
-
-        <div className="relative">
-          <motion.div
-            initial={false}
-            animate={{ height: isSci ? 'auto' : 0, opacity: isSci ? 1 : 0 }}
-            className="overflow-hidden"
-          >
-             <SciPad />
-             <div className='h-2'></div>
-          </motion.div>
-
-          <div className="grid grid-cols-4 gap-2">
-            {basicButtons.map((btn, i) => (
-              <CalculatorButton key={i} onClick={btn.onClick} className={btn.className} variant={btn.variant}>
-                {btn.label}
-              </CalculatorButton>
-            ))}
+    <div className="w-full space-y-4">
+      <Card>
+        <CardContent className="p-4 space-y-4">
+          <div className="bg-muted p-4 rounded-lg text-right">
+            <div className="text-muted-foreground text-xl h-8 truncate">{expression || '0'}</div>
+            <div className="text-foreground text-5xl font-bold h-[60px] flex items-end justify-end truncate">{display}</div>
           </div>
 
-          <Button 
-            variant="ghost" 
-            className="w-full mt-2" 
-            onClick={() => setIsSci(!isSci)}
-          >
+          <div className="relative">
             <motion.div
-              animate={{ rotate: isSci ? 180 : 0 }}
-              transition={{ duration: 0.3 }}
+              initial={false}
+              animate={{ height: isSci ? 'auto' : 0, opacity: isSci ? 1 : 0 }}
+              className="overflow-hidden"
             >
-              <ChevronUp className="mr-2 h-4 w-4" />
+              <SciPad />
+              <div className='h-2'></div>
             </motion.div>
-            {isSci ? 'Basic' : 'Scientific'}
-          </Button>
-        </div>
-      </CardContent>
-    </Card>
+
+            <div className="grid grid-cols-4 gap-2">
+              {basicButtons.map((btn, i) => (
+                <CalculatorButton key={i} onClick={btn.onClick} className={btn.className} variant={btn.variant}>
+                  {btn.label}
+                </CalculatorButton>
+              ))}
+            </div>
+
+            <Button 
+              variant="ghost" 
+              className="w-full mt-2" 
+              onClick={() => setIsSci(!isSci)}
+            >
+              <motion.div
+                animate={{ rotate: isSci ? 180 : 0 }}
+                transition={{ duration: 0.3 }}
+              >
+                <ChevronUp className="mr-2 h-4 w-4" />
+              </motion.div>
+              {isSci ? 'Basic' : 'Scientific'}
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+      
+      {calculatorHistory.length > 0 && (
+        <Card>
+          <CardContent className="p-4 space-y-2">
+            <div className="flex justify-between items-center">
+              <h3 className="font-semibold flex items-center gap-2"><History className='h-5 w-5 text-muted-foreground' />Recent Calculations</h3>
+              <Button asChild variant="link" className="text-primary pr-0">
+                <Link href="/history">See All</Link>
+              </Button>
+            </div>
+            <ul className="space-y-1">
+              {calculatorHistory.map((item) => (
+                <li key={item.id} className="p-2 rounded-lg bg-accent flex justify-between items-center text-sm text-accent-foreground">
+                    <div className='flex flex-col text-right w-full items-end'>
+                       <span className='text-xs text-muted-foreground'>{item.expression}</span>
+                       <span className="font-semibold text-lg">{item.result}</span>
+                    </div>
+                    <div className="flex items-center pl-2">
+                      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleRestoreHistory(item)}>
+                        <Undo2 className="h-4 w-4" />
+                      </Button>
+                      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => deleteHistoryItem(item.id)}>
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                </li>
+              ))}
+            </ul>
+          </CardContent>
+        </Card>
+      )}
+
+    </div>
   );
 }
