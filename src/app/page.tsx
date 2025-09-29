@@ -37,6 +37,7 @@ import {
   Calendar,
   Timer,
   Hourglass,
+  Settings,
 } from 'lucide-react';
 import Link from 'next/link';
 import { AdPlaceholder } from '@/components/ad-placeholder';
@@ -60,6 +61,7 @@ const quickAccessItems = [
   { icon: Calendar, label: 'Date Calc' },
   { icon: Timer, label: 'Timer' },
   { icon: Hourglass, label: 'Stopwatch' },
+  { icon: Settings, label: 'Settings', href: '/profile' },
 ];
 
 const comingSoonItems = [
