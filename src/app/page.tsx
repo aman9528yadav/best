@@ -58,7 +58,7 @@ const quickAccessItems = [
   { icon: History, label: 'History', href: '/history' },
   { icon: Newspaper, label: 'News' },
   { icon: Languages, label: 'Translator' },
-  { icon: Calendar, label: 'Date Calc' },
+  { icon: Calendar, label: 'Date Calc', href: '/date-calculator' },
   { icon: Timer, label: 'Timer' },
   { icon: Hourglass, label: 'Stopwatch' },
   { icon: Settings, label: 'Settings', href: '/settings' },

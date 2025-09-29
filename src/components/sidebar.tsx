@@ -56,7 +56,7 @@ const sidebarNavItems = [
   {
     icon: Calendar,
     label: 'Date Calc',
-    href: '#',
+    href: '/date-calculator',
   },
   {
     icon: Timer,
