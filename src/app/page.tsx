@@ -1,3 +1,6 @@
+"use client";
+
+import React, { useMemo } from 'react';
 import {
   Accordion,
   AccordionContent,
@@ -34,7 +37,8 @@ import Link from 'next/link';
 import { AdPlaceholder } from '@/components/ad-placeholder';
 import { Header } from '@/components/header';
 import { WeeklySummaryChart } from '@/components/weekly-summary-chart';
-
+import { useHistory } from '@/context/HistoryContext';
+import { isToday, differenceInCalendarDays } from 'date-fns';
 
 const quickAccessItems = [
   {
@@ -97,6 +101,46 @@ const discoverItems = [
 ];
 
 export default function DashboardPage() {
+  const { history } = useHistory();
+
+  const conversionHistory = useMemo(() => history.filter(item => item.type === 'conversion'), [history]);
+
+  const allTimeConversions = useMemo(() => conversionHistory.length, [conversionHistory]);
+
+  const todayConversions = useMemo(() => {
+    return conversionHistory.filter(item => isToday(item.timestamp)).length;
+  }, [conversionHistory]);
+
+  const streak = useMemo(() => {
+    if (conversionHistory.length === 0) return 0;
+
+    const sortedDates = [...new Set(conversionHistory.map(item => item.timestamp.setHours(0, 0, 0, 0)))].sort((a, b) => b - a);
+    
+    if (sortedDates.length === 0) return 0;
+    
+    let currentStreak = 0;
+    const today = new Date();
+    today.setHours(0,0,0,0);
+
+    const mostRecentDate = new Date(sortedDates[0]);
+
+    if(mostRecentDate.getTime() === today.getTime() || differenceInCalendarDays(today, mostRecentDate) === 1) {
+        currentStreak = 1;
+        for (let i = 0; i < sortedDates.length - 1; i++) {
+            const date1 = new Date(sortedDates[i]);
+            const date2 = new Date(sortedDates[i+1]);
+            if (differenceInCalendarDays(date1, date2) === 1) {
+                currentStreak++;
+            } else {
+                break;
+            }
+        }
+    }
+    
+    return currentStreak;
+  }, [conversionHistory]);
+
+
   return (
     <div className="flex min-h-screen w-full flex-col bg-background text-foreground items-center p-4">
       <div className="w-full max-w-[412px] space-y-4">
@@ -109,7 +153,7 @@ export default function DashboardPage() {
                   <Star className="h-4 w-4" />
                   All time
                 </div>
-                <div className="text-2xl font-bold">1</div>
+                <div className="text-2xl font-bold">{allTimeConversions}</div>
               </CardContent>
             </Card>
             <Card className="bg-accent/50">
@@ -118,7 +162,7 @@ export default function DashboardPage() {
                   <Clock className="h-4 w-4" />
                   Today
                 </div>
-                <div className="text-2xl font-bold">1</div>
+                <div className="text-2xl font-bold">{todayConversions}</div>
               </CardContent>
             </Card>
             <Card className="bg-accent/50">
@@ -127,7 +171,7 @@ export default function DashboardPage() {
                   <TrendingUp className="h-4 w-4" />
                   Streak
                 </div>
-                <div className="text-2xl font-bold">1</div>
+                <div className="text-2xl font-bold">{streak}</div>
               </CardContent>
             </Card>
           </div>
