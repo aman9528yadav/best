@@ -32,6 +32,7 @@ import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import Image from 'next/image';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
+import Link from 'next/link';
 
 const DetailItem = ({ icon: Icon, label, value }: { icon: React.ElementType, label: string, value: string }) => (
     <div className="flex justify-between items-center text-sm py-3 border-b border-border/50">
@@ -55,16 +56,22 @@ export function ProfilePage() {
 
     return (
         <div className="w-full space-y-6 pb-12">
-            <Card className="shadow-lg">
-                <CardContent className="p-6 text-center">
-                    <div className="flex justify-center mb-4 relative">
+            <Card className="shadow-lg overflow-visible">
+                <CardContent className="p-6 text-center relative">
+                     <Button asChild variant="outline" size="sm" className="absolute top-4 right-4 gap-2">
+                        <Link href="/profile/edit">
+                            <Pencil className="h-3 w-3" />
+                            Edit Profile
+                        </Link>
+                     </Button>
+                    <div className="flex justify-center mb-4 pt-8">
                         <Avatar className="h-24 w-24 border-4 border-background shadow-md">
                             {userAvatar && <AvatarImage src={userAvatar.imageUrl} alt="Aman Yadav" />}
                             <div className="h-full w-full rounded-full bg-gradient-to-br from-primary to-purple-400 flex items-center justify-center">
                                 <span className="text-4xl font-bold text-primary-foreground">A</span>
                             </div>
                         </Avatar>
-                        <div className="absolute bottom-1 right-[calc(50%-3rem)] transform translate-x-1/2 bg-primary rounded-full p-1.5 shadow-md">
+                        <div className="absolute bottom-5 right-[calc(50%-2.7rem)] transform translate-x-1/2 bg-primary rounded-full p-1.5 shadow-md">
                             <Heart className="h-3 w-3 text-primary-foreground fill-primary-foreground" />
                         </div>
                     </div>
