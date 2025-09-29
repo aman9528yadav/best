@@ -1,6 +1,7 @@
 
 import { Header } from '@/components/header';
 import { Calculator } from '@/components/calculator';
+import { AdPlaceholder } from '@/components/ad-placeholder';
 
 export default function CalculatorPage() {
   return (
@@ -8,8 +9,10 @@ export default function CalculatorPage() {
       <div className="w-full max-w-[412px]">
         <Header />
         <main className="flex flex-1 flex-col items-center py-6">
+          <AdPlaceholder className="mb-4 w-full" />
           <h1 className="text-2xl font-bold self-start mb-4">Calculator</h1>
           <Calculator />
+          <AdPlaceholder className="mt-4 w-full" />
         </main>
       </div>
     </div>
