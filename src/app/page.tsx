@@ -264,11 +264,11 @@ export default function DashboardPage() {
           </section>
 
           <Accordion type="single" collapsible className="w-full">
-            <AccordionItem value="item-1" className="border-none">
-              <AccordionTrigger className="font-semibold py-2 text-primary">
+            <AccordionItem value="item-1" className="bg-card border rounded-lg p-2">
+              <AccordionTrigger className="font-semibold py-2 text-primary no-underline hover:no-underline px-4">
                 About
               </AccordionTrigger>
-              <AccordionContent>
+              <AccordionContent className="px-4">
                 <div className="space-y-4 text-sm">
                   <div className="flex justify-between border-b pb-2">
                     <span className="text-muted-foreground">App</span>
