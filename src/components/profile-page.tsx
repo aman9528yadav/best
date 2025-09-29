@@ -101,20 +101,6 @@ export function ProfilePage() {
                 </CardContent>
             </Card>
             
-            <Card>
-                <CardContent className="p-4 space-y-1">
-                   <DetailItem icon={Globe} label="Default Region" value="International" />
-                   <DetailItem icon={Palette} label="Theme" value="Sutradhaar" />
-                   <div className="flex justify-between items-center text-sm py-3">
-                        <div className="flex items-center gap-3 text-muted-foreground">
-                            <History className="h-4 w-4" />
-                            <span>Save History</span>
-                        </div>
-                        <Switch defaultChecked />
-                    </div>
-                </CardContent>
-            </Card>
-
             <div className="grid grid-cols-2 gap-3">
                 <QuickActionButton icon={Globe} label="Region" />
                 <QuickActionButton icon={Shield} label="Security" />
