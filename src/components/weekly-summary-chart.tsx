@@ -19,7 +19,7 @@ export function WeeklySummaryChart() {
 
     return last7Days.map(day => {
       const dayStr = format(day, 'EEE');
-      const value = conversionHistory.filter(item => isSameDay(item.timestamp, day)).length;
+      const value = conversionHistory.filter(item => isSameDay(new Date(item.timestamp), day)).length;
       return { day: dayStr, value };
     });
   }, [history]);

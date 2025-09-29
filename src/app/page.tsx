@@ -38,7 +38,7 @@ import { AdPlaceholder } from '@/components/ad-placeholder';
 import { Header } from '@/components/header';
 import { WeeklySummaryChart } from '@/components/weekly-summary-chart';
 import { useHistory } from '@/context/HistoryContext';
-import { isToday, differenceInCalendarDays } from 'date-fns';
+import { isToday, differenceInCalendarDays, startOfDay } from 'date-fns';
 
 const quickAccessItems = [
   {
@@ -108,19 +108,18 @@ export default function DashboardPage() {
   const allTimeConversions = useMemo(() => conversionHistory.length, [conversionHistory]);
 
   const todayConversions = useMemo(() => {
-    return conversionHistory.filter(item => isToday(item.timestamp)).length;
+    return conversionHistory.filter(item => isToday(new Date(item.timestamp))).length;
   }, [conversionHistory]);
 
   const streak = useMemo(() => {
     if (conversionHistory.length === 0) return 0;
 
-    const sortedDates = [...new Set(conversionHistory.map(item => item.timestamp.setHours(0, 0, 0, 0)))].sort((a, b) => b - a);
+    const sortedDates = [...new Set(conversionHistory.map(item => startOfDay(new Date(item.timestamp)).getTime()))].sort((a, b) => b - a);
     
     if (sortedDates.length === 0) return 0;
     
     let currentStreak = 0;
-    const today = new Date();
-    today.setHours(0,0,0,0);
+    const today = startOfDay(new Date());
 
     const mostRecentDate = new Date(sortedDates[0]);
 

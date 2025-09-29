@@ -2,6 +2,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
+import { subDays } from 'date-fns';
 
 export type ConversionHistoryItem = {
   id: string;
@@ -11,7 +12,7 @@ export type ConversionHistoryItem = {
   toValue: string;
   toUnit: string;
   category: string;
-  timestamp: Date;
+  timestamp: string; // Use ISO string for serialization
 };
 
 export type CalculatorHistoryItem = {
@@ -19,7 +20,7 @@ export type CalculatorHistoryItem = {
   type: 'calculator';
   expression: string;
   result: string;
-  timestamp: Date;
+  timestamp: string; // Use ISO string for serialization
 };
 
 export type FavoriteItem = {
@@ -46,6 +47,69 @@ type HistoryContextType = {
 
 const HistoryContext = createContext<HistoryContextType | undefined>(undefined);
 
+const getInitialHistory = (): HistoryItem[] => {
+    // For first-time users, populate with some dummy data for a better initial experience
+    const today = new Date();
+    return [
+        {
+            id: '1',
+            type: 'conversion',
+            fromValue: '112',
+            fromUnit: 'Meters',
+            toValue: '0.112',
+            toUnit: 'Kilometers',
+            category: 'Length',
+            timestamp: subDays(today, 0).toISOString(),
+        },
+        {
+            id: '2',
+            type: 'calculator',
+            expression: '12 * 5 + 3',
+            result: '63',
+            timestamp: subDays(today, 1).toISOString(),
+        },
+        {
+            id: '3',
+            type: 'conversion',
+            fromValue: '2.5',
+            fromUnit: 'Kilograms',
+            toValue: '5.5115',
+            toUnit: 'Pounds',
+            category: 'Weight',
+            timestamp: subDays(today, 2).toISOString(),
+        },
+        {
+            id: '4',
+            type: 'conversion',
+            fromValue: '68',
+            fromUnit: 'Fahrenheit',
+            toValue: '20',
+            toUnit: 'Celsius',
+            category: 'Temperature',
+            timestamp: subDays(today, 3).toISOString(),
+        },
+    ];
+};
+
+const getInitialFavorites = (): FavoriteItem[] => {
+    return [
+        {
+            id: 'fav1',
+            type: 'favorite',
+            fromUnit: 'Meters',
+            toUnit: 'Kilometers',
+            category: 'Length',
+        },
+        {
+            id: 'fav2',
+            type: 'favorite',
+            fromUnit: 'USD',
+            toUnit: 'EUR',
+            category: 'Currency',
+        }
+    ];
+};
+
 export const HistoryProvider = ({ children }: { children: ReactNode }) => {
   const [isLoaded, setIsLoaded] = useState(false);
   
@@ -57,64 +121,14 @@ export const HistoryProvider = ({ children }: { children: ReactNode }) => {
       const savedHistory = localStorage.getItem('unitwise_history');
       const savedFavorites = localStorage.getItem('unitwise_favorites');
 
-      let initialHistory: HistoryItem[] = [];
-      if (savedHistory) {
-        const parsedHistory: HistoryItem[] = JSON.parse(savedHistory);
-        parsedHistory.forEach(item => item.timestamp = new Date(item.timestamp));
-        initialHistory = parsedHistory;
-      } else {
-        // For first-time users, populate with some dummy data for a better initial experience
-        initialHistory = [
-            {
-                id: '1',
-                type: 'conversion',
-                fromValue: '112',
-                fromUnit: 'Meters',
-                toValue: '0.112',
-                toUnit: 'Kilometers',
-                category: 'Length',
-                timestamp: new Date(Date.now() - 39 * 60 * 1000),
-            },
-            {
-                id: '2',
-                type: 'calculator',
-                expression: '12 * 5 + 3',
-                result: '63',
-                timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000),
-            },
-        ];
-      }
-      setHistory(initialHistory);
-      
-      let initialFavorites: FavoriteItem[] = [];
-      if (savedFavorites) {
-        initialFavorites = JSON.parse(savedFavorites);
-      } else {
-        // Dummy favorites for first-time users
-        initialFavorites = [
-            {
-                id: 'fav1',
-                type: 'favorite',
-                fromUnit: 'Meters',
-                toUnit: 'Kilometers',
-                category: 'Length',
-            },
-            {
-                id: 'fav2',
-                type: 'favorite',
-                fromUnit: 'USD',
-                toUnit: 'EUR',
-                category: 'Currency',
-            }
-        ];
-      }
-      setFavorites(initialFavorites);
+      setHistory(savedHistory ? JSON.parse(savedHistory) : getInitialHistory());
+      setFavorites(savedFavorites ? JSON.parse(savedFavorites) : getInitialFavorites());
 
     } catch (error) {
       console.error("Failed to load from localStorage", error);
-      // Set empty arrays on error
-      setHistory([]);
-      setFavorites([]);
+      // Set default initial data on error
+      setHistory(getInitialHistory());
+      setFavorites(getInitialFavorites());
     }
     setIsLoaded(true);
   }, []);
@@ -135,7 +149,7 @@ export const HistoryProvider = ({ children }: { children: ReactNode }) => {
     const newItem: ConversionHistoryItem = {
       ...item,
       id: new Date().toISOString(),
-      timestamp: new Date(),
+      timestamp: new Date().toISOString(),
       type: 'conversion',
     };
     setHistory(prev => [newItem, ...prev]);
@@ -145,7 +159,7 @@ export const HistoryProvider = ({ children }: { children: ReactNode }) => {
     const newItem: CalculatorHistoryItem = {
       ...item,
       id: new Date().toISOString(),
-      timestamp: new Date(),
+      timestamp: new Date().toISOString(),
       type: 'calculator',
     };
     setHistory(prev => [newItem, ...prev]);
@@ -200,5 +214,3 @@ export const useHistory = () => {
   }
   return context;
 };
-
-    

@@ -18,7 +18,7 @@ import {
 } from '@/components/ui/select';
 import { Trash2, Filter, Link as LinkIcon, RotateCw } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
-import { useHistory, HistoryItem, FavoriteItem, ConversionHistoryItem } from '@/context/HistoryContext';
+import { useHistory, HistoryItem, FavoriteItem, ConversionHistoryItem, CalculatorHistoryItem } from '@/context/HistoryContext';
 
 
 export function HistoryPage() {
@@ -53,7 +53,7 @@ export function HistoryPage() {
   const filteredHistory = history.filter(item => {
     if (activeTab === 'conversions' && item.type === 'conversion') {
       if (filter === 'All') return true;
-      return item.category === filter;
+      return (item as ConversionHistoryItem).category === filter;
     }
      if (activeTab === 'calculator' && item.type === 'calculator') {
       return true;
@@ -65,25 +65,26 @@ export function HistoryPage() {
 
   const renderHistoryItem = (item: HistoryItem) => {
     if (item.type === 'conversion') {
+      const convItem = item as ConversionHistoryItem;
       return (
-        <Card key={item.id} className="bg-accent/70 border-none p-4">
+        <Card key={convItem.id} className="bg-accent/70 border-none p-4">
           <div className="flex justify-between items-start text-xs text-accent-foreground/80 mb-2">
             <div className="flex items-center gap-1.5">
               <LinkIcon className="h-3 w-3" />
-              <span>{item.category}</span>
+              <span>{convItem.category}</span>
             </div>
-            <span>{isClient ? formatDistanceToNow(item.timestamp, { addSuffix: true }) : '...'}</span>
+            <span>{isClient ? formatDistanceToNow(new Date(convItem.timestamp), { addSuffix: true }) : '...'}</span>
           </div>
           <div className="text-lg font-medium text-accent-foreground mb-3">
-            <span>{item.fromValue} {item.fromUnit}</span>
+            <span>{convItem.fromValue} {convItem.fromUnit}</span>
             <span className="mx-2">→</span>
-            <span>{item.toValue} {item.toUnit}</span>
+            <span>{convItem.toValue} {convItem.toUnit}</span>
           </div>
           <div className="flex justify-end items-center gap-2">
              <Button variant="ghost" size="icon" className="h-7 w-7 text-accent-foreground/80">
                 <RotateCw className="h-4 w-4" />
              </Button>
-             <Button variant="ghost" size="icon" className="h-7 w-7 text-accent-foreground/80" onClick={() => deleteItem(item.id)}>
+             <Button variant="ghost" size="icon" className="h-7 w-7 text-accent-foreground/80" onClick={() => deleteItem(convItem.id)}>
                 <Trash2 className="h-4 w-4" />
              </Button>
           </div>
@@ -91,20 +92,21 @@ export function HistoryPage() {
       );
     }
     if (item.type === 'calculator') {
+      const calcItem = item as CalculatorHistoryItem;
       return (
-        <Card key={item.id} className="bg-accent/70 border-none p-4">
+        <Card key={calcItem.id} className="bg-accent/70 border-none p-4">
           <div className="flex justify-end items-start text-xs text-accent-foreground/80 mb-2">
-            <span>{isClient ? formatDistanceToNow(item.timestamp, { addSuffix: true }) : '...'}</span>
+            <span>{isClient ? formatDistanceToNow(new Date(calcItem.timestamp), { addSuffix: true }) : '...'}</span>
           </div>
           <div className="text-right">
-            <div className="text-muted-foreground text-sm">{item.expression}</div>
-            <div className="text-xl font-bold text-accent-foreground mb-3">{item.result}</div>
+            <div className="text-muted-foreground text-sm">{calcItem.expression}</div>
+            <div className="text-xl font-bold text-accent-foreground mb-3">{calcItem.result}</div>
           </div>
           <div className="flex justify-end items-center gap-2">
              <Button variant="ghost" size="icon" className="h-7 w-7 text-accent-foreground/80">
                 <RotateCw className="h-4 w-4" />
              </Button>
-             <Button variant="ghost" size="icon" className="h-7 w-7 text-accent-foreground/80" onClick={() => deleteItem(item.id)}>
+             <Button variant="ghost" size="icon" className="h-7 w-7 text-accent-foreground/80" onClick={() => deleteItem(calcItem.id)}>
                 <Trash2 className="h-4 w-4" />
              </Button>
           </div>
