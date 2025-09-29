@@ -1,3 +1,4 @@
+
 "use client";
 
 import {
@@ -19,6 +20,7 @@ import {
   X,
   Sigma,
   BarChart2,
+  History,
 } from 'lucide-react';
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
@@ -40,6 +42,11 @@ const sidebarNavItems = [
     icon: Calculator,
     label: 'Calculator',
     href: '/calculator',
+  },
+  {
+    icon: History,
+    label: 'History',
+    href: '/history',
   },
   {
     icon: BookText,
@@ -88,7 +95,8 @@ export function Sidebar() {
       </SheetTrigger>
       <SheetContent side="left" className="w-[300px] p-0">
         <SheetHeader className="p-4 flex flex-row items-center justify-between border-b">
-           <SheetTitle>Sutradhaar</SheetTitle>
+           <SheetTitle className="sr-only">Sutradhaar</SheetTitle>
+           <span className="font-bold text-lg">Sutradhaar</span>
             <Button
               variant="ghost"
               size="icon"
