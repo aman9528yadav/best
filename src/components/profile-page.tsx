@@ -78,9 +78,6 @@ export function ProfilePage() {
                                 <span className="text-4xl font-bold text-primary-foreground">{profile.name.charAt(0)}</span>
                             </div>
                         </Avatar>
-                        <div className="absolute bottom-5 right-[calc(50%-2.7rem)] transform translate-x-1/2 bg-primary rounded-full p-1.5 shadow-md">
-                            <Heart className="h-3 w-3 text-primary-foreground fill-primary-foreground" />
-                        </div>
                     </div>
 
                     <div className="space-y-1">
