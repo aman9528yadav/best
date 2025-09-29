@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Eye, EyeOff, ArrowRight, ArrowLeft, UserPlus } from 'lucide-react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 const GoogleIcon = (props: React.SVGProps<SVGSVGElement>) => (
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="24px" height="24px" {...props}>
@@ -20,9 +21,14 @@ const GoogleIcon = (props: React.SVGProps<SVGSVGElement>) => (
 );
 
 
-export function LoginPage() {
+export function LoginPage({ onLoginSuccess }: { onLoginSuccess: () => void }) {
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [confirmPasswordVisible, setConfirmPasswordVisible] = useState(false);
+  const router = useRouter();
+
+  const handleLogin = () => {
+    onLoginSuccess();
+  }
 
   return (
     <div className="flex flex-col items-center w-full max-w-sm mx-auto">
@@ -67,7 +73,7 @@ export function LoginPage() {
                 <Link href="#" className="text-sm text-primary hover:underline">
                   Forgot Password?
                 </Link>
-                <Button className="gap-2">
+                <Button onClick={handleLogin} className="gap-2">
                   Login <ArrowRight className="h-4 w-4" />
                 </Button>
               </div>
@@ -140,7 +146,7 @@ export function LoginPage() {
 
                 <div className="flex items-center justify-between">
                     <Button variant="link" className="text-muted-foreground">Skip for now</Button>
-                    <Button className="gap-2">
+                    <Button onClick={handleLogin} className="gap-2">
                          <UserPlus className="h-4 w-4" />
                          Sign Up
                     </Button>
@@ -157,9 +163,11 @@ export function LoginPage() {
           </Tabs>
         </CardContent>
       </Card>
-      <Button variant="ghost" className="mt-6 text-muted-foreground">
-        <ArrowLeft className="h-4 w-4 mr-2" />
-        Skip
+       <Button asChild variant="ghost" className="mt-6 text-muted-foreground">
+        <Link href="/">
+          <ArrowLeft className="h-4 w-4 mr-2" />
+          Skip
+        </Link>
       </Button>
     </div>
   );
