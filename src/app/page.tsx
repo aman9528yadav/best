@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import {
   Accordion,
   AccordionContent,
@@ -39,6 +39,7 @@ import { Header } from '@/components/header';
 import { WeeklySummaryChart } from '@/components/weekly-summary-chart';
 import { useHistory } from '@/context/HistoryContext';
 import { isToday, differenceInCalendarDays, startOfDay } from 'date-fns';
+import { DashboardSkeleton } from '@/components/dashboard-skeleton';
 
 const quickAccessItems = [
   {
@@ -102,6 +103,15 @@ const discoverItems = [
 
 export default function DashboardPage() {
   const { history } = useHistory();
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    // Simulate loading time
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 500); 
+    return () => clearTimeout(timer);
+  }, []);
 
   const conversionHistory = useMemo(() => history.filter(item => item.type === 'conversion'), [history]);
 
@@ -123,7 +133,7 @@ export default function DashboardPage() {
 
     const mostRecentDate = new Date(sortedDates[0]);
 
-    if(mostRecentDate.getTime() === today.getTime() || differenceInCalendarDays(today, mostRecentDate) === 1) {
+    if(isToday(mostRecentDate) || differenceInCalendarDays(today, mostRecentDate) === 1) {
         currentStreak = 1;
         for (let i = 0; i < sortedDates.length - 1; i++) {
             const date1 = new Date(sortedDates[i]);
@@ -144,6 +154,9 @@ export default function DashboardPage() {
     <div className="flex min-h-screen w-full flex-col bg-background text-foreground items-center p-4">
       <div className="w-full max-w-[412px] space-y-4">
         <Header />
+         {isLoading ? (
+          <DashboardSkeleton />
+        ) : (
         <main className="space-y-6 pb-8">
           <div className="grid grid-cols-3 gap-2 text-center">
             <Card className="bg-accent/50">
@@ -343,6 +356,7 @@ export default function DashboardPage() {
             </AccordionItem>
           </Accordion>
         </main>
+        )}
       </div>
     </div>
   );
