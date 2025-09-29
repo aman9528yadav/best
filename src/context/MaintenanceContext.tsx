@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
@@ -7,6 +8,8 @@ import { usePathname, useRouter } from 'next/navigation';
 type MaintenanceContextType = {
   isMaintenanceMode: boolean;
   setMaintenanceMode: (isMaintenance: boolean) => void;
+  isDevMode: boolean;
+  setDevMode: (isDev: boolean) => void;
 };
 
 const MaintenanceContext = createContext<MaintenanceContextType | undefined>(undefined);
@@ -14,15 +17,20 @@ const MaintenanceContext = createContext<MaintenanceContextType | undefined>(und
 export const MaintenanceProvider = ({ children }: { children: ReactNode }) => {
   const [isLoaded, setIsLoaded] = useState(false);
   const [isMaintenanceMode, setMaintenanceModeState] = useState<boolean>(false);
+  const [isDevMode, setDevModeState] = useState<boolean>(false);
 
   useEffect(() => {
     try {
       const savedMaintenance = localStorage.getItem('unitwise_maintenance');
+      const savedDevMode = localStorage.getItem('unitwise_dev_mode');
       if (savedMaintenance) {
         setMaintenanceModeState(JSON.parse(savedMaintenance));
       }
+      if (savedDevMode) {
+        setDevModeState(JSON.parse(savedDevMode));
+      }
     } catch (error) {
-      console.error("Failed to load maintenance mode from localStorage", error);
+      console.error("Failed to load state from localStorage", error);
     }
     setIsLoaded(true);
   }, []);
@@ -37,9 +45,20 @@ export const MaintenanceProvider = ({ children }: { children: ReactNode }) => {
       }
     }
   };
+  
+  const setDevMode = (isDev: boolean) => {
+    setDevModeState(isDev);
+    if (isLoaded) {
+      try {
+        localStorage.setItem('unitwise_dev_mode', JSON.stringify(isDev));
+      } catch (error) {
+        console.error("Failed to save dev mode to localStorage", error);
+      }
+    }
+  };
 
   return (
-    <MaintenanceContext.Provider value={{ isMaintenanceMode, setMaintenanceMode }}>
+    <MaintenanceContext.Provider value={{ isMaintenanceMode, setMaintenanceMode, isDevMode, setDevMode }}>
       {children}
     </MaintenanceContext.Provider>
   );

@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import React, { useState } from 'react';
@@ -68,10 +69,9 @@ export function SettingsPage() {
   const [saveHistory, setSaveHistory] = useState(true);
   const [currentTheme, setCurrentTheme] = useState('sutradhaar');
   const [appearance, setAppearance] = useState('system');
-  const [devMode, setDevMode] = useState(false);
   const [isPasswordDialogOpen, setIsPasswordDialogOpen] = useState(false);
   const [password, setPassword] = useState('');
-  const { isMaintenanceMode, setMaintenanceMode } = useMaintenance();
+  const { isMaintenanceMode, setMaintenanceMode, isDevMode, setDevMode } = useMaintenance();
 
   const SettingRow = ({
     label,
@@ -92,10 +92,10 @@ export function SettingsPage() {
   );
 
   const handleDevModeChange = (checked: boolean) => {
-    if (checked) {
+    if (checked && !isDevMode) {
       setIsPasswordDialogOpen(true);
     } else {
-      setDevMode(false);
+      setDevMode(checked);
     }
   };
 
@@ -142,14 +142,14 @@ export function SettingsPage() {
               </SettingRow>
               <SettingRow label="Developer Mode" icon={Code}>
                 <Switch
-                  checked={devMode}
+                  checked={isDevMode}
                   onCheckedChange={handleDevModeChange}
                 />
               </SettingRow>
             </CardContent>
           </Card>
           
-          {devMode && (
+          {isDevMode && (
              <Card className="mt-6">
                 <CardHeader>
                     <CardTitle className='flex items-center gap-2'><Code className='h-5 w-5' />Developer Options</CardTitle>
