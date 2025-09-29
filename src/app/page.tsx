@@ -33,6 +33,10 @@ import {
   TrendingUp,
   Mail,
   ExternalLink,
+  ChevronUp,
+  Calendar,
+  Timer,
+  Hourglass,
 } from 'lucide-react';
 import Link from 'next/link';
 import { AdPlaceholder } from '@/components/ad-placeholder';
@@ -53,6 +57,9 @@ const quickAccessItems = [
   { icon: History, label: 'History', href: '/history' },
   { icon: Newspaper, label: 'News' },
   { icon: Languages, label: 'Translator' },
+  { icon: Calendar, label: 'Date Calc' },
+  { icon: Timer, label: 'Timer' },
+  { icon: Hourglass, label: 'Stopwatch' },
 ];
 
 const comingSoonItems = [
@@ -105,6 +112,7 @@ const discoverItems = [
 export default function DashboardPage() {
   const { history } = useHistory();
   const [isLoading, setIsLoading] = useState(true);
+  const [showMore, setShowMore] = useState(false);
 
   useEffect(() => {
     // Simulate loading time
@@ -149,6 +157,8 @@ export default function DashboardPage() {
     
     return currentStreak;
   }, [conversionHistory]);
+
+  const visibleQuickAccessItems = showMore ? quickAccessItems : quickAccessItems.slice(0, 6);
 
 
   return (
@@ -216,7 +226,7 @@ export default function DashboardPage() {
               </Button>
             </div>
             <div className="grid grid-cols-3 gap-2">
-              {quickAccessItems.map((item) => (
+              {visibleQuickAccessItems.map((item) => (
                 <Link href={item.href || '#'} key={item.label}>
                   <Card className="h-full hover:bg-accent transition-colors">
                     <CardContent className="p-3 flex flex-col items-center justify-center text-center gap-2">
@@ -229,9 +239,9 @@ export default function DashboardPage() {
                 </Link>
               ))}
             </div>
-            <Button variant="ghost" className="w-full mt-2 text-primary">
-              <ChevronDown className="mr-2 h-4 w-4" />
-              Show More
+            <Button variant="ghost" className="w-full mt-2 text-primary" onClick={() => setShowMore(!showMore)}>
+              {showMore ? <ChevronUp className="mr-2 h-4 w-4" /> : <ChevronDown className="mr-2 h-4 w-4" />}
+              {showMore ? 'Show Less' : 'Show More'}
             </Button>
           </section>
 
