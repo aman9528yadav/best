@@ -4,6 +4,7 @@ import {
   Sheet,
   SheetContent,
   SheetHeader,
+  SheetTitle,
   SheetTrigger,
 } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
@@ -89,11 +90,13 @@ export function Sidebar() {
       </SheetTrigger>
       <SheetContent side="left" className="w-[300px] p-0">
         <div className="flex h-full flex-col bg-background text-foreground">
-          <SheetHeader className="p-4 flex flex-row justify-end">
+          <SheetHeader className="p-4 flex flex-row items-center justify-between">
+            <SheetTitle className="sr-only">Sidebar Menu</SheetTitle>
             <Button
               variant="ghost"
               size="icon"
               onClick={() => setIsOpen(false)}
+              className="ml-auto"
             >
               <X className="h-5 w-5" />
             </Button>
