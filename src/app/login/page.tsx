@@ -3,7 +3,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { LoginPage } from '@/components/login-page';
-import { WelcomePage } from '@/app/welcome/page';
+import WelcomePage from '@/app/welcome/page';
 
 export default function Login() {
   const [isLoading, setIsLoading] = useState(true);
