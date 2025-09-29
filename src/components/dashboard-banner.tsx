@@ -5,7 +5,7 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Rocket, X, Info } from 'lucide-react';
+import { Rocket, Info } from 'lucide-react';
 import { useMaintenance } from '@/context/MaintenanceContext';
 import Link from 'next/link';
 
@@ -79,29 +79,24 @@ export function DashboardBanner() {
   return (
     <Card className="bg-gradient-to-br from-primary/10 to-accent/20 border-primary/20">
       <CardContent className="p-4 relative">
-        <Button 
-          variant="ghost" 
-          size="icon" 
-          className="absolute top-2 right-2 h-6 w-6"
-          onClick={handleDismiss}
-        >
-          <X className="h-4 w-4 text-muted-foreground" />
-        </Button>
-        <div className="flex items-center gap-4">
-            <div className="p-3 bg-primary/10 rounded-full">
+        <div className="flex items-start gap-4">
+            <div className="p-3 bg-primary/10 rounded-full mt-1">
                 <Rocket className="h-6 w-6 text-primary" />
             </div>
-            <div className='flex-1'>
-                <div className='flex justify-between items-center'>
-                     <h3 className="font-bold">Next Update Incoming!</h3>
-                     <Badge variant="outline" className="text-primary bg-primary/10 border-primary/50 text-xs">
+            <div className='flex-1 space-y-3'>
+                <div className='flex justify-between items-start'>
+                     <div>
+                        <h3 className="font-bold">Next Update Incoming!</h3>
+                         <p className="text-xs text-muted-foreground">
+                            We're launching new features soon. Check out what's new!
+                        </p>
+                     </div>
+                     <Badge variant="outline" className="text-primary bg-primary/10 border-primary/50 text-xs shrink-0">
                         {category}
                     </Badge>
                 </div>
-                <p className="text-xs text-muted-foreground">
-                    We're launching new features soon. Check out what's new!
-                </p>
-                <div className="flex justify-between items-center mt-3">
+                
+                <div className="flex justify-between items-end">
                     <div className="flex gap-2">
                         <CountdownBox value={String(timeLeft.days).padStart(2, '0')} label="DAYS" />
                         <CountdownBox value={String(timeLeft.hours).padStart(2, '0')} label="HOURS" />
