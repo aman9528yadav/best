@@ -46,6 +46,7 @@ import { WeeklySummaryChart } from '@/components/weekly-summary-chart';
 import { useHistory } from '@/context/HistoryContext';
 import { isToday, differenceInCalendarDays, startOfDay } from 'date-fns';
 import { DashboardSkeleton } from '@/components/dashboard-skeleton';
+import { useMaintenance } from '@/context/MaintenanceContext';
 
 const quickAccessItems = [
   {
@@ -113,6 +114,8 @@ const discoverItems = [
 
 export default function DashboardPage() {
   const { history } = useHistory();
+  const { maintenanceConfig } = useMaintenance();
+  const { appInfo, ownerInfo } = maintenanceConfig.aboutPageContent;
   const [isLoading, setIsLoading] = useState(true);
   const [showMore, setShowMore] = useState(false);
 
@@ -348,11 +351,11 @@ export default function DashboardPage() {
                   </div>
                   <div className="flex justify-between border-b pb-2">
                     <span className="text-muted-foreground">Version</span>
-                    <span className="font-medium">beta 1.5</span>
+                    <span className="font-medium">{appInfo.version}</span>
                   </div>
                   <div className="flex justify-between border-b pb-2">
                     <span className="text-muted-foreground">Developer</span>
-                    <span className="font-medium">Aman Yadav</span>
+                    <span className="font-medium">{ownerInfo.name}</span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-muted-foreground">Support</span>
@@ -361,9 +364,11 @@ export default function DashboardPage() {
                         <Mail className="mr-2 h-4 w-4" />
                         Contact
                       </Button>
-                      <Button variant="outline" size="sm">
-                        <ExternalLink className="mr-2 h-4 w-4" />
-                        About Us
+                      <Button asChild variant="outline" size="sm">
+                        <Link href="/about">
+                           <ExternalLink className="mr-2 h-4 w-4" />
+                           About Us
+                        </Link>
                       </Button>
                     </div>
                   </div>
@@ -378,5 +383,7 @@ export default function DashboardPage() {
     </div>
   );
 }
+
+    
 
     
