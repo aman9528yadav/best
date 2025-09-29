@@ -283,8 +283,8 @@ export default function DashboardPage() {
           <section>
             <div className="flex justify-between items-center mb-2">
               <h2 className="font-semibold">What&apos;s New</h2>
-              <Button variant="link" size="sm" className="text-primary pr-0">
-                See all
+              <Button asChild variant="link" size="sm" className="text-primary pr-0">
+                <Link href="/whats-new">See all</Link>
               </Button>
             </div>
             <div className="space-y-3">
@@ -378,3 +378,5 @@ export default function DashboardPage() {
     </div>
   );
 }
+
+    
