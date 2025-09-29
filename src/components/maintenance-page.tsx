@@ -10,6 +10,17 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useMaintenance } from '@/context/MaintenanceContext';
 import { useToast } from '@/hooks/use-toast';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
+import { Input } from "@/components/ui/input"
 
 const CountdownBox = ({ value, label }: { value: string; label: string }) => (
   <div className="bg-accent/70 rounded-lg p-3 w-20 flex flex-col items-center">
@@ -23,6 +34,8 @@ export function MaintenancePage() {
   const { setDevMode, maintenanceConfig } = useMaintenance();
   const [clickCount, setClickCount] = useState(0);
   const { toast } = useToast();
+  const [isPasswordDialogOpen, setIsPasswordDialogOpen] = useState(false);
+  const [password, setPassword] = useState('');
 
   const [timeLeft, setTimeLeft] = useState(maintenanceConfig.countdown);
 
@@ -71,11 +84,7 @@ export function MaintenancePage() {
     setClickCount(newClickCount);
 
     if (newClickCount >= 5) {
-      setDevMode(true);
-      toast({
-        title: "Developer Mode Enabled",
-        description: "You've unlocked developer options.",
-      });
+      setIsPasswordDialogOpen(true);
       setClickCount(0); // Reset after activation
     } else if (newClickCount > 2) {
       const clicksRemaining = 5 - newClickCount;
@@ -88,6 +97,18 @@ export function MaintenancePage() {
     setTimeout(() => {
         if(clickCount < 5) setClickCount(0);
     }, 2000)
+  };
+
+  const handlePasswordSubmit = () => {
+    if (password === 'aman') {
+      setDevMode(true);
+      toast({ title: 'Developer Mode Enabled' });
+      router.push('/dev');
+    } else {
+      toast({ title: 'Incorrect Password', variant: 'destructive' });
+    }
+    setPassword('');
+    setIsPasswordDialogOpen(false);
   };
 
 
@@ -173,6 +194,27 @@ export function MaintenancePage() {
           </div>
         </div>
       </div>
+      <AlertDialog open={isPasswordDialogOpen} onOpenChange={setIsPasswordDialogOpen}>
+        <AlertDialogContent>
+            <AlertDialogHeader>
+            <AlertDialogTitle>Enter Developer Password</AlertDialogTitle>
+            <AlertDialogDescription>
+                This action requires a password to enable developer mode and access the dev panel.
+            </AlertDialogDescription>
+            </AlertDialogHeader>
+            <Input 
+                type="password"
+                placeholder="Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)} 
+                onKeyDown={(e) => e.key === 'Enter' && handlePasswordSubmit()}
+            />
+            <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handlePasswordSubmit}>Continue</AlertDialogAction>
+            </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
