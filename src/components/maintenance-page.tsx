@@ -20,15 +20,16 @@ const CountdownBox = ({ value, label }: { value: string; label: string }) => (
 
 export function MaintenancePage() {
   const router = useRouter();
-  const { setDevMode } = useMaintenance();
+  const { setDevMode, maintenanceConfig } = useMaintenance();
   const [clickCount, setClickCount] = useState(0);
   const { toast } = useToast();
-  const [timeLeft, setTimeLeft] = useState({
-    days: 0,
-    hours: 10,
-    minutes: 59,
-    seconds: 32,
-  });
+
+  const [timeLeft, setTimeLeft] = useState(maintenanceConfig.countdown);
+
+  useEffect(() => {
+    setTimeLeft(maintenanceConfig.countdown);
+  }, [maintenanceConfig.countdown]);
+
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -113,10 +114,10 @@ export function MaintenancePage() {
             <h1 className="text-4xl font-bold">We&apos;ll Be Back Soon!</h1>
             <Badge variant="outline" className="text-primary bg-primary/10 border-primary/50">
               <Shield className="mr-2 h-4 w-4" />
-              Security Update
+              {maintenanceConfig.type} Update
             </Badge>
             <p className="text-muted-foreground">
-              General improvements and bug fixes.
+              {maintenanceConfig.details}
             </p>
           </div>
 

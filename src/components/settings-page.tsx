@@ -47,9 +47,9 @@ import {
   Moon,
   Laptop,
   Code,
-  PowerOff,
 } from 'lucide-react';
 import { useMaintenance } from '@/context/MaintenanceContext';
+import { useRouter } from 'next/navigation';
 
 const themes = [
   { name: 'Sutradhaar', value: 'sutradhaar' },
@@ -71,7 +71,9 @@ export function SettingsPage() {
   const [appearance, setAppearance] = useState('system');
   const [isPasswordDialogOpen, setIsPasswordDialogOpen] = useState(false);
   const [password, setPassword] = useState('');
-  const { isMaintenanceMode, setMaintenanceMode, isDevMode, setDevMode } = useMaintenance();
+  const { isDevMode, setDevMode } = useMaintenance();
+  const router = useRouter();
+
 
   const SettingRow = ({
     label,
@@ -153,14 +155,12 @@ export function SettingsPage() {
              <Card className="mt-6">
                 <CardHeader>
                     <CardTitle className='flex items-center gap-2'><Code className='h-5 w-5' />Developer Options</CardTitle>
+                    <CardDescription>Configure advanced developer settings for the application.</CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <SettingRow label="Maintenance Mode" icon={PowerOff}>
-                        <Switch
-                          checked={isMaintenanceMode}
-                          onCheckedChange={setMaintenanceMode}
-                        />
-                    </SettingRow>
+                    <Button className="w-full" onClick={() => router.push('/dev')}>
+                        Open Developer Panel
+                    </Button>
                 </CardContent>
              </Card>
           )}
