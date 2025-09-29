@@ -7,7 +7,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Eye, EyeOff, ArrowRight, ArrowLeft } from 'lucide-react';
+import { Eye, EyeOff, ArrowRight, ArrowLeft, UserPlus } from 'lucide-react';
 import Link from 'next/link';
 
 const GoogleIcon = (props: React.SVGProps<SVGSVGElement>) => (
@@ -22,6 +22,7 @@ const GoogleIcon = (props: React.SVGProps<SVGSVGElement>) => (
 
 export function LoginPage() {
   const [passwordVisible, setPasswordVisible] = useState(false);
+  const [confirmPasswordVisible, setConfirmPasswordVisible] = useState(false);
 
   return (
     <div className="flex flex-col items-center w-full max-w-sm mx-auto">
@@ -96,12 +97,62 @@ export function LoginPage() {
               </p>
 
             </TabsContent>
-            <TabsContent value="signup">
-                {/* Signup form can go here */}
-                <div className="text-center p-8">
-                     <h2 className="text-2xl font-bold">Create an Account</h2>
-                     <p className="text-sm text-muted-foreground mt-2">Join us to get started!</p>
+            <TabsContent value="signup" className="pt-6 space-y-6">
+                <div className="text-center">
+                    <h2 className="text-2xl font-bold">Create your Sutradhaar Account</h2>
+                    <p className="text-sm text-muted-foreground mt-2">
+                        Start converting with a personalized workspace
+                    </p>
                 </div>
+
+                <div className="space-y-4">
+                    <div className="space-y-2">
+                        <Label htmlFor="full-name">Full Name</Label>
+                        <Input id="full-name" type="text" placeholder="Aman Yadav" className="bg-white/70" />
+                    </div>
+                     <div className="space-y-2">
+                        <Label htmlFor="username">Username</Label>
+                        <Input id="username" type="text" placeholder="e.g. aman_y" className="bg-white/70" />
+                    </div>
+                     <div className="space-y-2">
+                        <Label htmlFor="signup-email">Email</Label>
+                        <Input id="signup-email" type="email" placeholder="you@domain.com" className="bg-white/70" />
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="signup-password">Password</Label>
+                        <div className="relative">
+                            <Input id="signup-password" type={passwordVisible ? 'text' : 'password'} placeholder="Create a strong password" className="bg-white/70" />
+                            <Button type="button" variant="ghost" size="icon" className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 text-muted-foreground" onClick={() => setPasswordVisible(!passwordVisible)}>
+                                {passwordVisible ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                            </Button>
+                        </div>
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="confirm-password">Confirm Password</Label>
+                        <div className="relative">
+                            <Input id="confirm-password" type={confirmPasswordVisible ? 'text' : 'password'} placeholder="Re-enter your password" className="bg-white/70" />
+                            <Button type="button" variant="ghost" size="icon" className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 text-muted-foreground" onClick={() => setConfirmPasswordVisible(!confirmPasswordVisible)}>
+                                {confirmPasswordVisible ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                            </Button>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="flex items-center justify-between">
+                    <Button variant="link" className="text-muted-foreground">Skip for now</Button>
+                    <Button className="gap-2">
+                         <UserPlus className="h-4 w-4" />
+                         Sign Up
+                    </Button>
+                </div>
+                 <p className="text-center text-xs text-muted-foreground px-4">
+                    By creating an account, you agree to our{' '}
+                    <Link href="#" className="text-primary hover:underline">
+                    Privacy Policy
+                    </Link> and <Link href="#" className="text-primary hover:underline">
+                    Terms of Service.
+                    </Link>
+                </p>
             </TabsContent>
           </Tabs>
         </CardContent>
@@ -113,4 +164,3 @@ export function LoginPage() {
     </div>
   );
 }
-
