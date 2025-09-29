@@ -24,6 +24,7 @@ import {
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
+import { ScrollArea } from './ui/scroll-area';
 
 const sidebarNavItems = [
   {
@@ -97,51 +98,53 @@ export function Sidebar() {
               <X className="h-5 w-5" />
             </Button>
           </SheetHeader>
-          <div className="flex-1 p-6 space-y-8">
-            <div className="flex items-center gap-4 p-4 bg-card rounded-xl shadow-sm">
-              <Avatar className="h-14 w-14">
-                <AvatarImage asChild src="https://github.com/shadcn.png">
-                   <div className="h-14 w-14 rounded-full bg-gradient-to-br from-primary to-purple-400 flex items-center justify-center">
-                    <span className="text-2xl font-bold text-primary-foreground">G</span>
-                   </div>
-                </AvatarImage>
-                <AvatarFallback>G</AvatarFallback>
-              </Avatar>
-              <div>
-                <p className="text-sm text-muted-foreground">
-                  Welcome back,
-                </p>
-                <p className="font-bold text-lg">Guest</p>
-                <Link href="#" className="text-sm text-primary">
-                  Login
-                </Link>
-              </div>
-            </div>
-
-            <nav className="space-y-2">
-              <div className="flex items-center gap-2 px-2 text-sm font-semibold text-muted-foreground">
-                <BarChart2 className="h-4 w-4" />
-                <span>Productivity</span>
-              </div>
-              <div className="relative">
-                <div className="absolute left-3 top-0 bottom-0 w-0.5 bg-primary/20" />
-                <div className="space-y-2 pl-3">
-                    {sidebarNavItems.map((item) => (
-                    <Link href={item.href} key={item.label}>
-                        <Button
-                        variant="ghost"
-                        className="w-full justify-start gap-3 h-12 text-base bg-accent hover:bg-primary/20 hover:text-primary"
-                        onClick={() => setIsOpen(false)}
-                        >
-                        <item.icon className="h-5 w-5 text-primary" />
-                        {item.label}
-                        </Button>
-                    </Link>
-                    ))}
+          <ScrollArea className="flex-1">
+            <div className="p-6 space-y-8">
+              <div className="flex items-center gap-4 p-4 bg-card rounded-xl shadow-sm">
+                <Avatar className="h-14 w-14">
+                  <AvatarImage asChild src="https://github.com/shadcn.png">
+                     <div className="h-14 w-14 rounded-full bg-gradient-to-br from-primary to-purple-400 flex items-center justify-center">
+                      <span className="text-2xl font-bold text-primary-foreground">G</span>
+                     </div>
+                  </AvatarImage>
+                  <AvatarFallback>G</AvatarFallback>
+                </Avatar>
+                <div>
+                  <p className="text-sm text-muted-foreground">
+                    Welcome back,
+                  </p>
+                  <p className="font-bold text-lg">Guest</p>
+                  <Link href="#" className="text-sm text-primary">
+                    Login
+                  </Link>
                 </div>
               </div>
-            </nav>
-          </div>
+
+              <nav className="space-y-2">
+                <div className="flex items-center gap-2 px-2 text-sm font-semibold text-muted-foreground">
+                  <BarChart2 className="h-4 w-4" />
+                  <span>Productivity</span>
+                </div>
+                <div className="relative">
+                  <div className="absolute left-3 top-0 bottom-0 w-0.5 bg-primary/20" />
+                  <div className="space-y-2 pl-3">
+                      {sidebarNavItems.map((item) => (
+                      <Link href={item.href} key={item.label}>
+                          <Button
+                          variant="ghost"
+                          className="w-full justify-start gap-3 h-12 text-base bg-accent hover:bg-primary/20 hover:text-primary"
+                          onClick={() => setIsOpen(false)}
+                          >
+                          <item.icon className="h-5 w-5 text-primary" />
+                          {item.label}
+                          </Button>
+                      </Link>
+                      ))}
+                  </div>
+                </div>
+              </nav>
+            </div>
+          </ScrollArea>
           <div className="p-6 border-t text-center text-sm text-muted-foreground space-y-4">
             <div>
               <p className="font-bold text-foreground">Sutradhaar</p>
