@@ -42,7 +42,7 @@ export function Calculator() {
       return;
     }
     // If current display is an operator, replace it
-    if (['+', '-', '×', '÷'].includes(display)) {
+    if (['+', '-', '×', '÷', '^'].includes(display) || display.endsWith('(')) {
        setDisplay(value);
     } else if (display === '0' && value !== '.') {
       setDisplay(value);
@@ -55,17 +55,22 @@ export function Calculator() {
   const handleOperator = (op: string) => {
     if (display === 'Error') return;
     const lastChar = expression.slice(-1);
-    if (['+', '-', '×', '÷'].includes(lastChar)) {
+    if (['+', '-', '×', '÷', '^'].includes(lastChar)) {
       setExpression(expression.slice(0, -1) + op);
-    } else if (expression !== '') {
+    } else if (expression !== '' && expression.slice(-1) !== '(') {
       setExpression(expression + op);
     }
     setDisplay(op);
   };
   
   const evaluateExpression = (expr: string): number => {
-    const sanitizedExpr = expr.replace(/×/g, '*').replace(/÷/g, '/');
-    const scientificExpr = sanitizedExpr.replace(/(\d+)\s*\^\s*(\d+)/g, 'Math.pow($1, $2)');
+    // Handle expressions ending with operators by removing them
+    let sanitizedExpr = expr.replace(/×/g, '*').replace(/÷/g, '/');
+    while (['*', '/', '+', '-'].includes(sanitizedExpr.slice(-1))) {
+        sanitizedExpr = sanitizedExpr.slice(0, -1);
+    }
+
+    const scientificExpr = sanitizedExpr.replace(/(\d+(\.\d+)?)\s*\^\s*(\d+(\.\d+)?)/g, 'Math.pow($1, $3)');
     const funcExpr = scientificExpr
         .replace(/sin\(([^)]+)\)/g, (match, p1) => `Math.sin((${p1}) * Math.PI / 180)`)
         .replace(/cos\(([^)]+)\)/g, (match, p1) => `Math.cos((${p1}) * Math.PI / 180)`)
@@ -75,7 +80,12 @@ export function Calculator() {
         .replace(/sqrt\(([^)]+)\)/g, 'Math.sqrt($1)');
 
     try {
-      return new Function('return ' + funcExpr)();
+      // Balance parentheses before evaluation
+      const openParen = (funcExpr.match(/\(/g) || []).length;
+      const closeParen = (funcExpr.match(/\)/g) || []).length;
+      const finalExpr = funcExpr + ')'.repeat(openParen - closeParen);
+
+      return new Function('return ' + finalExpr)();
     } catch (e) {
       console.error("Calculation Error:", e);
       throw new Error("Invalid Expression");
@@ -86,11 +96,12 @@ export function Calculator() {
   const handleEquals = () => {
     if (display === 'Error' || expression === '') return;
     try {
-      const result = evaluateExpression(expression);
+      const currentExpression = expression;
+      const result = evaluateExpression(currentExpression);
       const finalResult = Number(result.toPrecision(15));
       
       addCalculatorToHistory({
-        expression: expression,
+        expression: currentExpression,
         result: finalResult.toString(),
       });
 
@@ -111,16 +122,16 @@ export function Calculator() {
     if (display === 'Error' || display === '0' || ['+', '-', '×', '÷'].includes(display)) return;
     
     // Find the last number entered
-    const operators = /([+\-×÷])/;
+    const operators = /([+\-×÷^])/;
     const parts = expression.split(operators);
-    const lastPart = parts[parts.length - 1];
-
-    if (!isNaN(parseFloat(lastPart))) {
-      const newLastPart = (parseFloat(lastPart) * -1).toString();
-      const newExpression = parts.slice(0, -1).join('') + newLastPart;
-      
-      setExpression(newExpression);
-      setDisplay(newLastPart);
+    const lastPart = parts.pop() || '';
+    
+    if (lastPart && !isNaN(parseFloat(lastPart))) {
+        const newLastPart = (parseFloat(lastPart) * -1).toString();
+        const newExpression = parts.join('') + newLastPart;
+        
+        setExpression(newExpression);
+        setDisplay(newLastPart);
     }
   };
   
@@ -132,7 +143,7 @@ export function Calculator() {
             const result = value / 100;
             setDisplay(result.toString());
 
-            const operators = /([+\-×÷])/;
+            const operators = /([+\-×÷^])/;
             const parts = expression.split(operators);
             const lastPart = parts[parts.length - 1];
             if (!isNaN(parseFloat(lastPart))) {
@@ -148,14 +159,26 @@ export function Calculator() {
 
   const handleSciFunction = (func: string) => {
     if (display === 'Error') return;
-    const currentDisplayIsOperator = ['+', '-', '×', '÷'].includes(display);
+    const currentDisplayIsOperator = ['+', '-', '×', '÷', '^'].includes(display);
+    
+    // Find the last number in the expression
+    const operators = /([+\-×÷^()])/;
+    const parts = expression.split(operators);
+    const lastNumber = parts.filter(p => p && !isNaN(parseFloat(p))).pop() || '';
     
     if (currentDisplayIsOperator) {
         setDisplay(`${func}(`);
         setExpression(`${expression}${func}(`);
     } else {
-        setDisplay(`${func}(${display}`);
-        setExpression(`${func}(${expression}`);
+        const startIndex = expression.lastIndexOf(lastNumber);
+        if (startIndex > -1) {
+            const newExpression = `${expression.substring(0, startIndex)}${func}(${lastNumber}`;
+            setExpression(newExpression);
+            setDisplay(`${func}(${lastNumber}`);
+        } else {
+            setExpression(`${func}(${expression}`);
+            setDisplay(`${func}(${display}`);
+        }
     }
   };
 
