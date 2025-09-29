@@ -29,10 +29,10 @@ import {
   TrendingUp,
 } from 'lucide-react';
 import Link from 'next/link';
-
-import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis } from 'recharts';
 import { AdPlaceholder } from '@/components/ad-placeholder';
 import { Header } from '@/components/header';
+import { WeeklySummaryChart } from '@/components/weekly-summary-chart';
+
 
 const quickAccessItems = [
   {
@@ -94,16 +94,6 @@ const discoverItems = [
   },
 ];
 
-const weeklySummaryData = [
-  { day: 'Tue', value: 20 },
-  { day: 'Wed', value: 40 },
-  { day: 'Thu', value: 30 },
-  { day: 'Fri', value: 50 },
-  { day: 'Sat', value: 35 },
-  { day: 'Sun', value: 60 },
-  { day: 'Mon', value: 80 },
-];
-
 export default function DashboardPage() {
   return (
     <div className="flex min-h-screen w-full flex-col bg-background text-foreground items-center p-4">
@@ -150,13 +140,7 @@ export default function DashboardPage() {
               </Button>
             </CardHeader>
             <CardContent>
-              <ResponsiveContainer width="100%" height={100}>
-                <BarChart data={weeklySummaryData} margin={{ top: 10, right: 0, left: 0, bottom: 0 }}>
-                  <XAxis dataKey="day" axisLine={false} tickLine={false} dy={10}  className="text-xs" />
-                  <YAxis hide={true} />
-                  <Bar dataKey="value" fill="var(--color-primary)" radius={[4, 4, 4, 4]} />
-                </BarChart>
-              </ResponsiveContainer>
+              <WeeklySummaryChart />
             </CardContent>
           </Card>
           
