@@ -26,6 +26,18 @@ import {
   TabsTrigger,
 } from '@/components/ui/tabs';
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
+import { Input } from "@/components/ui/input"
+import { useToast } from '@/hooks/use-toast';
+import {
   Globe,
   Palette,
   Info,
@@ -33,6 +45,7 @@ import {
   Sun,
   Moon,
   Laptop,
+  Code,
 } from 'lucide-react';
 
 const themes = [
@@ -49,22 +62,51 @@ const appearanceModes = [
 ];
 
 export function SettingsPage() {
+  const { toast } = useToast();
   const [saveHistory, setSaveHistory] = useState(true);
   const [currentTheme, setCurrentTheme] = useState('sutradhaar');
   const [appearance, setAppearance] = useState('system');
+  const [devMode, setDevMode] = useState(false);
+  const [isPasswordDialogOpen, setIsPasswordDialogOpen] = useState(false);
+  const [password, setPassword] = useState('');
 
   const SettingRow = ({
     label,
     children,
+    icon: Icon,
   }: {
     label: string;
     children: React.ReactNode;
+    icon?: React.ElementType;
   }) => (
     <div className="flex items-center justify-between py-4 border-b">
-      <Label className="font-medium">{label}</Label>
+        <Label className="font-medium flex items-center gap-2">
+            {Icon && <Icon className="h-4 w-4" />}
+            {label}
+        </Label>
       {children}
     </div>
   );
+
+  const handleDevModeChange = (checked: boolean) => {
+    if (checked) {
+      setIsPasswordDialogOpen(true);
+    } else {
+      setDevMode(false);
+    }
+  };
+
+  const handlePasswordSubmit = () => {
+    if (password === 'aman') {
+      setDevMode(true);
+      toast({ title: 'Developer Mode Enabled' });
+    } else {
+      toast({ title: 'Incorrect Password', variant: 'destructive' });
+    }
+    setPassword('');
+    setIsPasswordDialogOpen(false);
+  };
+
 
   return (
     <div className="w-full space-y-6">
@@ -78,7 +120,7 @@ export function SettingsPage() {
         <TabsContent value="general" className="pt-6">
           <Card>
             <CardContent className="p-4 pt-6 space-y-2">
-              <SettingRow label="Default Region">
+              <SettingRow label="Default Region" icon={Globe}>
                 <Select defaultValue="International">
                   <SelectTrigger className="w-[150px]">
                     <SelectValue />
@@ -89,10 +131,16 @@ export function SettingsPage() {
                   </SelectContent>
                 </Select>
               </SettingRow>
-              <SettingRow label="Save History">
+              <SettingRow label="Save History" icon={Info}>
                 <Switch
                   checked={saveHistory}
                   onCheckedChange={setSaveHistory}
+                />
+              </SettingRow>
+              <SettingRow label="Developer Mode" icon={Code}>
+                <Switch
+                  checked={devMode}
+                  onCheckedChange={handleDevModeChange}
                 />
               </SettingRow>
             </CardContent>
@@ -122,7 +170,7 @@ export function SettingsPage() {
                   </Button>
                 ))}
               </div>
-              <SettingRow label="Theme">
+              <SettingRow label="Theme" icon={Palette}>
                 <Select value={currentTheme} onValueChange={setCurrentTheme}>
                   <SelectTrigger className="w-[150px]">
                     <SelectValue />
@@ -159,6 +207,27 @@ export function SettingsPage() {
           </Card>
         </TabsContent>
       </Tabs>
+      <AlertDialog open={isPasswordDialogOpen} onOpenChange={setIsPasswordDialogOpen}>
+        <AlertDialogContent>
+            <AlertDialogHeader>
+            <AlertDialogTitle>Enter Developer Password</AlertDialogTitle>
+            <AlertDialogDescription>
+                This action requires a password to enable developer mode.
+            </AlertDialogDescription>
+            </AlertDialogHeader>
+            <Input 
+                type="password"
+                placeholder="Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)} 
+                onKeyDown={(e) => e.key === 'Enter' && handlePasswordSubmit()}
+            />
+            <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handlePasswordSubmit}>Continue</AlertDialogAction>
+            </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
