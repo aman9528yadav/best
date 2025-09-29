@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import React, { useState, useEffect } from 'react';
@@ -71,29 +70,31 @@ export function WhatsNewPage() {
   return (
     <div className="w-full space-y-6 pb-12">
         {showBanner && (
-          <Card>
-              <CardContent className="p-4 text-center space-y-4">
-                   <h2 className="text-lg font-semibold">Next Update In</h2>
-                   <div className="flex justify-center gap-3">
-                      <CountdownBox value={String(timeLeft.days).padStart(2, '0')} label="DAYS" />
-                      <CountdownBox value={String(timeLeft.hours).padStart(2, '0')} label="HOURS" />
-                      <CountdownBox value={String(timeLeft.minutes).padStart(2, '0')} label="MINUTES" />
-                      <CountdownBox value={String(timeLeft.seconds).padStart(2, '0')} label="SECONDS" />
-                  </div>
-                   <Badge variant="outline" className="text-primary bg-primary/10 border-primary/50">
-                      <Bug className="mr-2 h-4 w-4" />
-                      {category}
-                  </Badge>
-              </CardContent>
-          </Card>
+          <>
+            <Card>
+                <CardContent className="p-4 text-center space-y-4">
+                     <h2 className="text-lg font-semibold">Next Update In</h2>
+                     <div className="flex justify-center gap-3">
+                        <CountdownBox value={String(timeLeft.days).padStart(2, '0')} label="DAYS" />
+                        <CountdownBox value={String(timeLeft.hours).padStart(2, '0')} label="HOURS" />
+                        <CountdownBox value={String(timeLeft.minutes).padStart(2, '0')} label="MINUTES" />
+                        <CountdownBox value={String(timeLeft.seconds).padStart(2, '0')} label="SECONDS" />
+                    </div>
+                     <Badge variant="outline" className="text-primary bg-primary/10 border-primary/50">
+                        <Bug className="mr-2 h-4 w-4" />
+                        {category}
+                    </Badge>
+                </CardContent>
+            </Card>
+            
+            <Card className="bg-accent/50">
+                <CardContent className="p-4">
+                    <h3 className="font-semibold mb-2">What to expect:</h3>
+                    <p className="text-sm text-muted-foreground whitespace-pre-line">{upcomingFeatureDetails}</p>
+                </CardContent>
+            </Card>
+          </>
         )}
-        
-        <Card className="bg-accent/50">
-            <CardContent className="p-4">
-                <h3 className="font-semibold mb-2">What to expect:</h3>
-                <p className="text-sm text-muted-foreground whitespace-pre-line">{upcomingFeatureDetails}</p>
-            </CardContent>
-        </Card>
 
         <div className="space-y-4">
             {maintenanceConfig.updateItems.map((item, index) => {
@@ -126,4 +127,5 @@ export function WhatsNewPage() {
 }
 
     
+
 
