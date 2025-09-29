@@ -114,7 +114,7 @@ export function AnalyticsPage() {
             },
             calculatorOps: {
                 value: calculatorOps.length,
-                change: calc-percentage-change(calculatorOpsToday, calculatorOpsYesterday)
+                change: calcPercentageChange(calculatorOpsToday, calculatorOpsYesterday)
             },
             dateCalculations: { value: 19, change: -100 }, // Dummy data
             currentStreak: { value: '0', description: 'Best Streak: 3 days' }, // Dummy data
