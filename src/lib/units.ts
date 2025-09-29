@@ -1,5 +1,12 @@
 import React from 'react';
-import { Ruler, Weight, Thermometer, Speedometer, AreaChart, Volume } from 'lucide-react';
+import {
+  Ruler,
+  Weight,
+  Thermometer,
+  GaugeCircle,
+  LandPlot,
+  Beaker,
+} from 'lucide-react';
 
 export type Unit = {
   name: string;
@@ -25,6 +32,7 @@ export const CATEGORIES: Category[] = [
       { name: 'Inches', symbol: 'in' },
       { name: 'Yards', symbol: 'yd' },
       { name: 'Miles', symbol: 'mi' },
+      { name: 'Gaj (Indian)', symbol: 'gaj' },
     ],
   },
   {
@@ -36,6 +44,7 @@ export const CATEGORIES: Category[] = [
       { name: 'Milligrams', symbol: 'mg' },
       { name: 'Pounds', symbol: 'lb' },
       { name: 'Ounces', symbol: 'oz' },
+      { name: 'Tola (Indian)', symbol: 'tola' },
     ],
   },
   {
@@ -45,6 +54,35 @@ export const CATEGORIES: Category[] = [
       { name: 'Celsius', symbol: '°C' },
       { name: 'Fahrenheit', symbol: '°F' },
       { name: 'Kelvin', symbol: 'K' },
+    ],
+  },
+  {
+    name: 'Area',
+    icon: LandPlot,
+    units: [
+      { name: 'Square Meters', symbol: 'm²' },
+      { name: 'Square Kilometers', symbol: 'km²' },
+      { name: 'Acres', symbol: 'ac' },
+      { name: 'Hectares', symbol: 'ha' },
+      { name: 'Bigha (Indian)', symbol: 'bigha' },
+    ],
+  },
+  {
+    name: 'Volume',
+    icon: Beaker,
+    units: [
+      { name: 'Liters', symbol: 'L' },
+      { name: 'Milliliters', symbol: 'mL' },
+      { name: 'Gallons (US)', symbol: 'gal' },
+    ],
+  },
+  {
+    name: 'Speed',
+    icon: GaugeCircle,
+    units: [
+      { name: 'Meters per second', symbol: 'm/s' },
+      { name: 'Kilometers per hour', symbol: 'km/h' },
+      { name: 'Miles per hour', symbol: 'mph' },
     ],
   },
 ];
@@ -59,15 +97,36 @@ const conversionFactors: Record<string, Record<string, number>> = {
   Inches: 0.0254,
   Yards: 0.9144,
   Miles: 1609.34,
+  'Gaj (Indian)': 0.9144, // Same as Yard
   // Weight to base (Grams)
   Grams: 1,
   Kilograms: 1000,
   Milligrams: 0.001,
   Pounds: 453.592,
   Ounces: 28.3495,
+  'Tola (Indian)': 11.6638,
+  // Area to base (Square Meters)
+  'Square Meters': 1,
+  'Square Kilometers': 1000000,
+  Acres: 4046.86,
+  Hectares: 10000,
+  'Bigha (Indian)': 2529.29, // Varies, using a common value
+  // Volume to base (Liters)
+  Liters: 1,
+  Milliliters: 0.001,
+  'Gallons (US)': 3.78541,
+  // Speed to base (Meters per second)
+  'Meters per second': 1,
+  'Kilometers per hour': 0.277778,
+  'Miles per hour': 0.44704,
 };
 
-export function convert(value: number, fromUnit: string, toUnit: string, category: string): number | null {
+export function convert(
+  value: number,
+  fromUnit: string,
+  toUnit: string,
+  category: string
+): number | null {
   if (fromUnit === toUnit) return value;
 
   if (category === 'Temperature') {
