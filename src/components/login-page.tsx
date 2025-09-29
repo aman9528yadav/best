@@ -10,6 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Eye, EyeOff, ArrowRight, ArrowLeft, UserPlus } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { useAuth } from '@/context/AuthContext';
 
 const GoogleIcon = (props: React.SVGProps<SVGSVGElement>) => (
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="24px" height="24px" {...props}>
@@ -25,9 +26,14 @@ export function LoginPage({ onLoginSuccess }: { onLoginSuccess: () => void }) {
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [confirmPasswordVisible, setConfirmPasswordVisible] = useState(false);
   const router = useRouter();
+  const { signInWithGoogle } = useAuth();
 
   const handleLogin = () => {
     onLoginSuccess();
+  }
+
+  const handleGoogleSignIn = async () => {
+    await signInWithGoogle();
   }
 
   return (
@@ -84,7 +90,7 @@ export function LoginPage({ onLoginSuccess }: { onLoginSuccess: () => void }) {
                 <div className="flex-1 border-t"></div>
               </div>
 
-              <Button variant="outline" className="w-full gap-2 bg-white">
+              <Button variant="outline" className="w-full gap-2 bg-white" onClick={handleGoogleSignIn}>
                 <GoogleIcon />
                 Sign in with Google
               </Button>

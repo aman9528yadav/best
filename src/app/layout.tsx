@@ -4,6 +4,7 @@ import { Toaster } from '@/components/ui/toaster';
 import { HistoryProvider } from '@/context/HistoryContext';
 import { ProfileProvider } from '@/context/ProfileContext';
 import { MaintenanceProvider, MaintenanceWrapper } from '@/context/MaintenanceContext';
+import { AuthProvider } from '@/context/AuthContext';
 
 
 export const metadata: Metadata = {
@@ -27,16 +28,18 @@ export default function RootLayout({
         />
       </head>
       <body className="font-body antialiased">
-        <MaintenanceProvider>
-            <ProfileProvider>
-              <HistoryProvider>
-                <MaintenanceWrapper>
-                   {children}
-                </MaintenanceWrapper>
-                <Toaster />
-              </HistoryProvider>
-            </ProfileProvider>
-        </MaintenanceProvider>
+        <AuthProvider>
+            <MaintenanceProvider>
+                <ProfileProvider>
+                  <HistoryProvider>
+                    <MaintenanceWrapper>
+                       {children}
+                    </MaintenanceWrapper>
+                    <Toaster />
+                  </HistoryProvider>
+                </ProfileProvider>
+            </MaintenanceProvider>
+        </AuthProvider>
       </body>
     </html>
   );
