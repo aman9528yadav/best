@@ -22,6 +22,7 @@ import {
   BarChart2,
   History,
   Info,
+  LogIn,
 } from 'lucide-react';
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
@@ -73,6 +74,11 @@ const sidebarNavItems = [
     icon: Info,
     label: 'About',
     href: '/about',
+  },
+  {
+    icon: LogIn,
+    label: 'Login',
+    href: '/login',
   },
 ];
 
