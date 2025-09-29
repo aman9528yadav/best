@@ -8,6 +8,8 @@ import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, Wrench, Shield, Hourglass, Zap } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { useMaintenance } from '@/context/MaintenanceContext';
+import { useToast } from '@/hooks/use-toast';
 
 const CountdownBox = ({ value, label }: { value: string; label: string }) => (
   <div className="bg-accent/70 rounded-lg p-3 w-20 flex flex-col items-center">
@@ -18,6 +20,9 @@ const CountdownBox = ({ value, label }: { value: string; label: string }) => (
 
 export function MaintenancePage() {
   const router = useRouter();
+  const { setDevMode } = useMaintenance();
+  const [clickCount, setClickCount] = useState(0);
+  const { toast } = useToast();
   const [timeLeft, setTimeLeft] = useState({
     days: 0,
     hours: 10,
@@ -60,6 +65,30 @@ export function MaintenancePage() {
     return () => clearTimeout(timer);
   }, [timeLeft]);
 
+  const handleIconClick = () => {
+    const newClickCount = clickCount + 1;
+    setClickCount(newClickCount);
+
+    if (newClickCount >= 5) {
+      setDevMode(true);
+      toast({
+        title: "Developer Mode Enabled",
+        description: "You've unlocked developer options.",
+      });
+      setClickCount(0); // Reset after activation
+    } else if (newClickCount > 2) {
+      const clicksRemaining = 5 - newClickCount;
+      toast({
+        description: `You are ${clicksRemaining} step${clicksRemaining > 1 ? 's' : ''} away from being a developer.`,
+      });
+    }
+
+    // Reset if time between clicks is too long
+    setTimeout(() => {
+        if(clickCount < 5) setClickCount(0);
+    }, 2000)
+  };
+
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-background text-foreground p-4">
@@ -75,7 +104,7 @@ export function MaintenancePage() {
 
         <div className="text-center space-y-6">
           <div className="flex justify-center">
-            <div className="bg-accent/70 p-4 rounded-full">
+            <div className="bg-accent/70 p-4 rounded-full" onClick={handleIconClick}>
               <Wrench className="h-8 w-8 text-primary" />
             </div>
           </div>
