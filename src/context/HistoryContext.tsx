@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
@@ -45,75 +46,75 @@ type HistoryContextType = {
 
 const HistoryContext = createContext<HistoryContextType | undefined>(undefined);
 
-const dummyHistory: HistoryItem[] = [
-  {
-    id: '1',
-    type: 'conversion',
-    fromValue: '112',
-    fromUnit: 'm',
-    toValue: '0.112',
-    toUnit: 'km',
-    category: 'Length',
-    timestamp: new Date(Date.now() - 39 * 60 * 1000),
-  },
-  {
-    id: '2',
-    type: 'calculator',
-    expression: '12 * 5 + 3',
-    result: '63',
-    timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000),
-  },
-  {
-    id: '3',
-    type: 'conversion',
-    fromValue: '2.5',
-    fromUnit: 'kg',
-    toValue: '5.51',
-    toUnit: 'lb',
-    category: 'Weight',
-    timestamp: new Date(Date.now() - 24 * 60 * 60 * 1000),
-  },
-];
-
-const dummyFavorites: FavoriteItem[] = [
-    {
-        id: 'fav1',
-        type: 'favorite',
-        fromUnit: 'Meters',
-        toUnit: 'Kilometers',
-        category: 'Length',
-    },
-    {
-        id: 'fav2',
-        type: 'favorite',
-        fromUnit: 'USD',
-        toUnit: 'EUR',
-        category: 'Currency',
-    }
-];
-
 export const HistoryProvider = ({ children }: { children: ReactNode }) => {
   const [isLoaded, setIsLoaded] = useState(false);
   
-  const [history, setHistory] = useState<HistoryItem[]>(dummyHistory);
-  const [favorites, setFavorites] = useState<FavoriteItem[]>(dummyFavorites);
+  const [history, setHistory] = useState<HistoryItem[]>([]);
+  const [favorites, setFavorites] = useState<FavoriteItem[]>([]);
 
   useEffect(() => {
     try {
       const savedHistory = localStorage.getItem('unitwise_history');
       const savedFavorites = localStorage.getItem('unitwise_favorites');
 
+      let initialHistory: HistoryItem[] = [];
       if (savedHistory) {
         const parsedHistory: HistoryItem[] = JSON.parse(savedHistory);
         parsedHistory.forEach(item => item.timestamp = new Date(item.timestamp));
-        setHistory(parsedHistory);
+        initialHistory = parsedHistory;
+      } else {
+        // For first-time users, populate with some dummy data for a better initial experience
+        initialHistory = [
+            {
+                id: '1',
+                type: 'conversion',
+                fromValue: '112',
+                fromUnit: 'Meters',
+                toValue: '0.112',
+                toUnit: 'Kilometers',
+                category: 'Length',
+                timestamp: new Date(Date.now() - 39 * 60 * 1000),
+            },
+            {
+                id: '2',
+                type: 'calculator',
+                expression: '12 * 5 + 3',
+                result: '63',
+                timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000),
+            },
+        ];
       }
+      setHistory(initialHistory);
       
+      let initialFavorites: FavoriteItem[] = [];
       if (savedFavorites) {
-        setFavorites(JSON.parse(savedFavorites));
+        initialFavorites = JSON.parse(savedFavorites);
+      } else {
+        // Dummy favorites for first-time users
+        initialFavorites = [
+            {
+                id: 'fav1',
+                type: 'favorite',
+                fromUnit: 'Meters',
+                toUnit: 'Kilometers',
+                category: 'Length',
+            },
+            {
+                id: 'fav2',
+                type: 'favorite',
+                fromUnit: 'USD',
+                toUnit: 'EUR',
+                category: 'Currency',
+            }
+        ];
       }
+      setFavorites(initialFavorites);
+
     } catch (error) {
       console.error("Failed to load from localStorage", error);
+      // Set empty arrays on error
+      setHistory([]);
+      setFavorites([]);
     }
     setIsLoaded(true);
   }, []);
@@ -199,3 +200,5 @@ export const useHistory = () => {
   }
   return context;
 };
+
+    

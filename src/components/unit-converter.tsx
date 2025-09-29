@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
@@ -29,12 +30,12 @@ import { CATEGORIES, convert } from '@/lib/units';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { AdPlaceholder } from './ad-placeholder';
-import { useHistory, ConversionHistoryItem } from '@/context/HistoryContext';
+import { useHistory, ConversionHistoryItem, FavoriteItem } from '@/context/HistoryContext';
 import Link from 'next/link';
 
 export function UnitConverter() {
   const { toast } = useToast();
-  const { history, addConversionToHistory, deleteHistoryItem } = useHistory();
+  const { history, favorites, addConversionToHistory, addFavorite, deleteFavorite, deleteHistoryItem } = useHistory();
 
   const [region, setRegion] = useState('International');
   const [category, setCategory] = useState(CATEGORIES[0].name);
@@ -50,6 +51,10 @@ export function UnitConverter() {
   const units = useMemo(() => activeCategory.units, [activeCategory]);
   const fromUnitDetails = useMemo(() => units.find(u => u.name === fromUnit), [units, fromUnit]);
   const toUnitDetails = useMemo(() => units.find(u => u.name === toUnit), [units, toUnit]);
+
+  const isFavorited = useMemo(() => {
+    return favorites.some(fav => fav.category === category && fav.fromUnit === fromUnit && fav.toUnit === toUnit);
+  }, [favorites, category, fromUnit, toUnit]);
 
   const conversionInfo = useMemo(() => {
     if (!fromUnitDetails || !toUnitDetails) return '';
@@ -135,6 +140,18 @@ export function UnitConverter() {
 
   const handleDeleteHistory = (idToDelete: string) => {
     deleteHistoryItem(idToDelete);
+  };
+
+  const handleFavoriteToggle = () => {
+    const favoriteItem = favorites.find(fav => fav.category === category && fav.fromUnit === fromUnit && fav.toUnit === toUnit);
+
+    if (favoriteItem) {
+      deleteFavorite(favoriteItem.id);
+      toast({ title: 'Removed from favorites.' });
+    } else {
+      addFavorite({ fromUnit, toUnit, category });
+      toast({ title: 'Added to favorites!' });
+    }
   };
 
 
@@ -258,7 +275,9 @@ export function UnitConverter() {
           <div className="bg-accent p-4 rounded-lg flex items-center justify-between">
             <span className="text-3xl font-bold tracking-tight text-accent-foreground">{result || '0'}</span>
             <div className="flex items-center gap-1 text-accent-foreground">
-                <Button variant="ghost" size="icon"><Star className="h-5 w-5"/></Button>
+                <Button variant="ghost" size="icon" onClick={handleFavoriteToggle}>
+                  <Star className={cn("h-5 w-5", isFavorited && "fill-current text-primary")} />
+                </Button>
                 <Button variant="ghost" size="icon" onClick={handleCopy}><Copy className="h-5 w-5"/></Button>
                 <Button variant="ghost" size="icon"><Share2 className="h-5 w-5"/></Button>
             </div>
@@ -308,3 +327,5 @@ export function UnitConverter() {
     </div>
   );
 }
+
+    
