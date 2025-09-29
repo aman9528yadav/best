@@ -105,11 +105,16 @@ export function SettingsPage() {
     if (password === 'aman') {
       setDevMode(true);
       toast({ title: 'Developer Mode Enabled' });
+      router.push('/dev');
     } else {
       toast({ title: 'Incorrect Password', variant: 'destructive' });
     }
     setPassword('');
     setIsPasswordDialogOpen(false);
+  };
+
+  const handleOpenDevPanelClick = () => {
+    setIsPasswordDialogOpen(true);
   };
 
 
@@ -158,7 +163,7 @@ export function SettingsPage() {
                     <CardDescription>Configure advanced developer settings for the application.</CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <Button className="w-full" onClick={() => router.push('/dev')}>
+                    <Button className="w-full" onClick={handleOpenDevPanelClick}>
                         Open Developer Panel
                     </Button>
                 </CardContent>
@@ -232,7 +237,7 @@ export function SettingsPage() {
             <AlertDialogHeader>
             <AlertDialogTitle>Enter Developer Password</AlertDialogTitle>
             <AlertDialogDescription>
-                This action requires a password to enable developer mode.
+                This action requires a password to access developer tools.
             </AlertDialogDescription>
             </AlertDialogHeader>
             <Input 
