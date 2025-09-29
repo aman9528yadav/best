@@ -22,7 +22,7 @@ import {
   BarChart2,
 } from 'lucide-react';
 import Link from 'next/link';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 
 const sidebarNavItems = [
@@ -65,6 +65,19 @@ const sidebarNavItems = [
 
 export function Sidebar() {
   const [isOpen, setIsOpen] = useState(false);
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  if (!isClient) {
+    return (
+        <Button variant="ghost" size="icon" aria-label="Menu">
+          <Menu className="h-5 w-5" />
+        </Button>
+    );
+  }
 
   return (
     <Sheet open={isOpen} onOpenChange={setIsOpen}>
