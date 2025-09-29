@@ -27,6 +27,8 @@ import {
   Star,
   Clock,
   TrendingUp,
+  Mail,
+  ExternalLink,
 } from 'lucide-react';
 import Link from 'next/link';
 import { AdPlaceholder } from '@/components/ad-placeholder';
@@ -263,13 +265,37 @@ export default function DashboardPage() {
 
           <Accordion type="single" collapsible className="w-full">
             <AccordionItem value="item-1" className="border-none">
-              <AccordionTrigger className="font-semibold py-2">
+              <AccordionTrigger className="font-semibold py-2 text-primary">
                 About
               </AccordionTrigger>
               <AccordionContent>
-                Sutradhaar is your all-in-one productivity assistant. Convert
-                units, calculate, take notes, and stay updated with the latest
-                news.
+                <div className="space-y-4 text-sm">
+                  <div className="flex justify-between border-b pb-2">
+                    <span className="text-muted-foreground">App</span>
+                    <span className="font-medium">Sutradhaar · Unit Converter</span>
+                  </div>
+                  <div className="flex justify-between border-b pb-2">
+                    <span className="text-muted-foreground">Version</span>
+                    <span className="font-medium">beta 1.5</span>
+                  </div>
+                  <div className="flex justify-between border-b pb-2">
+                    <span className="text-muted-foreground">Developer</span>
+                    <span className="font-medium">Aman Yadav</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-muted-foreground">Support</span>
+                    <div className="flex gap-2">
+                      <Button variant="outline" size="sm">
+                        <Mail className="mr-2 h-4 w-4" />
+                        Contact
+                      </Button>
+                      <Button variant="outline" size="sm">
+                        <ExternalLink className="mr-2 h-4 w-4" />
+                        About Us
+                      </Button>
+                    </div>
+                  </div>
+                </div>
               </AccordionContent>
             </AccordionItem>
           </Accordion>
