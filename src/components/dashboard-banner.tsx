@@ -83,27 +83,26 @@ export function DashboardBanner() {
             <div className="p-3 bg-primary/10 rounded-full mt-1">
                 <Rocket className="h-6 w-6 text-primary" />
             </div>
-            <div className='flex-1 space-y-3'>
-                <div className='flex justify-between items-start'>
-                     <div>
-                        <h3 className="font-bold">Next Update Incoming!</h3>
-                         <p className="text-xs text-muted-foreground">
-                            We're launching new features soon. Check out what's new!
-                        </p>
-                     </div>
-                     <Badge variant="outline" className="text-primary bg-primary/10 border-primary/50 text-xs shrink-0">
-                        {category}
-                    </Badge>
+            <div className='flex-1 space-y-2'>
+                <div>
+                    <h3 className="font-bold">Next Update Incoming!</h3>
+                     <p className="text-xs text-muted-foreground">
+                        We're launching new features soon. Check out what's new!
+                    </p>
                 </div>
                 
-                <div className="flex justify-between items-end">
-                    <div className="flex gap-2">
-                        <CountdownBox value={String(timeLeft.days).padStart(2, '0')} label="DAYS" />
-                        <CountdownBox value={String(timeLeft.hours).padStart(2, '0')} label="HOURS" />
-                        <CountdownBox value={String(timeLeft.minutes).padStart(2, '0')} label="MINS" />
-                        <CountdownBox value={String(timeLeft.seconds).padStart(2, '0')} label="SECS" />
-                    </div>
-                    <Button asChild size="sm" variant="link" className="text-primary pr-0">
+                <div className="flex gap-2">
+                    <CountdownBox value={String(timeLeft.days).padStart(2, '0')} label="DAYS" />
+                    <CountdownBox value={String(timeLeft.hours).padStart(2, '0')} label="HOURS" />
+                    <CountdownBox value={String(timeLeft.minutes).padStart(2, '0')} label="MINS" />
+                    <CountdownBox value={String(timeLeft.seconds).padStart(2, '0')} label="SECS" />
+                </div>
+                
+                <div className="flex justify-between items-center">
+                    <Badge variant="outline" className="text-primary bg-primary/10 border-primary/50 text-xs shrink-0">
+                        {category}
+                    </Badge>
+                     <Button asChild size="sm" variant="link" className="text-primary pr-0">
                          <Link href="/whats-new">
                             <Info className="mr-2 h-4 w-4" />
                             Learn More
