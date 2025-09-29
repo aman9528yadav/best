@@ -124,20 +124,6 @@ export function AboutPage() {
                     </CardContent>
                 </Card>
             </section>
-            
-            <section>
-                <Card className="bg-primary/10 border-primary/20">
-                    <CardContent className="p-6 text-center space-y-3">
-                        <Sparkles className="h-8 w-8 text-primary mx-auto"/>
-                        <h2 className="text-xl font-semibold">What's Next for Sutradhaar?</h2>
-                        <p className="text-sm text-muted-foreground">Click the button to get AI-powered feature suggestions!</p>
-                        <Button className="bg-primary hover:bg-primary/90 text-primary-foreground">
-                            <Sparkles className="h-4 w-4 mr-2" />
-                            Suggest New Features
-                        </Button>
-                    </CardContent>
-                </Card>
-            </section>
 
             <section className="space-y-4">
                 <h2 className="text-xl font-bold text-center">Release Plan & Roadmap</h2>
