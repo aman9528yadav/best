@@ -3,9 +3,8 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ChevronUp, Divide, Equal, Minus, Plus, X, Percent, PlusMinus } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 
 const CalculatorButton = ({
   onClick,
@@ -98,11 +97,6 @@ export function Calculator() {
     }
   };
 
-  const handleClear = () => {
-    setDisplay('0');
-    setExpression('');
-  };
-
   const handleAllClear = () => {
     setDisplay('0');
     setExpression('');
@@ -117,7 +111,6 @@ export function Calculator() {
   const handlePercent = () => {
     if (display === 'Error') return;
     try {
-        // Find the last number in the expression
         const parts = expression.split(/([+\-×÷])/);
         const lastPart = parts[parts.length - 1];
         
@@ -125,11 +118,7 @@ export function Calculator() {
             const percentage = parseFloat(lastPart) / 100;
             const newExpression = expression.slice(0, expression.length - lastPart.length) + percentage.toString();
             setExpression(newExpression);
-
-            // Temporarily show the percentage value on display
             setDisplay(percentage.toString());
-            // After a short delay, restore the display to the full expression or handle as needed
-            setTimeout(() => setDisplay(newExpression), 1000);
         }
     } catch (e) {
       setDisplay('Error');
@@ -179,6 +168,16 @@ export function Calculator() {
     { label: 'π', onClick: () => handleInput(Math.PI.toString()) },
   ];
 
+  const SciPad = () => (
+    <div className="grid grid-cols-5 gap-2">
+      {sciButtons.map((btn, i) => (
+        <CalculatorButton key={`sci-${i}`} onClick={btn.onClick} className="h-12 text-lg">
+          {btn.label}
+        </CalculatorButton>
+      ))}
+    </div>
+  );
+
   return (
     <Card className="w-full">
       <CardContent className="p-4 space-y-4">
@@ -188,50 +187,21 @@ export function Calculator() {
         </div>
 
         <div className="relative">
+          <motion.div
+            initial={false}
+            animate={{ height: isSci ? 'auto' : 0, opacity: isSci ? 1 : 0 }}
+            className="overflow-hidden"
+          >
+             <SciPad />
+             <div className='h-2'></div>
+          </motion.div>
+
           <div className="grid grid-cols-4 gap-2">
-            {!isSci && basicButtons.map((btn, i) => (
+            {basicButtons.map((btn, i) => (
               <CalculatorButton key={i} onClick={btn.onClick} className={btn.className} variant={btn.variant}>
                 {btn.label}
               </CalculatorButton>
             ))}
-            {isSci && <>
-              {sciButtons.slice(0,5).map((btn, i) => (
-                <CalculatorButton key={`sci-1-${i}`} onClick={btn.onClick} className={btn.className}>
-                  {btn.label}
-                </CalculatorButton>
-              ))}
-               <CalculatorButton onClick={handleAllClear} className='bg-muted text-foreground'>AC</CalculatorButton>
-               <CalculatorButton onClick={handlePlusMinus} className='bg-muted text-foreground'><PlusMinus size={24} /></CalculatorButton>
-               <CalculatorButton onClick={handlePercent} className='bg-muted text-foreground'><Percent size={24} /></CalculatorButton>
-               <CalculatorButton onClick={() => handleOperator('÷')} variant='default'><Divide size={24} /></CalculatorButton>
-
-               {sciButtons.slice(5, 9).map((btn, i) => (
-                <CalculatorButton key={`sci-2-${i}`} onClick={btn.onClick} className={btn.className}>
-                  {btn.label}
-                </CalculatorButton>
-              ))}
-              <CalculatorButton onClick={() => handleOperator('×')} variant='default'><X size={24} /></CalculatorButton>
-              
-              <CalculatorButton onClick={() => handleInput('7')}>7</CalculatorButton>
-              <CalculatorButton onClick={() => handleInput('8')}>8</CalculatorButton>
-              <CalculatorButton onClick={() => handleInput('9')}>9</CalculatorButton>
-              <CalculatorButton onClick={() => handleOperator('-')} variant='default'><Minus size={24} /></CalculatorButton>
-
-              <CalculatorButton onClick={() => handleInput('4')}>4</CalculatorButton>
-              <CalculatorButton onClick={() => handleInput('5')}>5</CalculatorButton>
-              <CalculatorButton onClick={() => handleInput('6')}>6</CalculatorButton>
-              <CalculatorButton onClick={() => handleOperator('+')} variant='default'><Plus size={24} /></CalculatorButton>
-
-              <CalculatorButton onClick={() => handleInput('1')}>1</CalculatorButton>
-              <CalculatorButton onClick={() => handleInput('2')}>2</CalculatorButton>
-              <CalculatorButton onClick={() => handleInput('3')}>3</CalculatorButton>
-              <CalculatorButton onClick={handleEquals} variant='default' className="row-span-2 h-auto">
-                <Equal size={24} />
-              </CalculatorButton>
-
-              <CalculatorButton onClick={() => handleInput('0')} className="col-span-2">0</CalculatorButton>
-              <CalculatorButton onClick={() => handleInput('.')}>.</CalculatorButton>
-            </>}
           </div>
 
           <Button 
