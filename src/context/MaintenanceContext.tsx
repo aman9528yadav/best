@@ -16,23 +16,28 @@ export type UpdateItem = {
     tags: string[];
 };
 
+type Countdown = {
+    days: number;
+    hours: number;
+    minutes: number;
+    seconds: number;
+};
+
 export type MaintenanceConfig = {
     globalMaintenance: boolean;
     individualPages: string[];
-    countdown: {
-        days: number;
-        hours: number;
-        minutes: number;
-        seconds: number;
-    };
+    countdown: Countdown;
     details: string;
     type: string;
     postUpdateStatus: string;
     successMessage: string;
     failureMessage: string;
-    showDashboardBanner: boolean;
-    bannerCategory: string;
-    upcomingFeatureDetails: string;
+    dashboardBanner: {
+        show: boolean;
+        countdown: Countdown;
+        category: string;
+        upcomingFeatureDetails: string;
+    };
     globalNotification: string;
     updateItems: UpdateItem[];
 };
@@ -58,18 +63,26 @@ const defaultMaintenanceConfig: MaintenanceConfig = {
     individualPages: [],
     countdown: {
         days: 0,
-        hours: 10,
-        minutes: 59,
-        seconds: 32,
+        hours: 0,
+        minutes: 0,
+        seconds: 0,
     },
     details: 'General improvements and bug fixes.',
     type: 'Security',
     postUpdateStatus: 'In Progress',
     successMessage: 'The update was successful! We will be back shortly.',
     failureMessage: 'The update failed. Please try again later.',
-    showDashboardBanner: true,
-    bannerCategory: 'Bug Fix',
-    upcomingFeatureDetails: '1. bug fix\n2. may be some feature not working',
+    dashboardBanner: {
+        show: true,
+        countdown: {
+            days: 0,
+            hours: 10,
+            minutes: 59,
+            seconds: 32,
+        },
+        category: 'Bug Fix',
+        upcomingFeatureDetails: '1. bug fix\n2. may be some feature not working',
+    },
     globalNotification: '',
     updateItems: [
         {

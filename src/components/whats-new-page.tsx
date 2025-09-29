@@ -33,11 +33,12 @@ const iconMap: { [key: string]: Icon } = {
 
 export function WhatsNewPage() {
   const { maintenanceConfig } = useMaintenance();
-  const [timeLeft, setTimeLeft] = useState(maintenanceConfig.countdown);
+  const { countdown, category, upcomingFeatureDetails } = maintenanceConfig.dashboardBanner;
+  const [timeLeft, setTimeLeft] = useState(countdown);
 
   useEffect(() => {
-    setTimeLeft(maintenanceConfig.countdown);
-  }, [maintenanceConfig.countdown]);
+    setTimeLeft(countdown);
+  }, [countdown]);
 
 
   useEffect(() => {
@@ -80,7 +81,7 @@ export function WhatsNewPage() {
                 </div>
                  <Badge variant="outline" className="text-primary bg-primary/10 border-primary/50">
                     <Bug className="mr-2 h-4 w-4" />
-                    {maintenanceConfig.bannerCategory}
+                    {category}
                 </Badge>
             </CardContent>
         </Card>
@@ -88,7 +89,7 @@ export function WhatsNewPage() {
         <Card className="bg-accent/50">
             <CardContent className="p-4">
                 <h3 className="font-semibold mb-2">What to expect:</h3>
-                <p className="text-sm text-muted-foreground whitespace-pre-line">{maintenanceConfig.upcomingFeatureDetails}</p>
+                <p className="text-sm text-muted-foreground whitespace-pre-line">{upcomingFeatureDetails}</p>
             </CardContent>
         </Card>
 

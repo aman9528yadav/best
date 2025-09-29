@@ -75,6 +75,14 @@ export function DevPanel() {
       countdown: { ...prev.countdown, [name]: parseInt(value, 10) || 0 },
     }));
   };
+  
+  const handleBannerTimeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setMaintenanceConfig(prev => ({
+      ...prev,
+      dashboardBanner: { ...prev.dashboardBanner, countdown: { ...prev.dashboardBanner.countdown, [name]: parseInt(value, 10) || 0 } },
+    }));
+  };
 
   return (
     <div className="flex flex-col items-center w-full min-h-screen bg-background text-foreground p-4">
@@ -142,10 +150,71 @@ export function DevPanel() {
                         placeholder="e.g., /notes, /calculator"
                         className="text-sm"
                       />
-                      <p className="text-xs text-muted-foreground">
-                        Enter page paths separated by commas.
+                       <p className="text-xs text-muted-foreground">
+                        Enter page paths separated by commas. These pages will be in maintenance even if global mode is off.
                       </p>
                     </div>
+
+                    <div className="space-y-2">
+                        <Label>Set Countdown Duration</Label>
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-1">
+                                <Label htmlFor="days" className="text-xs text-muted-foreground">Days</Label>
+                                <Input id="days" name="days" type="number" value={maintenanceConfig.countdown.days} onChange={handleTimeChange} />
+                            </div>
+                            <div className="space-y-1">
+                                <Label htmlFor="hours" className="text-xs text-muted-foreground">Hours</Label>
+                                <Input id="hours" name="hours" type="number" value={maintenanceConfig.countdown.hours} onChange={handleTimeChange} />
+                            </div>
+                            <div className="space-y-1">
+                                <Label htmlFor="minutes" className="text-xs text-muted-foreground">Minutes</Label>
+                                <Input id="minutes" name="minutes" type="number" value={maintenanceConfig.countdown.minutes} onChange={handleTimeChange} />
+                            </div>
+                            <div className="space-y-1">
+                                <Label htmlFor="seconds" className="text-xs text-muted-foreground">Seconds</Label>
+                                <Input id="seconds" name="seconds" type="number" value={maintenanceConfig.countdown.seconds} onChange={handleTimeChange} />
+                            </div>
+                        </div>
+                    </div>
+                     <div className="space-y-2">
+                        <Label htmlFor="maintenance-details" className="flex items-center gap-2"><FileText className="h-4 w-4" />Maintenance Details</Label>
+                        <Textarea id="maintenance-details" name="details" value={maintenanceConfig.details} onChange={handleChange} placeholder="Describe what's happening during maintenance..." />
+                    </div>
+
+                    <div className="space-y-2">
+                        <Label htmlFor="maintenance-type" className="flex items-center gap-2"><Wrench className="h-4 w-4" />Maintenance Type</Label>
+                        <Select value={maintenanceConfig.type} onValueChange={(value) => setMaintenanceConfig(p => ({ ...p, type: value }))}>
+                            <SelectTrigger id="maintenance-type"><SelectValue /></SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="Security">Security</SelectItem>
+                                <SelectItem value="Feature Update">Feature Update</SelectItem>
+                                <SelectItem value="Bug Fix">Bug Fix</SelectItem>
+                                <SelectItem value="General">General</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
+
+                    <div className="space-y-2">
+                        <Label htmlFor="post-update-status" className="flex items-center gap-2"><Info className="h-4 w-4" />Post-Update Status</Label>
+                        <Select value={maintenanceConfig.postUpdateStatus} onValueChange={(value) => setMaintenanceConfig(p => ({ ...p, postUpdateStatus: value }))}>
+                            <SelectTrigger id="post-update-status"><SelectValue /></SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="In Progress">In Progress</SelectItem>
+                                <SelectItem value="Completed">Completed</SelectItem>
+                                <SelectItem value="Failed">Failed</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
+
+                     <div className="space-y-2">
+                        <Label htmlFor="success-message">Success Message</Label>
+                        <Input id="success-message" name="successMessage" value={maintenanceConfig.successMessage} onChange={handleChange} />
+                    </div>
+                     <div className="space-y-2">
+                        <Label htmlFor="failure-message">Failure Message</Label>
+                        <Input id="failure-message" name="failureMessage" value={maintenanceConfig.failureMessage} onChange={handleChange} />
+                    </div>
+
 
                     <div className="grid grid-cols-2 gap-4 pt-4">
                         <Button variant="outline" onClick={handleClear}>Clear</Button>
@@ -185,34 +254,34 @@ export function DevPanel() {
                       </div>
                       <Switch
                         id="show-banner"
-                        checked={maintenanceConfig.showDashboardBanner}
-                        onCheckedChange={(checked) => setMaintenanceConfig(p => ({ ...p, showDashboardBanner: checked }))}
+                        checked={maintenanceConfig.dashboardBanner.show}
+                        onCheckedChange={(checked) => setMaintenanceConfig(p => ({ ...p, dashboardBanner: {...p.dashboardBanner, show: checked} }))}
                       />
                     </div>
                      <div className="space-y-2">
                         <Label>Set Countdown Duration</Label>
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-1">
-                                <Label htmlFor="days" className="text-xs text-muted-foreground">Days</Label>
-                                <Input id="days" name="days" type="number" value={maintenanceConfig.countdown.days} onChange={handleTimeChange} />
+                                <Label htmlFor="banner-days" className="text-xs text-muted-foreground">Days</Label>
+                                <Input id="banner-days" name="days" type="number" value={maintenanceConfig.dashboardBanner.countdown.days} onChange={handleBannerTimeChange} />
                             </div>
                             <div className="space-y-1">
-                                <Label htmlFor="hours" className="text-xs text-muted-foreground">Hours</Label>
-                                <Input id="hours" name="hours" type="number" value={maintenanceConfig.countdown.hours} onChange={handleTimeChange} />
+                                <Label htmlFor="banner-hours" className="text-xs text-muted-foreground">Hours</Label>
+                                <Input id="banner-hours" name="hours" type="number" value={maintenanceConfig.dashboardBanner.countdown.hours} onChange={handleBannerTimeChange} />
                             </div>
                             <div className="space-y-1">
-                                <Label htmlFor="minutes" className="text-xs text-muted-foreground">Minutes</Label>
-                                <Input id="minutes" name="minutes" type="number" value={maintenanceConfig.countdown.minutes} onChange={handleTimeChange} />
+                                <Label htmlFor="banner-minutes" className="text-xs text-muted-foreground">Minutes</Label>
+                                <Input id="banner-minutes" name="minutes" type="number" value={maintenanceConfig.dashboardBanner.countdown.minutes} onChange={handleBannerTimeChange} />
                             </div>
                             <div className="space-y-1">
-                                <Label htmlFor="seconds" className="text-xs text-muted-foreground">Seconds</Label>
-                                <Input id="seconds" name="seconds" type="number" value={maintenanceConfig.countdown.seconds} onChange={handleTimeChange} />
+                                <Label htmlFor="banner-seconds" className="text-xs text-muted-foreground">Seconds</Label>
+                                <Input id="banner-seconds" name="seconds" type="number" value={maintenanceConfig.dashboardBanner.countdown.seconds} onChange={handleBannerTimeChange} />
                             </div>
                         </div>
                     </div>
                      <div className="space-y-2">
                         <Label htmlFor="banner-category" className="flex items-center gap-2"><Wrench className="h-4 w-4" />Banner Category</Label>
-                        <Select value={maintenanceConfig.bannerCategory} onValueChange={(value) => setMaintenanceConfig(p => ({ ...p, bannerCategory: value }))}>
+                        <Select value={maintenanceConfig.dashboardBanner.category} onValueChange={(value) => setMaintenanceConfig(p => ({ ...p, dashboardBanner: {...p.dashboardBanner, category: value} }))}>
                             <SelectTrigger id="banner-category"><SelectValue /></SelectTrigger>
                             <SelectContent>
                                 <SelectItem value="Security">Security</SelectItem>
@@ -224,10 +293,10 @@ export function DevPanel() {
                     </div>
                     <div className="space-y-2">
                         <Label htmlFor="upcoming-feature-details" className="flex items-center gap-2"><FileText className="h-4 w-4" />Upcoming Feature Details</Label>
-                        <Textarea id="upcoming-feature-details" name="upcomingFeatureDetails" value={maintenanceConfig.upcomingFeatureDetails} onChange={handleChange} placeholder="Describe what's coming..." />
+                        <Textarea id="upcoming-feature-details" name="upcomingFeatureDetails" value={maintenanceConfig.dashboardBanner.upcomingFeatureDetails} onChange={(e) => setMaintenanceConfig(p => ({...p, dashboardBanner: {...p.dashboardBanner, upcomingFeatureDetails: e.target.value}}))} placeholder="Describe what's coming..." />
                     </div>
                     <div className="grid grid-cols-2 gap-4 pt-4">
-                        <Button variant="outline" onClick={handleClear}>Clear</Button>
+                        <Button variant="outline" onClick={() => setMaintenanceConfig(p => ({ ...p, dashboardBanner: { show: false, countdown: {days: 0, hours: 0, minutes: 0, seconds: 0}, category: 'General', upcomingFeatureDetails: ''} }))}>Clear</Button>
                         <Button onClick={handleSave}>Save</Button>
                     </div>
                   </div>
