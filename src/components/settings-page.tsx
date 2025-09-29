@@ -46,7 +46,9 @@ import {
   Moon,
   Laptop,
   Code,
+  PowerOff,
 } from 'lucide-react';
+import { useMaintenance } from '@/context/MaintenanceContext';
 
 const themes = [
   { name: 'Sutradhaar', value: 'sutradhaar' },
@@ -69,6 +71,7 @@ export function SettingsPage() {
   const [devMode, setDevMode] = useState(false);
   const [isPasswordDialogOpen, setIsPasswordDialogOpen] = useState(false);
   const [password, setPassword] = useState('');
+  const { isMaintenanceMode, setMaintenanceMode } = useMaintenance();
 
   const SettingRow = ({
     label,
@@ -145,6 +148,23 @@ export function SettingsPage() {
               </SettingRow>
             </CardContent>
           </Card>
+          
+          {devMode && (
+             <Card className="mt-6">
+                <CardHeader>
+                    <CardTitle className='flex items-center gap-2'><Code className='h-5 w-5' />Developer Options</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <SettingRow label="Maintenance Mode" icon={PowerOff}>
+                        <Switch
+                          checked={isMaintenanceMode}
+                          onCheckedChange={setMaintenanceMode}
+                        />
+                    </SettingRow>
+                </CardContent>
+             </Card>
+          )}
+
         </TabsContent>
 
         <TabsContent value="theme" className="pt-6">

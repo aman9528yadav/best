@@ -3,6 +3,8 @@ import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
 import { HistoryProvider } from '@/context/HistoryContext';
 import { ProfileProvider } from '@/context/ProfileContext';
+import { MaintenanceProvider, MaintenanceWrapper } from '@/context/MaintenanceContext';
+
 
 export const metadata: Metadata = {
   title: 'UnitWise',
@@ -25,12 +27,16 @@ export default function RootLayout({
         />
       </head>
       <body className="font-body antialiased">
-        <ProfileProvider>
-          <HistoryProvider>
-            {children}
-            <Toaster />
-          </HistoryProvider>
-        </ProfileProvider>
+        <MaintenanceProvider>
+            <ProfileProvider>
+              <HistoryProvider>
+                <MaintenanceWrapper>
+                   {children}
+                </MaintenanceWrapper>
+                <Toaster />
+              </HistoryProvider>
+            </ProfileProvider>
+        </MaintenanceProvider>
       </body>
     </html>
   );
