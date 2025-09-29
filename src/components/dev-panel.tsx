@@ -27,7 +27,7 @@ import {
 } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
-import { ArrowLeft, Clock, FileText, Wrench, Info } from 'lucide-react';
+import { ArrowLeft, Clock, FileText, Wrench, Info, Tv, Send, FileEdit, Crown, Shield, Trash } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useMaintenance } from '@/context/MaintenanceContext';
 import { useToast } from '@/hooks/use-toast';
@@ -45,7 +45,7 @@ export function DevPanel() {
 
   const handleSave = () => {
     setMaintenanceMode(maintenanceConfig.globalMaintenance);
-    setMaintenanceConfig(maintenanceConfig);
+    // setMaintenanceConfig is already updating state on change, but we could explicitly save to a backend here.
     toast({
       title: 'Settings Saved',
       description: 'Your maintenance mode settings have been updated.',
@@ -92,8 +92,9 @@ export function DevPanel() {
           </div>
         </div>
 
-        <main className="flex-1 space-y-4">
-          <Accordion type="single" collapsible defaultValue="item-1" className="w-full">
+        <main className="flex-1 space-y-4 pb-12">
+          <Accordion type="single" collapsible defaultValue="item-1" className="w-full space-y-4">
+            
             <AccordionItem value="item-1" asChild>
               <Card>
                 <CardHeader className="p-4">
@@ -140,12 +141,53 @@ export function DevPanel() {
                         className="text-sm"
                       />
                       <p className="text-xs text-muted-foreground">
-                        Enter page paths separated by commas. These pages will be in
-                        maintenance even if global mode is off.
+                        Enter page paths separated by commas.
                       </p>
                     </div>
 
-                    <div className="space-y-2">
+                    <div className="grid grid-cols-2 gap-4 pt-4">
+                        <Button variant="outline" onClick={handleClear}>Clear</Button>
+                        <Button onClick={handleSave}>Save</Button>
+                    </div>
+
+                  </div>
+                </AccordionContent>
+              </Card>
+            </AccordionItem>
+            
+            <AccordionItem value="item-2" asChild>
+              <Card>
+                <CardHeader className="p-4">
+                  <AccordionTrigger className="p-0 hover:no-underline">
+                    <div className="flex items-center gap-3">
+                      <Tv className="h-5 w-5" />
+                      <div>
+                        <CardTitle className="text-lg">Dashboard Banner</CardTitle>
+                        <CardDescription>
+                          Manage the upcoming update banner.
+                        </CardDescription>
+                      </div>
+                    </div>
+                  </AccordionTrigger>
+                </CardHeader>
+                <AccordionContent className="px-4 pb-4">
+                  <div className="space-y-6">
+                    <div className="bg-accent/50 p-4 rounded-lg flex items-center justify-between">
+                      <div>
+                        <Label htmlFor="show-banner" className="font-medium">
+                          Show Update Banner on Dashboard
+                        </Label>
+                        <p className="text-xs text-muted-foreground">
+                          Toggles the countdown banner for all users.
+                        </p>
+                      </div>
+                      <Switch
+                        id="show-banner"
+                        checked={maintenanceConfig.showDashboardBanner}
+                        onCheckedChange={(checked) => setMaintenanceConfig(p => ({ ...p, showDashboardBanner: checked }))}
+                      />
+                    </div>
+                     <div className="space-y-2">
                         <Label>Set Countdown Duration</Label>
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-1">
@@ -166,16 +208,10 @@ export function DevPanel() {
                             </div>
                         </div>
                     </div>
-
-                    <div className="space-y-2">
-                        <Label htmlFor="maintenance-details" className="flex items-center gap-2"><FileText className="h-4 w-4" />Maintenance Details</Label>
-                        <Textarea id="maintenance-details" name="details" value={maintenanceConfig.details} onChange={handleChange} placeholder="Describe what's happening..." />
-                    </div>
-
-                    <div className="space-y-2">
-                        <Label htmlFor="maintenance-type" className="flex items-center gap-2"><Wrench className="h-4 w-4" />Maintenance Type</Label>
-                        <Select value={maintenanceConfig.type} onValueChange={(value) => setMaintenanceConfig(p => ({ ...p, type: value }))}>
-                            <SelectTrigger id="maintenance-type"><SelectValue /></SelectTrigger>
+                     <div className="space-y-2">
+                        <Label htmlFor="banner-category" className="flex items-center gap-2"><Wrench className="h-4 w-4" />Banner Category</Label>
+                        <Select value={maintenanceConfig.bannerCategory} onValueChange={(value) => setMaintenanceConfig(p => ({ ...p, bannerCategory: value }))}>
+                            <SelectTrigger id="banner-category"><SelectValue /></SelectTrigger>
                             <SelectContent>
                                 <SelectItem value="Security">Security</SelectItem>
                                 <SelectItem value="Feature Update">Feature Update</SelectItem>
@@ -184,38 +220,109 @@ export function DevPanel() {
                             </SelectContent>
                         </Select>
                     </div>
-                    
                     <div className="space-y-2">
-                        <Label htmlFor="post-update-status" className="flex items-center gap-2"><Info className="h-4 w-4" />Post-Update Status</Label>
-                         <Select value={maintenanceConfig.postUpdateStatus} onValueChange={(value) => setMaintenanceConfig(p => ({ ...p, postUpdateStatus: value }))}>
-                            <SelectTrigger id="post-update-status"><SelectValue /></SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="In Progress">In Progress</SelectItem>
-                                <SelectItem value="Completed">Completed</SelectItem>
-                                <SelectItem value="Failed">Failed</SelectItem>
-                            </SelectContent>
-                        </Select>
+                        <Label htmlFor="upcoming-feature-details" className="flex items-center gap-2"><FileText className="h-4 w-4" />Upcoming Feature Details</Label>
+                        <Textarea id="upcoming-feature-details" name="upcomingFeatureDetails" value={maintenanceConfig.upcomingFeatureDetails} onChange={handleChange} placeholder="Describe what's coming..." />
                     </div>
-                    
-                    <div className="space-y-2">
-                        <Label htmlFor="success-message">Success Message</Label>
-                        <Input id="success-message" name="successMessage" value={maintenanceConfig.successMessage} onChange={handleChange} placeholder="The update was successful!"/>
-                    </div>
-                    
-                    <div className="space-y-2">
-                        <Label htmlFor="failure-message">Failure Message</Label>
-                        <Input id="failure-message" name="failureMessage" value={maintenanceConfig.failureMessage} onChange={handleChange} placeholder="The update failed."/>
-                    </div>
-                    
                     <div className="grid grid-cols-2 gap-4 pt-4">
                         <Button variant="outline" onClick={handleClear}>Clear</Button>
                         <Button onClick={handleSave}>Save</Button>
                     </div>
-
                   </div>
                 </AccordionContent>
               </Card>
             </AccordionItem>
+
+            <AccordionItem value="item-3" asChild>
+              <Card>
+                 <CardHeader className="p-4">
+                  <AccordionTrigger className="p-0 hover:no-underline">
+                    <div className="flex items-center gap-3">
+                      <Send className="h-5 w-5" />
+                      <div>
+                        <CardTitle className="text-lg">Global Notification</CardTitle>
+                        <CardDescription>
+                          Update the broadcast message for all users.
+                        </CardDescription>
+                      </div>
+                    </div>
+                  </AccordionTrigger>
+                </CardHeader>
+                <AccordionContent className="px-4 pb-4">
+                    <div className="space-y-4">
+                        <Textarea placeholder="Enter broadcast message..."/>
+                        <Button className="w-full">Send Notification</Button>
+                    </div>
+                </AccordionContent>
+              </Card>
+            </AccordionItem>
+            
+            <AccordionItem value="item-4" asChild>
+              <Card>
+                 <CardHeader className="p-4">
+                  <AccordionTrigger className="p-0 hover:no-underline">
+                    <div className="flex items-center gap-3">
+                      <FileEdit className="h-5 w-5" />
+                      <div>
+                        <CardTitle className="text-lg">Content Management</CardTitle>
+                        <CardDescription>
+                          Edit dynamic text and content for various pages.
+                        </CardDescription>
+                      </div>
+                    </div>
+                  </AccordionTrigger>
+                </CardHeader>
+                 <AccordionContent className="px-4 pb-4">
+                     <p className="text-sm text-muted-foreground">Content management options will be available here.</p>
+                </AccordionContent>
+              </Card>
+            </AccordionItem>
+            
+            <AccordionItem value="item-5" asChild>
+              <Card>
+                 <CardHeader className="p-4">
+                  <AccordionTrigger className="p-0 hover:no-underline">
+                    <div className="flex items-center gap-3">
+                      <Crown className="h-5 w-5" />
+                      <div>
+                        <CardTitle className="text-lg">Premium Info Content</CardTitle>
+                        <CardDescription>
+                          Edit the content of the premium dialog.
+                        </CardDescription>
+                      </div>
+                    </div>
+                  </AccordionTrigger>
+                </CardHeader>
+                 <AccordionContent className="px-4 pb-4">
+                     <p className="text-sm text-muted-foreground">Premium content editing options will be available here.</p>
+                </AccordionContent>
+              </Card>
+            </AccordionItem>
+            
+            <AccordionItem value="item-6" asChild>
+              <Card>
+                 <CardHeader className="p-4">
+                  <AccordionTrigger className="p-0 hover:no-underline">
+                    <div className="flex items-center gap-3">
+                      <Shield className="h-5 w-5" />
+                      <div>
+                        <CardTitle className="text-lg">Security & Data</CardTitle>
+                        <CardDescription>
+                          Manage developer access and clear local data.
+                        </CardDescription>
+                      </div>
+                    </div>
+                  </AccordionTrigger>
+                </CardHeader>
+                <AccordionContent className="px-4 pb-4">
+                    <Button variant="destructive" className="w-full gap-2">
+                        <Trash className="h-4 w-4"/>
+                        Clear All Local Storage
+                    </Button>
+                </AccordionContent>
+              </Card>
+            </AccordionItem>
+            
           </Accordion>
         </main>
       </div>

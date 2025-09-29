@@ -19,6 +19,10 @@ export type MaintenanceConfig = {
     postUpdateStatus: string;
     successMessage: string;
     failureMessage: string;
+    showDashboardBanner: boolean;
+    bannerCategory: string;
+    upcomingFeatureDetails: string;
+    globalNotification: string;
 };
 
 
@@ -48,6 +52,10 @@ const defaultMaintenanceConfig: MaintenanceConfig = {
     postUpdateStatus: 'In Progress',
     successMessage: 'The update was successful! We will be back shortly.',
     failureMessage: 'The update failed. Please try again later.',
+    showDashboardBanner: true,
+    bannerCategory: 'Bug Fix',
+    upcomingFeatureDetails: '1. bug fix\n2. may be some feature not working',
+    globalNotification: '',
 };
 
 export const MaintenanceProvider = ({ children }: { children: ReactNode }) => {
@@ -65,7 +73,9 @@ export const MaintenanceProvider = ({ children }: { children: ReactNode }) => {
       
       if (savedMaintenance) setMaintenanceModeState(JSON.parse(savedMaintenance));
       if (savedDevMode) setDevModeState(JSON.parse(savedDevMode));
-      if (savedConfig) setMaintenanceConfig(JSON.parse(savedConfig));
+      if (savedConfig) {
+        setMaintenanceConfig(prev => ({...prev, ...JSON.parse(savedConfig)}));
+      }
 
     } catch (error) {
       console.error("Failed to load state from localStorage", error);
