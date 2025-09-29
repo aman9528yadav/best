@@ -42,7 +42,7 @@ export function Calculator() {
       return;
     }
     // If current display is an operator, replace it
-    if (['+', '-', '×', '÷', '^'].includes(display) || display.endsWith('(')) {
+    if (['+', '-', '×', '÷', '^'].includes(display) || expression.endsWith('(')) {
        setDisplay(value);
     } else if (display === '0' && value !== '.') {
       setDisplay(value);
@@ -158,29 +158,28 @@ export function Calculator() {
   };
 
   const handleSciFunction = (func: string) => {
-    if (display === 'Error') return;
+    if (display === 'Error') {
+        setDisplay(`${func}(`);
+        setExpression(`${func}(`);
+        return;
+    }
+
     const currentDisplayIsOperator = ['+', '-', '×', '÷', '^'].includes(display);
     
-    // Find the last number in the expression
-    const operators = /([+\-×÷^()])/;
-    const parts = expression.split(operators);
-    const lastNumber = parts.filter(p => p && !isNaN(parseFloat(p))).pop() || '';
-    
-    if (currentDisplayIsOperator) {
+    if (display === '0' || currentDisplayIsOperator || expression.endsWith('(')) {
         setDisplay(`${func}(`);
-        setExpression(`${expression}${func}(`);
-    } else {
-        const startIndex = expression.lastIndexOf(lastNumber);
-        if (startIndex > -1) {
-            const newExpression = `${expression.substring(0, startIndex)}${func}(${lastNumber}`;
-            setExpression(newExpression);
-            setDisplay(`${func}(${lastNumber}`);
+        if (display === '0' && expression ==='0') {
+             setExpression(`${func}(`);
+        } else if (currentDisplayIsOperator || expression.endsWith('(')) {
+             setExpression(expression + `${func}(`);
         } else {
-            setExpression(`${func}(${expression}`);
-            setDisplay(`${func}(${display}`);
+            setExpression(`${func}(`);
         }
+    } else {
+        setExpression(expression + `${func}(`);
+        setDisplay(`${func}(`);
     }
-  };
+};
 
   const handleRestoreHistory = (item: CalculatorHistoryItem) => {
     setExpression(item.expression);
