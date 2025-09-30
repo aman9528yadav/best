@@ -7,7 +7,7 @@ body {
 }
 
 @layer base {
-  :root, .theme-sutradhaar {
+  :root {
     --background: 240 10% 97.5%;
     --foreground: 240 5% 15%;
     --card: 0 0% 100%;
@@ -35,7 +35,8 @@ body {
     --radius: 0.5rem;
     --color-primary: hsl(var(--primary));
   }
-  .dark:is(.theme-sutradhaar) {
+ 
+  .dark {
     --background: 240 5% 10%;
     --foreground: 0 0% 98%;
     --card: 240 5% 10%;
@@ -62,6 +63,49 @@ body {
     --chart-5: 340 75% 55%;
   }
 
+  .theme-sutradhaar {
+    --background: 240 10% 97.5%;
+    --foreground: 240 5% 15%;
+    --card: 0 0% 100%;
+    --card-foreground: 240 5% 15%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 5% 15%;
+    --primary: 259 87% 60%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 240 4.8% 95.9%;
+    --secondary-foreground: 240 5.9% 10%;
+    --muted: 240 4.8% 95.9%;
+    --muted-foreground: 240 3.8% 46.1%;
+    --accent: 259 34% 95%;
+    --accent-foreground: 259 34% 40%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 240 5.9% 90%;
+    --input: 240 5.9% 90%;
+    --ring: 259 87% 60%;
+  }
+  .dark.theme-sutradhaar {
+    --background: 240 5% 10%;
+    --foreground: 0 0% 98%;
+    --card: 240 5% 10%;
+    --card-foreground: 0 0% 98%;
+    --popover: 240 5% 10%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 259 87% 60%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 240 3.7% 15.9%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 240 3.7% 15.9%;
+    --muted-foreground: 240 5% 64.9%;
+    --accent: 240 3.7% 15.9%;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 240 3.7% 15.9%;
+    --input: 240 3.7% 15.9%;
+    --ring: 259 87% 70%;
+  }
+
   .theme-forest {
     --background: 120 15% 96%;
     --foreground: 120 25% 10%;
@@ -83,7 +127,7 @@ body {
     --input: 130 10% 88%;
     --ring: 130 60% 40%;
   }
-  .dark:is(.theme-forest) {
+  .dark.theme-forest {
     --background: 120 25% 8%;
     --foreground: 120 10% 96%;
     --card: 120 25% 8%;
@@ -126,7 +170,7 @@ body {
     --input: 210 20% 88%;
     --ring: 210 70% 50%;
   }
-  .dark:is(.theme-ocean) {
+  .dark.theme-ocean {
     --background: 215 30% 10%;
     --foreground: 210 15% 95%;
     --card: 215 30% 10%;
@@ -169,7 +213,7 @@ body {
     --input: 25 15% 88%;
     --ring: 30 80% 55%;
   }
-  .dark:is(.theme-sunset) {
+  .dark.theme-sunset {
     --background: 25 30% 9%;
     --foreground: 20 15% 96%;
     --card: 25 30% 9%;
