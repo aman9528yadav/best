@@ -5,7 +5,7 @@
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { Wrench, Rocket, User, Languages, Bug, Icon as LucideIcon, GitBranch, Sparkles } from 'lucide-react';
-import { get, ref, onValue, set } from 'firebase/database';
+import { ref, onValue, set, get } from 'firebase/database';
 import { rtdb } from '@/lib/firebase';
 
 export type UpdateItem = {
@@ -241,7 +241,6 @@ export const MaintenanceProvider = ({ children }: { children: ReactNode }) => {
         if (snapshot.exists()) {
             setMaintenanceConfigState(snapshot.val());
         } else {
-            // Data doesn't exist, so create it with default values
             set(configRef, defaultMaintenanceConfig).catch(err => console.error("Error creating default config", err));
             setMaintenanceConfigState(defaultMaintenanceConfig);
         }
@@ -282,7 +281,7 @@ export const MaintenanceProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const resetMaintenanceConfig = () => {
-    updateMaintenanceConfigInDb(defaultMaintenanceConfig);
+    setMaintenanceConfig(defaultMaintenanceConfig);
   }
 
   const addUpdateItem = (item: Omit<UpdateItem, 'id'>) => {
@@ -370,37 +369,31 @@ export const MaintenanceWrapper = ({ children }: { children: ReactNode }) => {
     const pathname = usePathname();
 
     useEffect(() => {
-        if (isLoading) return; // Don't perform redirects until the config is loaded
+        if (isLoading) return; 
 
-        const { globalMaintenance, individualPages } = maintenanceConfig;
+        const isUnderMaintenance = maintenanceConfig.globalMaintenance;
+        const isMaintenancePage = pathname === '/maintenance';
+        const isAllowedPath = isMaintenancePage || (isDevMode && (pathname.startsWith('/dev') || pathname === '/settings'));
 
-        const allowedPaths = ['/maintenance', '/login'];
-        if (isDevMode) {
-          allowedPaths.push('/dev', '/settings', '/profile/edit', '/dev/manage-updates', '/dev/manage-about');
-        }
-        
-        const isIndividuallyMaintained = individualPages?.includes(pathname) ?? false;
-        
-        const isPathAllowed = allowedPaths.some(p => pathname.startsWith(p));
-        const isInMaintenance = globalMaintenance || isIndividuallyMaintained;
-
-        if (isInMaintenance && !isPathAllowed) {
+        if (isUnderMaintenance && !isAllowedPath) {
             router.replace('/maintenance');
         }
+
+        if (!isUnderMaintenance && isMaintenancePage) {
+            router.replace('/');
+        }
+
     }, [maintenanceConfig, pathname, router, isLoading, isDevMode]);
 
     if (isLoading) {
-        // You can return a global loader here if you want
         return null;
     }
     
-    const { globalMaintenance, individualPages } = maintenanceConfig;
-    const isIndividuallyMaintained = individualPages?.includes(pathname) ?? false;
-    const isPathAllowed = ['/maintenance', '/login', '/dev'].some(p => pathname.startsWith(p)) || (isDevMode && ['/settings', '/profile/edit', '/dev/manage-updates', '/dev/manage-about'].some(p => pathname.startsWith(p)));
-
-    if ((globalMaintenance || isIndividuallyMaintained) && !isPathAllowed) {
-        return null; // Render nothing while redirecting
+    if (maintenanceConfig.globalMaintenance && !pathname.startsWith('/maintenance') && !(isDevMode && (pathname.startsWith('/dev') || pathname === '/settings'))) {
+      return null;
     }
     
     return <>{children}</>;
 };
+
+    
