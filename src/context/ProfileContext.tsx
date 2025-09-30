@@ -13,6 +13,7 @@ export type UserStats = {
   lastConversionDate: string | null;
   lastAppOpenDate: string | null;
   streak: number;
+  daysActive: number;
 };
 
 export type NoteItem = {
@@ -65,6 +66,7 @@ const defaultStats: UserStats = {
     lastConversionDate: null,
     lastAppOpenDate: null,
     streak: 0,
+    daysActive: 0,
 };
 
 const getInitialProfile = (): UserProfile => {
@@ -260,8 +262,10 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
         
         if (lastOpen && isYesterday(lastOpen)) {
             newStats.streak = (newStats.streak || 0) + 1;
+            newStats.daysActive = (newStats.daysActive || 0) + 1;
         } else if (!lastOpen || !isToday(lastOpen)) {
             newStats.streak = 1;
+            newStats.daysActive = (newStats.daysActive || 0) + 1;
         }
 
         newStats.lastAppOpenDate = today.toISOString();

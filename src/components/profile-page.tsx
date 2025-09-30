@@ -63,8 +63,9 @@ export function ProfilePage() {
     const { history } = useHistory();
     const { user, logout } = useAuth();
     
-    const totalConversions = history.filter(item => item.type === 'conversion').length;
-    const daysActive = new Set(history.map(item => new Date(item.timestamp).toDateString())).size;
+    const { allTimeConversions = 0, daysActive = 0 } = profile.stats || {};
+    const totalNotes = profile.notes.filter(n => !n.isTrashed).length;
+
 
     const displayName = user?.displayName || profile.name;
     const displayEmail = user?.email || profile.email;
@@ -134,13 +135,13 @@ export function ProfilePage() {
             <div className="grid grid-cols-3 gap-4 text-center">
                 <Card>
                     <CardContent className="p-3">
-                        <div className="text-xl font-bold">{totalConversions}</div>
+                        <div className="text-xl font-bold">{allTimeConversions}</div>
                         <div className="text-xs text-muted-foreground">Conversions</div>
                     </CardContent>
                 </Card>
                 <Card>
                     <CardContent className="p-3">
-                        <div className="text-xl font-bold">3</div>
+                        <div className="text-xl font-bold">{totalNotes}</div>
                         <div className="text-xs text-muted-foreground">Notes</div>
                     </CardContent>
                 </Card>

@@ -98,16 +98,18 @@ export function AnalyticsPage() {
     }
 
     const analyticsData = useMemo(() => {
+        const { allTimeConversions = 0, streak = 0 } = profile.stats || {};
+        
         const conversions = history.filter(h => h.type === 'conversion');
         const calculatorOps = history.filter(h => h.type === 'calculator');
-        const dateCalculations = history.filter(h => h.type === 'date_calculation').length;
+        const dateCalculations = history.filter(h => h.type === 'date_calculation');
         
         const conversionsToday = getCountForDay(conversions, isToday);
         const conversionsYesterday = getCountForDay(conversions, isYesterday);
         const calculatorOpsToday = getCountForDay(calculatorOps, isToday);
         const calculatorOpsYesterday = getCountForDay(calculatorOps, isYesterday);
-        const dateCalculationsToday = getCountForDay(history.filter(h => h.type === 'date_calculation'), isToday);
-        const dateCalculationsYesterday = getCountForDay(history.filter(h => h.type === 'date_calculation'), isYesterday);
+        const dateCalculationsToday = getCountForDay(dateCalculations, isToday);
+        const dateCalculationsYesterday = getCountForDay(dateCalculations, isYesterday);
         
         const calcPercentageChange = (todayCount: number, yesterdayCount: number) => {
             if (yesterdayCount === 0) return todayCount > 0 ? 100 : 0;
@@ -116,7 +118,7 @@ export function AnalyticsPage() {
 
         return {
             totalConversions: {
-                value: conversions.length,
+                value: allTimeConversions,
                 change: calcPercentageChange(conversionsToday, conversionsYesterday)
             },
             calculatorOps: {
@@ -124,15 +126,15 @@ export function AnalyticsPage() {
                 change: calcPercentageChange(calculatorOpsToday, calculatorOpsYesterday)
             },
             dateCalculations: { 
-                value: dateCalculations, 
+                value: dateCalculations.length, 
                 change: calcPercentageChange(dateCalculationsToday, dateCalculationsYesterday)
             },
-            currentStreak: { value: profile.stats.streak, description: `Best: ${profile.stats.streak} days` },
-            savedNotes: { value: 3, change: 0 }, // Placeholder
-            recycleBin: { value: 5, description: 'Items in bin' }, // Placeholder
+            currentStreak: { value: streak, description: `Best: ${streak} days` },
+            savedNotes: { value: profile.notes.filter(n => !n.isTrashed).length, change: 0 },
+            recycleBin: { value: profile.notes.filter(n => n.isTrashed).length, description: 'Items in bin' }, 
             favoriteConversions: { value: favorites.length, description: 'Your top conversions' },
         };
-    }, [history, favorites, profile.stats.streak, getCountForDay]);
+    }, [history, favorites, profile]);
 
     const lastActivities = history.slice(0, 2).map(item => {
         let title = '';
