@@ -110,7 +110,7 @@ const defaultMaintenanceConfig: MaintenanceConfig = {
     maintenanceMessage: "We're currently performing scheduled maintenance to improve our services. We're working as quickly as possible to restore service.",
     updateItems: [
         {
-            id: 'update-1',
+            id: 'update-1-unique',
             icon: 'Wrench',
             title: 'Bug fix and stable',
             date: '10 September, 2025',
@@ -118,7 +118,7 @@ const defaultMaintenanceConfig: MaintenanceConfig = {
             tags: ['Bug Fix', 'Beta 1.3'],
         },
         {
-            id: 'update-2',
+            id: 'update-2-unique',
             icon: 'Rocket',
             title: 'Live sync by email',
             date: '7 September, 2025',
@@ -229,11 +229,13 @@ export const MaintenanceProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const deleteUpdateItem = (id: string) => {
-    setMaintenanceConfig(prev => ({...prev, updateItems: prev.updateItems.filter(i => i.id !== id)}));
+    const newConfig = {...maintenanceConfig, updateItems: maintenanceConfig.updateItems.filter(i => i.id !== id)};
+    setMaintenanceConfig(newConfig);
   };
   
   const clearAllUpdateItems = () => {
-    setMaintenanceConfig(prev => ({...prev, updateItems: []}));
+    const newConfig = {...maintenanceConfig, updateItems: []};
+    setMaintenanceConfig(newConfig);
   }
 
   const addRoadmapItem = (item: Omit<RoadmapItem, 'id'>) => {
@@ -252,17 +254,25 @@ export const MaintenanceProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const deleteRoadmapItem = (id: string) => {
-    setMaintenanceConfig(prev => ({
-        ...prev,
-        aboutPageContent: {...prev.aboutPageContent, roadmap: prev.aboutPageContent.roadmap.filter(i => i.id !== id)},
-    }));
+    const newConfig = {
+      ...maintenanceConfig,
+      aboutPageContent: {
+        ...maintenanceConfig.aboutPageContent,
+        roadmap: maintenanceConfig.aboutPageContent.roadmap.filter(i => i.id !== id)
+      }
+    };
+    setMaintenanceConfig(newConfig);
   };
   
   const clearAllRoadmapItems = () => {
-    setMaintenanceConfig(prev => ({
-        ...prev,
-        aboutPageContent: {...prev.aboutPageContent, roadmap: []},
-    }));
+    const newConfig = {
+      ...maintenanceConfig,
+      aboutPageContent: {
+        ...maintenanceConfig.aboutPageContent,
+        roadmap: []
+      }
+    };
+    setMaintenanceConfig(newConfig);
   }
 
 
