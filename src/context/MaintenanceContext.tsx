@@ -108,7 +108,7 @@ const defaultMaintenanceConfig: MaintenanceConfig = {
     maintenanceMessage: "We're currently performing scheduled maintenance to improve our services. We're working as quickly as possible to restore service.",
     updateItems: [
         {
-            id: '1',
+            id: 'update-1',
             icon: 'Wrench',
             title: 'Bug fix and stable',
             date: '10 September, 2025',
@@ -116,7 +116,7 @@ const defaultMaintenanceConfig: MaintenanceConfig = {
             tags: ['Bug Fix', 'Beta 1.3'],
         },
         {
-            id: '2',
+            id: 'update-2',
             icon: 'Rocket',
             title: 'Live sync by email',
             date: '7 September, 2025',
