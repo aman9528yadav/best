@@ -10,6 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Eye, EyeOff, ArrowRight, ArrowLeft, UserPlus } from 'lucide-react';
 import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
+import { useToast } from '@/hooks/use-toast';
 
 const GoogleIcon = (props: React.SVGProps<SVGSVGElement>) => (
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="24px" height="24px" {...props}>
@@ -24,14 +25,41 @@ const GoogleIcon = (props: React.SVGProps<SVGSVGElement>) => (
 export function LoginPage({ onLoginSuccess }: { onLoginSuccess: () => void }) {
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [confirmPasswordVisible, setConfirmPasswordVisible] = useState(false);
-  const { signInWithGoogle } = useAuth();
+  
+  const [loginEmail, setLoginEmail] = useState('');
+  const [loginPassword, setLoginPassword] = useState('');
+  
+  const [signupFullName, setSignupFullName] = useState('');
+  const [signupUsername, setSignupUsername] = useState('');
+  const [signupEmail, setSignupEmail] = useState('');
+  const [signupPassword, setSignupPassword] = useState('');
+  const [signupConfirmPassword, setSignupConfirmPassword] = useState('');
 
-  const handleLogin = (e: React.FormEvent) => {
+  const { signInWithGoogle, signInWithEmail, signUpWithEmail } = useAuth();
+  const { toast } = useToast();
+
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    // For now, we'll just call the success handler.
-    // A real implementation would validate credentials.
-    onLoginSuccess();
+    if (!loginEmail || !loginPassword) {
+        toast({ title: "Missing Fields", description: "Please enter both email and password.", variant: "destructive" });
+        return;
+    }
+    await signInWithEmail(loginEmail, loginPassword);
   }
+
+  const handleSignUp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!signupEmail || !signupPassword || !signupConfirmPassword) {
+        toast({ title: "Missing Fields", description: "Please fill out all password fields.", variant: "destructive" });
+        return;
+    }
+    if (signupPassword !== signupConfirmPassword) {
+        toast({ title: "Passwords Do Not Match", description: "Please ensure your passwords match.", variant: "destructive" });
+        return;
+    }
+    await signUpWithEmail(signupEmail, signupPassword);
+  }
+
 
   const handleGoogleSignIn = async () => {
     await signInWithGoogle();
@@ -57,12 +85,12 @@ export function LoginPage({ onLoginSuccess }: { onLoginSuccess: () => void }) {
               <form onSubmit={handleLogin} className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="email">Email or Username</Label>
-                  <Input id="email" type="email" placeholder="name@example.com" className="bg-white/70" />
+                  <Input id="email" type="email" placeholder="name@example.com" className="bg-white/70" value={loginEmail} onChange={(e) => setLoginEmail(e.target.value)} />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="password">Password</Label>
                   <div className="relative">
-                    <Input id="password" type={passwordVisible ? 'text' : 'password'} placeholder="********" className="bg-white/70" />
+                    <Input id="password" type={passwordVisible ? 'text' : 'password'} placeholder="********" className="bg-white/70" value={loginPassword} onChange={(e) => setLoginPassword(e.target.value)} />
                     <Button
                       type="button"
                       variant="ghost"
@@ -117,23 +145,23 @@ export function LoginPage({ onLoginSuccess }: { onLoginSuccess: () => void }) {
                     </p>
                 </div>
 
-                <div className="space-y-4">
+                <form onSubmit={handleSignUp} className="space-y-4">
                     <div className="space-y-2">
                         <Label htmlFor="full-name">Full Name</Label>
-                        <Input id="full-name" type="text" placeholder="Aman Yadav" className="bg-white/70" />
+                        <Input id="full-name" type="text" placeholder="Aman Yadav" className="bg-white/70" value={signupFullName} onChange={(e) => setSignupFullName(e.target.value)} />
                     </div>
                      <div className="space-y-2">
                         <Label htmlFor="username">Username</Label>
-                        <Input id="username" type="text" placeholder="e.g. aman_y" className="bg-white/70" />
+                        <Input id="username" type="text" placeholder="e.g. aman_y" className="bg-white/70" value={signupUsername} onChange={(e) => setSignupUsername(e.target.value)} />
                     </div>
                      <div className="space-y-2">
                         <Label htmlFor="signup-email">Email</Label>
-                        <Input id="signup-email" type="email" placeholder="you@domain.com" className="bg-white/70" />
+                        <Input id="signup-email" type="email" placeholder="you@domain.com" className="bg-white/70" value={signupEmail} onChange={(e) => setSignupEmail(e.target.value)} />
                     </div>
                     <div className="space-y-2">
                         <Label htmlFor="signup-password">Password</Label>
                         <div className="relative">
-                            <Input id="signup-password" type={passwordVisible ? 'text' : 'password'} placeholder="Create a strong password" className="bg-white/70" />
+                            <Input id="signup-password" type={passwordVisible ? 'text' : 'password'} placeholder="Create a strong password" className="bg-white/70" value={signupPassword} onChange={(e) => setSignupPassword(e.target.value)} />
                             <Button type="button" variant="ghost" size="icon" className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 text-muted-foreground" onClick={() => setPasswordVisible(!passwordVisible)}>
                                 {passwordVisible ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                             </Button>
@@ -142,21 +170,20 @@ export function LoginPage({ onLoginSuccess }: { onLoginSuccess: () => void }) {
                     <div className="space-y-2">
                         <Label htmlFor="confirm-password">Confirm Password</Label>
                         <div className="relative">
-                            <Input id="confirm-password" type={confirmPasswordVisible ? 'text' : 'password'} placeholder="Re-enter your password" className="bg-white/70" />
+                            <Input id="confirm-password" type={confirmPasswordVisible ? 'text' : 'password'} placeholder="Re-enter your password" className="bg-white/70" value={signupConfirmPassword} onChange={(e) => setSignupConfirmPassword(e.target.value)} />
                             <Button type="button" variant="ghost" size="icon" className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 text-muted-foreground" onClick={() => setConfirmPasswordVisible(!confirmPasswordVisible)}>
                                 {confirmPasswordVisible ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                             </Button>
                         </div>
                     </div>
-                </div>
-
-                <div className="flex items-center justify-between">
-                    <Button variant="link" className="text-muted-foreground">Skip for now</Button>
-                    <Button onClick={onLoginSuccess} className="gap-2">
-                         <UserPlus className="h-4 w-4" />
-                         Sign Up
-                    </Button>
-                </div>
+                     <div className="flex items-center justify-between pt-2">
+                        <Button variant="link" className="text-muted-foreground">Skip for now</Button>
+                        <Button type="submit" className="gap-2">
+                             <UserPlus className="h-4 w-4" />
+                             Sign Up
+                        </Button>
+                    </div>
+                </form>
                  <p className="text-center text-xs text-muted-foreground px-4">
                     By creating an account, you agree to our{' '}
                     <Link href="#" className="text-primary hover:underline">
