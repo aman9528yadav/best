@@ -63,7 +63,7 @@ body {
     --chart-5: 340 75% 55%;
   }
 
-  .theme-sutradhaar {
+  html.theme-sutradhaar {
     --background: 240 10% 97.5%;
     --foreground: 240 5% 15%;
     --card: 0 0% 100%;
@@ -84,7 +84,7 @@ body {
     --input: 240 5.9% 90%;
     --ring: 259 87% 60%;
   }
-  .dark.theme-sutradhaar {
+  html.dark.theme-sutradhaar {
     --background: 240 5% 10%;
     --foreground: 0 0% 98%;
     --card: 240 5% 10%;
@@ -106,7 +106,7 @@ body {
     --ring: 259 87% 70%;
   }
 
-  .theme-forest {
+  html.theme-forest {
     --background: 120 15% 96%;
     --foreground: 120 25% 10%;
     --card: 120 10% 100%;
@@ -127,7 +127,7 @@ body {
     --input: 130 10% 88%;
     --ring: 130 60% 40%;
   }
-  .dark.theme-forest {
+  html.dark.theme-forest {
     --background: 120 25% 8%;
     --foreground: 120 10% 96%;
     --card: 120 25% 8%;
@@ -149,7 +149,7 @@ body {
     --ring: 130 55% 55%;
   }
 
-  .theme-ocean {
+  html.theme-ocean {
     --background: 205 20% 95%;
     --foreground: 215 30% 15%;
     --card: 210 10% 100%;
@@ -170,7 +170,7 @@ body {
     --input: 210 20% 88%;
     --ring: 210 70% 50%;
   }
-  .dark.theme-ocean {
+  html.dark.theme-ocean {
     --background: 215 30% 10%;
     --foreground: 210 15% 95%;
     --card: 215 30% 10%;
@@ -192,7 +192,7 @@ body {
     --ring: 210 65% 60%;
   }
   
-  .theme-sunset {
+  html.theme-sunset {
     --background: 20 20% 96%;
     --foreground: 25 30% 12%;
     --card: 15 10% 100%;
@@ -213,7 +213,7 @@ body {
     --input: 25 15% 88%;
     --ring: 30 80% 55%;
   }
-  .dark.theme-sunset {
+  html.dark.theme-sunset {
     --background: 25 30% 9%;
     --foreground: 20 15% 96%;
     --card: 25 30% 9%;
