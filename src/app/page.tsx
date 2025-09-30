@@ -112,7 +112,7 @@ const discoverItems = [
 
 export default function DashboardPage() {
   const { maintenanceConfig, isLoading: isMaintenanceLoading } = useMaintenance();
-  const { profile } = useProfile();
+  const { profile, isLoading: isProfileLoading } = useProfile();
   const [isLoading, setIsLoading] = useState(true);
   const [showMore, setShowMore] = useState(false);
 
@@ -124,7 +124,7 @@ export default function DashboardPage() {
     return () => clearTimeout(timer);
   }, []);
 
-  if (isMaintenanceLoading || isLoading) {
+  if (isMaintenanceLoading || isProfileLoading || isLoading) {
     return (
       <div className="flex flex-col items-center w-full min-h-screen bg-background text-foreground">
         <div className="w-full max-w-[412px] flex flex-col flex-1">
@@ -140,7 +140,7 @@ export default function DashboardPage() {
   }
 
   const { appInfo, ownerInfo, updateItems } = maintenanceConfig;
-  const { allTimeConversions, todayConversions, streak } = profile.stats;
+  const { allTimeConversions = 0, todayConversions = 0, streak = 0 } = profile.stats || {};
 
   const visibleQuickAccessItems = showMore ? quickAccessItems : quickAccessItems.slice(0, 6);
   const whatsNewItems = (updateItems || []).slice(0, 2);
@@ -367,5 +367,7 @@ export default function DashboardPage() {
     
 
 
+
+    
 
     
