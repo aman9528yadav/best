@@ -1,10 +1,8 @@
-
 // Import the functions you need from the SDKs you need
 import { initializeApp, getApps, getApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 
 // Your web app's Firebase configuration
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
   apiKey: "AIzaSyDZfCpW_TklzEgDN4KEHFg9hEjZO8ChahA",
   authDomain: "aman-dc411.firebaseapp.com",
