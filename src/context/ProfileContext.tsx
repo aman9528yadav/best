@@ -64,54 +64,71 @@ const getInitialProfile = (): UserProfile => {
   };
 };
 
+const guestProfileDefault: UserProfile = {
+    name: "Guest User",
+    email: "",
+    phone: "",
+    address: "",
+    birthday: "",
+    skills: [],
+    socialLinks: {
+        linkedin: "",
+        twitter: "",
+        github: "",
+        instagram: "",
+    },
+    stats: defaultStats
+}
+
 export const ProfileProvider = ({ children }: { children: ReactNode }) => {
   const [profile, setProfileState] = useState<UserProfile>(getInitialProfile());
   const [isLoading, setIsLoading] = useState(true);
   const { user, loading: authLoading } = useAuth();
 
   useEffect(() => {
-    // Handle guest users (not logged in)
-    if (!authLoading && !user) {
-      try {
-        const savedProfile = localStorage.getItem('unitwise_profile');
-        if (savedProfile) {
-          setProfileState(JSON.parse(savedProfile));
-        } else {
-          // For guests, use a richer default profile
-          const guestProfile = {
-            name: "Aman Yadav",
-            email: "amanyadavyadav9458@gmail.com",
-            phone: "+91 7037652730",
-            address: "Manirampur bewar",
-            birthday: "December 5th, 2025",
-            skills: ["React", "developed"],
-            socialLinks: {
-              linkedin: "#",
-              twitter: "#",
-              github: "#",
-              instagram: "#",
-            },
-            stats: defaultStats,
-          };
-          setProfileState(guestProfile);
+    // This effect runs when auth state is resolved.
+    if (!authLoading) {
+      if (user) {
+        // User is logged in, do nothing here. The other useEffect will handle Firestore.
+      } else {
+        // User is a guest. Load from localStorage.
+        try {
+          const savedProfile = localStorage.getItem('unitwise_profile');
+          if (savedProfile) {
+            const parsedProfile = JSON.parse(savedProfile);
+            // Ensure stats object is not missing
+            if (!parsedProfile.stats) {
+              parsedProfile.stats = defaultStats;
+            }
+            setProfileState(parsedProfile);
+          } else {
+            setProfileState(guestProfileDefault);
+          }
+        } catch (error) {
+          console.error("Failed to load guest profile from localStorage", error);
+          setProfileState(guestProfileDefault);
+        } finally {
+            setIsLoading(false);
         }
-      } catch (error) {
-        console.error("Failed to load profile from localStorage", error);
-        setProfileState(getInitialProfile());
       }
-      setIsLoading(false);
     }
   }, [authLoading, user]);
 
   useEffect(() => {
-    // Handle authenticated users
+    // This effect handles Firestore subscription for logged-in users.
     if (user) {
+      setIsLoading(true);
       const docRef = doc(db, 'users', user.uid);
       
       const unsubscribe = onSnapshot(docRef, async (snapshot) => {
         if (snapshot.exists()) {
           const fetchedData = snapshot.data() as UserProfile;
           const today = startOfDay(new Date()).toISOString().split('T')[0];
+          
+          if (!fetchedData.stats) {
+            fetchedData.stats = defaultStats;
+          }
+
           if (fetchedData.stats.lastConversionDate !== today) {
             fetchedData.stats.todayConversions = 0;
           }
@@ -137,14 +154,14 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
   }, [user]);
 
 
-  const setProfile = async (newProfile: UserProfile) => {
+  const setProfile = async (newProfileData: UserProfile | ((prevState: UserProfile) => UserProfile)) => {
+    const newProfile = typeof newProfileData === 'function' ? newProfileData(profile) : newProfileData;
     setProfileState(newProfile);
+    
     if (user) {
-        // Save to Firestore for logged-in users
         const docRef = doc(db, 'users', user.uid);
         await setDoc(docRef, newProfile, { merge: true });
     } else {
-        // Save to localStorage for guests
         try {
           localStorage.setItem('unitwise_profile', JSON.stringify(newProfile));
         } catch (error) {
@@ -154,41 +171,34 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const updateStatsForNewConversion = () => {
-    setProfileState(prevProfile => {
-      const today = startOfDay(new Date());
-      const newStats = { ...prevProfile.stats };
+    const newStats = {...profile.stats};
+    const today = startOfDay(new Date());
 
-      newStats.allTimeConversions += 1;
-      
-      const lastDate = prevProfile.stats.lastConversionDate ? startOfDay(new Date(prevProfile.stats.lastConversionDate)) : null;
-      
-      if (lastDate && isToday(lastDate)) {
-        newStats.todayConversions += 1;
-      } else {
+    newStats.allTimeConversions = (newStats.allTimeConversions || 0) + 1;
+
+    const lastDate = newStats.lastConversionDate ? startOfDay(new Date(newStats.lastConversionDate)) : null;
+
+    if (lastDate && isToday(lastDate)) {
+        newStats.todayConversions = (newStats.todayConversions || 0) + 1;
+    } else {
         newStats.todayConversions = 1;
-      }
-
-      if (lastDate && differenceInCalendarDays(today, lastDate) === 1) {
-        newStats.streak += 1;
-      } else if (!lastDate || differenceInCalendarDays(today, lastDate) > 1) {
+    }
+    
+    if (lastDate && differenceInCalendarDays(today, lastDate) === 1) {
+        newStats.streak = (newStats.streak || 0) + 1;
+    } else if (!lastDate || differenceInCalendarDays(today, lastDate) > 1) {
         newStats.streak = 1;
-      }
-      
-      newStats.lastConversionDate = today.toISOString();
+    }
 
-      const updatedProfile = { ...prevProfile, stats: newStats };
-      
-      // Asynchronously update the database/localStorage
-      setProfile(updatedProfile);
-
-      return updatedProfile;
-    });
-  };
+    newStats.lastConversionDate = today.toISOString();
+    
+    setProfile(prevProfile => ({ ...prevProfile, stats: newStats }));
+};
 
 
   return (
     <ProfileContext.Provider value={{ profile, setProfile, updateStatsForNewConversion, isLoading }}>
-      {!isLoading ? children : null}
+      {children}
     </ProfileContext.Provider>
   );
 };
