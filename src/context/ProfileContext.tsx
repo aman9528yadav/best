@@ -2,7 +2,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
-import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
+import { doc, getDoc, setDoc, onSnapshot } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useAuth } from './AuthContext';
 import { isToday, differenceInCalendarDays, startOfDay } from 'date-fns';
@@ -34,6 +34,7 @@ type ProfileContextType = {
   profile: UserProfile;
   setProfile: (profile: UserProfile) => void;
   updateStatsForNewConversion: () => void;
+  isLoading: boolean;
 };
 
 const ProfileContext = createContext<ProfileContextType | undefined>(undefined);
@@ -64,56 +65,60 @@ const getInitialProfile = (): UserProfile => {
 };
 
 export const ProfileProvider = ({ children }: { children: ReactNode }) => {
-  const [isLoaded, setIsLoaded] = useState(false);
   const [profile, setProfileState] = useState<UserProfile>(getInitialProfile());
-  const { user, loading } = useAuth();
+  const [isLoading, setIsLoading] = useState(true);
+  const { user, loading: authLoading } = useAuth();
 
   useEffect(() => {
-    const loadProfile = async () => {
-        if (user) {
-            const docRef = doc(db, 'users', user.uid);
-            const docSnap = await getDoc(docRef);
-
-            if (docSnap.exists()) {
-                const fetchedData = docSnap.data() as UserProfile;
-                 // Check and reset todayConversions if last conversion was not today
-                const today = startOfDay(new Date()).toISOString().split('T')[0];
-                if (fetchedData.stats.lastConversionDate !== today) {
-                    fetchedData.stats.todayConversions = 0;
-                }
-                setProfileState(fetchedData);
-            } else {
-                // Create a new profile for a new user
-                const newProfile: UserProfile = {
-                    ...getInitialProfile(),
-                    email: user.email || '',
-                    name: user.displayName || 'New User',
-                };
-                await setDoc(docRef, newProfile);
-                setProfileState(newProfile);
-            }
+    // Handle guest users (not logged in)
+    if (!authLoading && !user) {
+      try {
+        const savedProfile = localStorage.getItem('unitwise_profile');
+        if (savedProfile) {
+          setProfileState(JSON.parse(savedProfile));
         } else {
-            // Load from localStorage for guest users
-            try {
-              const savedProfile = localStorage.getItem('unitwise_profile');
-              if (savedProfile) {
-                setProfileState(JSON.parse(savedProfile));
-              } else {
-                setProfileState(getInitialProfile());
-              }
-            } catch (error) {
-              console.error("Failed to load profile from localStorage", error);
-              setProfileState(getInitialProfile());
-            }
+          setProfileState(getInitialProfile());
         }
-         setIsLoaded(true);
-    };
-
-    if(!loading) {
-       loadProfile();
+      } catch (error) {
+        console.error("Failed to load profile from localStorage", error);
+        setProfileState(getInitialProfile());
+      }
+      setIsLoading(false);
     }
+  }, [authLoading, user]);
 
-  }, [user, loading]);
+  useEffect(() => {
+    // Handle authenticated users
+    if (user) {
+      const docRef = doc(db, 'users', user.uid);
+      
+      const unsubscribe = onSnapshot(docRef, async (snapshot) => {
+        if (snapshot.exists()) {
+          const fetchedData = snapshot.data() as UserProfile;
+          const today = startOfDay(new Date()).toISOString().split('T')[0];
+          if (fetchedData.stats.lastConversionDate !== today) {
+            fetchedData.stats.todayConversions = 0;
+          }
+          setProfileState(fetchedData);
+        } else {
+          // Create a new profile for a new user if it doesn't exist
+          const newProfile: UserProfile = {
+            ...getInitialProfile(),
+            email: user.email || '',
+            name: user.displayName || 'New User',
+          };
+          await setDoc(docRef, newProfile);
+          setProfileState(newProfile);
+        }
+        setIsLoading(false);
+      }, (error) => {
+        console.error("Error listening to profile changes:", error);
+        setIsLoading(false);
+      });
+
+      return () => unsubscribe();
+    }
+  }, [user]);
 
 
   const setProfile = async (newProfile: UserProfile) => {
@@ -124,12 +129,10 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
         await setDoc(docRef, newProfile, { merge: true });
     } else {
         // Save to localStorage for guests
-        if (isLoaded) {
-          try {
-            localStorage.setItem('unitwise_profile', JSON.stringify(newProfile));
-          } catch (error) {
-            console.error("Failed to save profile to localStorage", error);
-          }
+        try {
+          localStorage.setItem('unitwise_profile', JSON.stringify(newProfile));
+        } catch (error) {
+          console.error("Failed to save profile to localStorage", error);
         }
     }
   };
@@ -168,8 +171,8 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
 
 
   return (
-    <ProfileContext.Provider value={{ profile, setProfile, updateStatsForNewConversion }}>
-      {children}
+    <ProfileContext.Provider value={{ profile, setProfile, updateStatsForNewConversion, isLoading }}>
+      {!isLoading ? children : null}
     </ProfileContext.Provider>
   );
 };
