@@ -220,7 +220,7 @@ export const MaintenanceProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const addUpdateItem = (item: Omit<UpdateItem, 'id'>) => {
-    const newItem = { ...item, id: `${new Date().toISOString()}-${Math.random()}` };
+    const newItem = { ...item, id: `${Date.now()}-${Math.random().toString(36).substring(2, 9)}` };
     setMaintenanceConfig(prev => ({...prev, updateItems: [newItem, ...prev.updateItems]}));
   };
 
@@ -237,7 +237,7 @@ export const MaintenanceProvider = ({ children }: { children: ReactNode }) => {
   }
 
   const addRoadmapItem = (item: Omit<RoadmapItem, 'id'>) => {
-    const newItem = { ...item, id: `${new Date().toISOString()}-${Math.random()}` };
+    const newItem = { ...item, id: `${Date.now()}-${Math.random().toString(36).substring(2, 9)}` };
     setMaintenanceConfig(prev => ({
         ...prev,
         aboutPageContent: {...prev.aboutPageContent, roadmap: [newItem, ...prev.aboutPageContent.roadmap]},
