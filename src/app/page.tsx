@@ -143,7 +143,7 @@ export default function DashboardPage() {
   const { allTimeConversions, todayConversions, streak } = profile.stats;
 
   const visibleQuickAccessItems = showMore ? quickAccessItems : quickAccessItems.slice(0, 6);
-  const whatsNewItems = updateItems.slice(0, 2);
+  const whatsNewItems = (updateItems || []).slice(0, 2);
 
 
   return (
@@ -331,11 +331,11 @@ export default function DashboardPage() {
                   </div>
                   <div className="flex justify-between border-b pb-2">
                     <span className="text-muted-foreground">Version</span>
-                    <span className="font-medium">{appInfo.version}</span>
+                    <span className="font-medium">{appInfo?.version}</span>
                   </div>
                   <div className="flex justify-between border-b pb-2">
                     <span className="text-muted-foreground">Developer</span>
-                    <span className="font-medium">{ownerInfo.name}</span>
+                    <span className="font-medium">{ownerInfo?.name}</span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-muted-foreground">Support</span>
@@ -362,8 +362,10 @@ export default function DashboardPage() {
     </div>
   );
 }
-
     
 
     
 
+
+
+    
