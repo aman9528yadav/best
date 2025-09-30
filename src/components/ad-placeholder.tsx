@@ -45,7 +45,7 @@ export function AdPlaceholder({ className }: { className?: string }) {
     }
   }, [isClient]);
 
-  if (!ad) {
+  if (!isClient || !ad) {
     return (
       <Card
         className={`flex items-center justify-center h-32 bg-muted/50 ${className}`}
