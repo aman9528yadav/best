@@ -156,13 +156,13 @@ const defaultMaintenanceConfig: MaintenanceConfig = {
 
 export const MaintenanceProvider = ({ children }: { children: ReactNode }) => {
   const [isLoading, setIsLoading] = useState(true);
-  const [maintenanceConfig, setMaintenanceConfigState] = useState<MaintenanceConfig>(defaultMaintenanceConfig);
+  const [maintenanceConfig, setMaintenanceConfig] = useState<MaintenanceConfig>(defaultMaintenanceConfig);
   const configRef = ref(rtdb, 'config');
   const isInitialLoad = useRef(true);
 
   // Function to save the entire config to DB
   const updateConfigInDb = (config: MaintenanceConfig) => {
-    set(configRef, config).catch(error => {
+    return set(configRef, config).catch(error => {
       console.error("Error updating maintenance config:", error);
     });
   };
@@ -172,104 +172,101 @@ export const MaintenanceProvider = ({ children }: { children: ReactNode }) => {
       (snapshot) => {
         if (snapshot.exists()) {
             const dbConfig = snapshot.val();
+            // Deep merge to avoid losing nested defaults
             const mergedConfig = {
                 ...defaultMaintenanceConfig,
                 ...dbConfig,
                 dashboardBanner: { ...defaultMaintenanceConfig.dashboardBanner, ...(dbConfig.dashboardBanner || {}) },
                 maintenanceCountdown: { ...defaultMaintenanceConfig.maintenanceCountdown, ...(dbConfig.maintenanceCountdown || {}) },
+                updateItems: dbConfig.updateItems || defaultMaintenanceConfig.updateItems,
                 aboutPageContent: {
                     ...defaultMaintenanceConfig.aboutPageContent,
                     ...(dbConfig.aboutPageContent || {}),
                     roadmap: dbConfig.aboutPageContent?.roadmap || defaultMaintenanceConfig.aboutPageContent.roadmap,
                 },
-                updateItems: dbConfig.updateItems || defaultMaintenanceConfig.updateItems,
             };
-            setMaintenanceConfigState(mergedConfig);
+            setMaintenanceConfig(mergedConfig);
         } else {
+            // If no config in DB, set the default one
             updateConfigInDb(defaultMaintenanceConfig);
-            setMaintenanceConfigState(defaultMaintenanceConfig);
+            setMaintenanceConfig(defaultMaintenanceConfig);
         }
         setIsLoading(false);
         isInitialLoad.current = false;
       }, 
       (error) => {
           console.error("Error fetching maintenance config:", error);
-          setMaintenanceConfigState(defaultMaintenanceConfig);
+          setMaintenanceConfig(defaultMaintenanceConfig); // Fallback to default
           setIsLoading(false);
           isInitialLoad.current = false;
       });
 
     return () => unsubscribe();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-  
-  const setMaintenanceConfig = (value: React.SetStateAction<MaintenanceConfig>) => {
-    const newConfig = typeof value === 'function' ? value(maintenanceConfig) : value;
-    setMaintenanceConfigState(newConfig);
-    updateConfigInDb(newConfig);
-  };
   
   const setDevMode = (isDev: boolean) => {
     const newConfig = {...maintenanceConfig, isDevMode: isDev };
-    setMaintenanceConfigState(newConfig);
+    setMaintenanceConfig(newConfig);
     updateConfigInDb(newConfig);
   };
 
   const addUpdateItem = (item: Omit<UpdateItem, 'id'>) => {
     const newItem = { ...item, id: `${new Date().toISOString()}-${Math.random()}` };
-    const newConfig = {...maintenanceConfig, updateItems: [newItem, ...maintenanceConfig.updateItems]};
-    setMaintenanceConfigState(newConfig);
+    const newItems = [newItem, ...maintenanceConfig.updateItems];
+    const newConfig = {...maintenanceConfig, updateItems: newItems};
+    setMaintenanceConfig(newConfig);
     updateConfigInDb(newConfig);
   };
 
-  const editUpdateItem = (item: UpdateItem) => {
-    const newConfig = {
-      ...maintenanceConfig,
-      updateItems: maintenanceConfig.updateItems.map(i => (i.id === item.id ? item : i)),
-    };
-    setMaintenanceConfigState(newConfig);
+  const editUpdateItem = (itemToEdit: UpdateItem) => {
+    const newItems = maintenanceConfig.updateItems.map(item => (item.id === itemToEdit.id ? itemToEdit : item));
+    const newConfig = { ...maintenanceConfig, updateItems: newItems };
+    setMaintenanceConfig(newConfig);
     updateConfigInDb(newConfig);
   };
 
   const deleteUpdateItem = (id: string) => {
-    const newConfig = {
-      ...maintenanceConfig,
-      updateItems: maintenanceConfig.updateItems.filter(i => i.id !== id),
-    };
-    setMaintenanceConfigState(newConfig);
+    const newItems = maintenanceConfig.updateItems.filter(i => i.id !== id);
+    const newConfig = {...maintenanceConfig, updateItems: newItems};
+    setMaintenanceConfig(newConfig);
     updateConfigInDb(newConfig);
   };
 
   const addRoadmapItem = (item: Omit<RoadmapItem, 'id'>) => {
     const newItem = { ...item, id: `${new Date().toISOString()}-${Math.random()}` };
+    const newRoadmap = [newItem, ...maintenanceConfig.aboutPageContent.roadmap];
     const newConfig = {
       ...maintenanceConfig,
-      aboutPageContent: { ...maintenanceConfig.aboutPageContent, roadmap: [newItem, ...maintenanceConfig.aboutPageContent.roadmap] },
+      aboutPageContent: { ...maintenanceConfig.aboutPageContent, roadmap: newRoadmap },
     };
-    setMaintenanceConfigState(newConfig);
+    setMaintenanceConfig(newConfig);
     updateConfigInDb(newConfig);
   };
 
-  const editRoadmapItem = (item: RoadmapItem) => {
+  const editRoadmapItem = (itemToEdit: RoadmapItem) => {
+    const newRoadmap = maintenanceConfig.aboutPageContent.roadmap.map(i => (i.id === itemToEdit.id ? itemToEdit : i));
     const newConfig = {
       ...maintenanceConfig,
       aboutPageContent: {
         ...maintenanceConfig.aboutPageContent,
-        roadmap: maintenanceConfig.aboutPageContent.roadmap.map(i => (i.id === item.id ? item : i)),
+        roadmap: newRoadmap,
       },
     };
-    setMaintenanceConfigState(newConfig);
+    setMaintenanceConfig(newConfig);
     updateConfigInDb(newConfig);
   };
 
   const deleteRoadmapItem = (id: string) => {
+    const newRoadmap = maintenanceConfig.aboutPageContent.roadmap.filter(i => i.id !== id);
     const newConfig = {
       ...maintenanceConfig,
       aboutPageContent: {
         ...maintenanceConfig.aboutPageContent,
-        roadmap: maintenanceConfig.aboutPageContent.roadmap.filter(i => i.id !== id),
+        roadmap: newRoadmap,
       },
     };
-    setMaintenanceConfigState(newConfig);
+    setMaintenanceConfig(newConfig);
     updateConfigInDb(newConfig);
   };
 
