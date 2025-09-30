@@ -5,6 +5,9 @@
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { Wrench, Rocket, User, Languages, Bug, Icon as LucideIcon, GitBranch, Sparkles } from 'lucide-react';
+import { doc, getDoc, setDoc, onSnapshot } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
+import { useAuth } from './AuthContext';
 
 
 export type UpdateItem = {
@@ -222,89 +225,108 @@ const defaultMaintenanceConfig: MaintenanceConfig = {
 
 export const MaintenanceProvider = ({ children }: { children: ReactNode }) => {
   const [isLoaded, setIsLoaded] = useState(false);
-  const [isMaintenanceMode, setMaintenanceModeState] = useState<boolean>(false);
   const [isDevMode, setDevModeState] = useState<boolean>(false);
   const [maintenanceConfig, setMaintenanceConfig] = useState<MaintenanceConfig>(defaultMaintenanceConfig);
 
+  const { user } = useAuth(); // Use user to decide whether to use localStorage
 
   useEffect(() => {
+    // Dev mode is local to the browser, so it's fine to keep it in localStorage.
     try {
-      const savedMaintenance = localStorage.getItem('unitwise_maintenance');
       const savedDevMode = localStorage.getItem('unitwise_dev_mode');
-      const savedConfig = localStorage.getItem('unitwise_maintenance_config');
-      
-      if (savedMaintenance) setMaintenanceModeState(JSON.parse(savedMaintenance));
-      if (savedDevMode) setDevModeState(JSON.parse(savedDevMode));
-      if (savedConfig) {
-        setMaintenanceConfig(prev => ({...defaultMaintenanceConfig, ...JSON.parse(savedConfig)}));
+      if (savedDevMode) {
+        setDevModeState(JSON.parse(savedDevMode));
       }
-
     } catch (error) {
-      console.error("Failed to load state from localStorage", error);
+      console.error("Failed to load dev mode from localStorage", error);
     }
-    setIsLoaded(true);
+    
+    // Set up Firestore listener for the maintenance config
+    const configDocRef = doc(db, 'config', 'maintenance');
+    const unsubscribe = onSnapshot(configDocRef, (docSnap) => {
+        if (docSnap.exists()) {
+            // Merge with default config to prevent missing fields if a new field is added to the default
+            const firestoreConfig = { ...defaultMaintenanceConfig, ...docSnap.data() };
+            setMaintenanceConfig(firestoreConfig);
+        } else {
+            // If doc doesn't exist, create it with the default config
+            setDoc(configDocRef, defaultMaintenanceConfig);
+            setMaintenanceConfig(defaultMaintenanceConfig);
+        }
+        setIsLoaded(true);
+    }, (error) => {
+        console.error("Error fetching maintenance config:", error);
+        // Fallback to default if there's an error
+        setMaintenanceConfig(defaultMaintenanceConfig);
+        setIsLoaded(true);
+    });
+
+    return () => unsubscribe(); // Cleanup listener on unmount
   }, []);
 
+  const updateMaintenanceConfig = (newConfig: MaintenanceConfig) => {
+    const configDocRef = doc(db, 'config', 'maintenance');
+    setDoc(configDocRef, newConfig, { merge: true }).catch(error => {
+      console.error("Error updating maintenance config:", error);
+    });
+  };
+  
   const setMaintenanceMode = (isMaintenance: boolean) => {
-    setMaintenanceModeState(isMaintenance);
-    if (isLoaded) {
-      try {
-        localStorage.setItem('unitwise_maintenance', JSON.stringify(isMaintenance));
-        localStorage.setItem('unitwise_maintenance_config', JSON.stringify({ ...maintenanceConfig, globalMaintenance: isMaintenance }));
-      } catch (error) {
-        console.error("Failed to save maintenance mode to localStorage", error);
-      }
-    }
+    const newConfig = { ...maintenanceConfig, globalMaintenance: isMaintenance };
+    setMaintenanceConfig(newConfig);
+    updateMaintenanceConfig(newConfig);
   };
   
   const setDevMode = (isDev: boolean) => {
     setDevModeState(isDev);
-    if (isLoaded) {
-      try {
+     try {
         localStorage.setItem('unitwise_dev_mode', JSON.stringify(isDev));
       } catch (error) {
         console.error("Failed to save dev mode to localStorage", error);
       }
-    }
   };
-
-  useEffect(() => {
-    if (isLoaded) {
-      try {
-        localStorage.setItem('unitwise_maintenance_config', JSON.stringify(maintenanceConfig));
-      } catch (error) {
-        console.error("Failed to save maintenance config to localStorage", error);
-      }
+  
+  const handleSetConfig = (newConfig: React.SetStateAction<MaintenanceConfig>) => {
+    if(typeof newConfig === 'function'){
+      setMaintenanceConfig(prevConfig => {
+        const updatedConfig = newConfig(prevConfig);
+        updateMaintenanceConfig(updatedConfig);
+        return updatedConfig;
+      })
+    } else {
+      setMaintenanceConfig(newConfig);
+      updateMaintenanceConfig(newConfig);
     }
-  }, [maintenanceConfig, isLoaded]);
+  }
 
   const resetMaintenanceConfig = () => {
     setMaintenanceConfig(defaultMaintenanceConfig);
+    updateMaintenanceConfig(defaultMaintenanceConfig);
   }
 
   const addUpdateItem = (item: Omit<UpdateItem, 'id'>) => {
-    setMaintenanceConfig(prev => ({
+    handleSetConfig(prev => ({
         ...prev,
         updateItems: [{ ...item, id: new Date().toISOString() }, ...prev.updateItems ]
     }));
   };
 
   const editUpdateItem = (updatedItem: UpdateItem) => {
-     setMaintenanceConfig(prev => ({
+     handleSetConfig(prev => ({
         ...prev,
         updateItems: prev.updateItems.map(item => item.id === updatedItem.id ? updatedItem : item)
     }));
   };
 
   const deleteUpdateItem = (id: string) => {
-     setMaintenanceConfig(prev => ({
+     handleSetConfig(prev => ({
         ...prev,
         updateItems: prev.updateItems.filter(item => item.id !== id)
     }));
   };
 
   const addRoadmapItem = (item: Omit<RoadmapItem, 'id'>) => {
-    setMaintenanceConfig(prev => ({
+    handleSetConfig(prev => ({
       ...prev,
       aboutPageContent: {
         ...prev.aboutPageContent,
@@ -314,7 +336,7 @@ export const MaintenanceProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const editRoadmapItem = (updatedItem: RoadmapItem) => {
-    setMaintenanceConfig(prev => ({
+    handleSetConfig(prev => ({
       ...prev,
       aboutPageContent: {
         ...prev.aboutPageContent,
@@ -324,7 +346,7 @@ export const MaintenanceProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const deleteRoadmapItem = (id: string) => {
-    setMaintenanceConfig(prev => ({
+    handleSetConfig(prev => ({
       ...prev,
       aboutPageContent: {
         ...prev.aboutPageContent,
@@ -333,12 +355,11 @@ export const MaintenanceProvider = ({ children }: { children: ReactNode }) => {
     }));
   };
 
-
   return (
     <MaintenanceContext.Provider value={{ 
-        isMaintenanceMode, setMaintenanceMode, 
+        isMaintenanceMode: maintenanceConfig.globalMaintenance, setMaintenanceMode, 
         isDevMode, setDevMode, 
-        maintenanceConfig, setMaintenanceConfig,
+        maintenanceConfig, setMaintenanceConfig: handleSetConfig,
         resetMaintenanceConfig,
         addUpdateItem,
         editUpdateItem,
@@ -389,6 +410,5 @@ export const MaintenanceWrapper = ({ children }: { children: ReactNode }) => {
     
     return <>{children}</>;
 };
-
 
     
