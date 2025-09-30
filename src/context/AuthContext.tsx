@@ -50,7 +50,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const provider = new GoogleAuthProvider();
     try {
       await signInWithPopup(auth, provider);
-      router.push('/welcome');
+      router.push('/auth-action?action=login');
     } catch (error: any) {
       console.error("Error signing in with Google", error);
       toast({
@@ -64,7 +64,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const signInWithEmail = async (email: string, pass: string) => {
     try {
         await signInWithEmailAndPassword(auth, email, pass);
-        router.push('/welcome');
+        router.push('/auth-action?action=login');
     } catch (error: any) {
         console.error("Error signing in with email", error);
         toast({
@@ -87,7 +87,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             title: "Congratulations!",
             description: "Your account has been created successfully.",
         });
-        router.push('/profile/edit');
+        router.push('/auth-action?action=signup');
     } catch (error: any) {
         console.error("Error signing up with email", error);
         toast({
@@ -102,11 +102,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const logout = async () => {
     try {
       await signOut(auth);
-      toast({
-        title: "Logged Out",
-        description: "You have been successfully logged out.",
-      });
-      router.push('/login');
+      router.push('/auth-action?action=logout');
     } catch (error: any) {
       console.error("Error signing out", error);
        toast({
