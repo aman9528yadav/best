@@ -4,8 +4,7 @@
 
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
-import { Wrench, Rocket, User, Languages, Bug, Icon as LucideIcon, GitBranch, Sparkles } from 'lucide-react';
-import { ref, onValue, set, get } from 'firebase/database';
+import { ref, onValue, set } from 'firebase/database';
 import { rtdb } from '@/lib/firebase';
 
 export type UpdateItem = {
@@ -56,21 +55,13 @@ type Countdown = {
 
 export type MaintenanceConfig = {
     globalMaintenance: boolean;
-    isDevMode: boolean; // Added to sync with DB
-    individualPages: string[];
-    countdown: Countdown;
-    details: string;
-    type: string;
-    postUpdateStatus: string;
-    successMessage: string;
-    failureMessage: string;
+    isDevMode: boolean;
     dashboardBanner: {
         show: boolean;
         countdown: Countdown;
         category: string;
         upcomingFeatureDetails: string;
     };
-    globalNotification: string;
     updateItems: UpdateItem[];
     aboutPageContent: AboutPageContent;
     appInfo: { version: string; };
@@ -82,8 +73,14 @@ type MaintenanceContextType = {
   isDevMode: boolean;
   setDevMode: (isDev: boolean) => void;
   maintenanceConfig: MaintenanceConfig;
-  setMaintenanceConfig: (setter: React.SetStateAction<MaintenanceConfig>) => void;
+  setMaintenanceConfig: React.Dispatch<React.SetStateAction<MaintenanceConfig>>;
   isLoading: boolean;
+  addUpdateItem: (item: Omit<UpdateItem, 'id'>) => void;
+  editUpdateItem: (item: UpdateItem) => void;
+  deleteUpdateItem: (id: string) => void;
+  addRoadmapItem: (item: Omit<RoadmapItem, 'id'>) => void;
+  editRoadmapItem: (item: RoadmapItem) => void;
+  deleteRoadmapItem: (id: string) => void;
 };
 
 const MaintenanceContext = createContext<MaintenanceContextType | undefined>(undefined);
@@ -91,22 +88,10 @@ const MaintenanceContext = createContext<MaintenanceContextType | undefined>(und
 const defaultMaintenanceConfig: MaintenanceConfig = {
     globalMaintenance: false,
     isDevMode: false,
-    individualPages: [],
-    countdown: {
-        days: 0,
-        hours: 0,
-        minutes: 0,
-        seconds: 0,
-    },
-    details: 'General improvements and bug fixes.',
-    type: 'Security',
-    postUpdateStatus: 'In Progress',
-    successMessage: 'The update was successful! We will be back shortly.',
-    failureMessage: 'The update failed. Please try again later.',
     dashboardBanner: {
-        show: false,
+        show: true,
         countdown: {
-            days: 0,
+            days: 1,
             hours: 10,
             minutes: 59,
             seconds: 32,
@@ -114,7 +99,6 @@ const defaultMaintenanceConfig: MaintenanceConfig = {
         category: 'Bug Fix',
         upcomingFeatureDetails: '1. bug fix\n2. may be some feature not working',
     },
-    globalNotification: '',
     updateItems: [
         {
             id: '1',
@@ -132,22 +116,6 @@ const defaultMaintenanceConfig: MaintenanceConfig = {
             description: 'Now user can sync data live like history stats etc',
             tags: ['New Feature', 'Beta 1.3'],
         },
-        {
-            id: '3',
-            icon: 'User',
-            title: 'Profile Management',
-            date: '1 October, 2024',
-            description: 'Manage your profile, track stats, and view your premium membership progress.',
-            tags: ['New Feature', 'Beta 1.2'],
-        },
-        {
-            id: '4',
-            icon: 'Languages',
-            title: 'Language Support: Hindi',
-            date: '25 September, 2024',
-            description: 'The entire app is now available in Hindi.',
-            tags: ['New Feature', 'Beta 1.2'],
-        }
     ],
     aboutPageContent: {
         stats: {
@@ -175,36 +143,6 @@ const defaultMaintenanceConfig: MaintenanceConfig = {
                 icon: 'GitBranch',
                 status: 'completed',
             },
-            {
-                id: 'roadmap-2',
-                version: 'Beta 1.2',
-                date: '18 Nov, 2024',
-                title: 'Calculator & History',
-                description: 'Introducing a powerful scientific calculator and persistent history for all your activities.',
-                details: ['Scientific calculator', 'Conversion & calculation history'],
-                icon: 'GitBranch',
-                status: 'completed',
-            },
-            {
-                id: 'roadmap-3',
-                version: 'Beta 1.3',
-                date: '26 Jan, 2025',
-                title: 'Profile & Themes',
-                description: 'Personalize your experience with user profiles and custom themes.',
-                details: ['User profile page', 'Theme customization'],
-                icon: 'GitBranch',
-                status: 'completed',
-            },
-            {
-                id: 'roadmap-4',
-                version: 'Beta 2.0',
-                date: '10 Mar, 2025',
-                title: 'AI Features & Cloud Sync',
-                description: 'The next big leap! Get ready for AI-powered suggestions and seamless cloud synchronization.',
-                details: ['AI unit suggestions', 'Cloud backup & sync'],
-                icon: 'Sparkles',
-                status: 'upcoming',
-            }
         ]
     },
     appInfo: {
@@ -225,10 +163,8 @@ export const MaintenanceProvider = ({ children }: { children: ReactNode }) => {
       (snapshot) => {
         if (snapshot.exists()) {
             const dbConfig = snapshot.val();
-            // Merge database config with defaults to prevent missing properties
-            setMaintenanceConfigState(prev => ({ ...defaultMaintenanceConfig, ...prev, ...dbConfig }));
+            setMaintenanceConfigState(prev => ({ ...prev, ...dbConfig }));
         } else {
-            // If no config in DB, create one from the default
             set(configRef, defaultMaintenanceConfig).catch(err => console.error("Error creating default config in DB", err));
             setMaintenanceConfigState(defaultMaintenanceConfig);
         }
@@ -236,7 +172,6 @@ export const MaintenanceProvider = ({ children }: { children: ReactNode }) => {
       }, 
       (error) => {
           console.error("Error fetching maintenance config:", error);
-          // Fallback to default config on error
           setMaintenanceConfigState(defaultMaintenanceConfig);
           setIsLoading(false);
       });
@@ -264,6 +199,54 @@ export const MaintenanceProvider = ({ children }: { children: ReactNode }) => {
     setMaintenanceConfig(prev => ({...prev, isDevMode: isDev}));
   };
 
+  const addUpdateItem = (item: Omit<UpdateItem, 'id'>) => {
+    const newItem = { ...item, id: new Date().toISOString() };
+    setMaintenanceConfig(prev => ({ ...prev, updateItems: [newItem, ...prev.updateItems] }));
+  };
+
+  const editUpdateItem = (item: UpdateItem) => {
+    setMaintenanceConfig(prev => ({
+      ...prev,
+      updateItems: prev.updateItems.map(i => (i.id === item.id ? item : i)),
+    }));
+  };
+
+  const deleteUpdateItem = (id: string) => {
+    setMaintenanceConfig(prev => ({
+      ...prev,
+      updateItems: prev.updateItems.filter(i => i.id !== id),
+    }));
+  };
+
+  const addRoadmapItem = (item: Omit<RoadmapItem, 'id'>) => {
+    const newItem = { ...item, id: new Date().toISOString() };
+    setMaintenanceConfig(prev => ({
+      ...prev,
+      aboutPageContent: { ...prev.aboutPageContent, roadmap: [newItem, ...prev.aboutPageContent.roadmap] },
+    }));
+  };
+
+  const editRoadmapItem = (item: RoadmapItem) => {
+    setMaintenanceConfig(prev => ({
+      ...prev,
+      aboutPageContent: {
+        ...prev.aboutPageContent,
+        roadmap: prev.aboutPageContent.roadmap.map(i => (i.id === item.id ? item : i)),
+      },
+    }));
+  };
+
+  const deleteRoadmapItem = (id: string) => {
+    setMaintenanceConfig(prev => ({
+      ...prev,
+      aboutPageContent: {
+        ...prev.aboutPageContent,
+        roadmap: prev.aboutPageContent.roadmap.filter(i => i.id !== id),
+      },
+    }));
+  };
+
+
   return (
     <MaintenanceContext.Provider value={{ 
         isDevMode: maintenanceConfig.isDevMode, 
@@ -271,6 +254,12 @@ export const MaintenanceProvider = ({ children }: { children: ReactNode }) => {
         maintenanceConfig, 
         setMaintenanceConfig,
         isLoading,
+        addUpdateItem,
+        editUpdateItem,
+        deleteUpdateItem,
+        addRoadmapItem,
+        editRoadmapItem,
+        deleteRoadmapItem,
     }}>
       {children}
     </MaintenanceContext.Provider>
@@ -296,7 +285,6 @@ export const MaintenanceWrapper = ({ children }: { children: ReactNode }) => {
         const isUnderMaintenance = maintenanceConfig.globalMaintenance;
         const isMaintenancePage = pathname === '/maintenance';
         
-        // Developer is allowed to see dev panel and settings even in maintenance mode
         const isAllowedPath = isMaintenancePage || (isDevMode && (pathname.startsWith('/dev') || pathname === '/settings'));
 
         if (isUnderMaintenance && !isAllowedPath) {
@@ -309,12 +297,10 @@ export const MaintenanceWrapper = ({ children }: { children: ReactNode }) => {
 
     }, [maintenanceConfig, pathname, router, isLoading, isDevMode]);
     
-    // While loading, don't render children to prevent components from accessing config prematurely
     if (isLoading) {
         return null;
     }
     
-    // If maintenance is on, and we're not on an allowed path, don't render children to prevent content flashing during redirect
     if (maintenanceConfig.globalMaintenance && !pathname.startsWith('/maintenance') && !(isDevMode && (pathname.startsWith('/dev') || pathname === '/settings'))) {
       return null;
     }
