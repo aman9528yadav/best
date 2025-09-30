@@ -34,7 +34,7 @@ export function DevPanel() {
     setMaintenanceConfig,
     isLoading,
   } = useMaintenance();
-  const { globalMaintenance, dashboardBanner } = maintenanceConfig;
+  const { globalMaintenance, dashboardBanner, maintenanceCountdown } = maintenanceConfig;
 
   const handleGlobalMaintenanceChange = (checked: boolean) => {
     setMaintenanceConfig(prev => ({...prev, globalMaintenance: checked }));
@@ -70,7 +70,7 @@ export function DevPanel() {
     }));
   }
   
-  const handleCountdownChange = (field: 'days' | 'hours' | 'minutes' | 'seconds', value: string) => {
+  const handleBannerCountdownChange = (field: 'days' | 'hours' | 'minutes' | 'seconds', value: string) => {
      setMaintenanceConfig(prev => ({
         ...prev,
         dashboardBanner: {
@@ -79,6 +79,16 @@ export function DevPanel() {
                 ...prev.dashboardBanner.countdown,
                 [field]: parseInt(value, 10) || 0
             }
+        }
+    }));
+  }
+
+  const handleMaintenanceCountdownChange = (field: 'days' | 'hours' | 'minutes' | 'seconds', value: string) => {
+     setMaintenanceConfig(prev => ({
+        ...prev,
+        maintenanceCountdown: {
+            ...prev.maintenanceCountdown,
+            [field]: parseInt(value, 10) || 0
         }
     }));
   }
@@ -141,6 +151,15 @@ export function DevPanel() {
                         />
                       )}
                     </div>
+                    <div className="bg-accent/50 p-4 rounded-lg space-y-2">
+                      <Label>Maintenance Page Countdown</Label>
+                      <div className="grid grid-cols-2 gap-2">
+                        <div><Label className="text-xs">Days</Label><Input type="number" value={maintenanceCountdown.days} onChange={e => handleMaintenanceCountdownChange('days', e.target.value)} /></div>
+                        <div><Label className="text-xs">Hours</Label><Input type="number" value={maintenanceCountdown.hours} onChange={e => handleMaintenanceCountdownChange('hours', e.target.value)} /></div>
+                        <div><Label className="text-xs">Minutes</Label><Input type="number" value={maintenanceCountdown.minutes} onChange={e => handleMaintenanceCountdownChange('minutes', e.target.value)} /></div>
+                        <div><Label className="text-xs">Seconds</Label><Input type="number" value={maintenanceCountdown.seconds} onChange={e => handleMaintenanceCountdownChange('seconds', e.target.value)} /></div>
+                      </div>
+                   </div>
                   </div>
                 </AccordionContent>
               </Card>
@@ -167,12 +186,12 @@ export function DevPanel() {
                     <Switch id="show-banner" checked={dashboardBanner.show} onCheckedChange={(c) => handleBannerChange('show', c)} />
                   </div>
                    <div className="bg-accent/50 p-4 rounded-lg space-y-2">
-                      <Label>Countdown Timer</Label>
+                      <Label>Banner Countdown Timer</Label>
                       <div className="grid grid-cols-2 gap-2">
-                        <div><Label className="text-xs">Days</Label><Input type="number" value={dashboardBanner.countdown.days} onChange={e => handleCountdownChange('days', e.target.value)} /></div>
-                        <div><Label className="text-xs">Hours</Label><Input type="number" value={dashboardBanner.countdown.hours} onChange={e => handleCountdownChange('hours', e.target.value)} /></div>
-                        <div><Label className="text-xs">Minutes</Label><Input type="number" value={dashboardBanner.countdown.minutes} onChange={e => handleCountdownChange('minutes', e.target.value)} /></div>
-                        <div><Label className="text-xs">Seconds</Label><Input type="number" value={dashboardBanner.countdown.seconds} onChange={e => handleCountdownChange('seconds', e.target.value)} /></div>
+                        <div><Label className="text-xs">Days</Label><Input type="number" value={dashboardBanner.countdown.days} onChange={e => handleBannerCountdownChange('days', e.target.value)} /></div>
+                        <div><Label className="text-xs">Hours</Label><Input type="number" value={dashboardBanner.countdown.hours} onChange={e => handleBannerCountdownChange('hours', e.target.value)} /></div>
+                        <div><Label className="text-xs">Minutes</Label><Input type="number" value={dashboardBanner.countdown.minutes} onChange={e => handleBannerCountdownChange('minutes', e.target.value)} /></div>
+                        <div><Label className="text-xs">Seconds</Label><Input type="number" value={dashboardBanner.countdown.seconds} onChange={e => handleBannerCountdownChange('seconds', e.target.value)} /></div>
                       </div>
                    </div>
                    <div className="bg-accent/50 p-4 rounded-lg space-y-2">

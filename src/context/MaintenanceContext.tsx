@@ -62,6 +62,7 @@ export type MaintenanceConfig = {
         category: string;
         upcomingFeatureDetails: string;
     };
+    maintenanceCountdown: Countdown;
     updateItems: UpdateItem[];
     aboutPageContent: AboutPageContent;
     appInfo: { version: string; };
@@ -98,6 +99,12 @@ const defaultMaintenanceConfig: MaintenanceConfig = {
         },
         category: 'Bug Fix',
         upcomingFeatureDetails: '1. bug fix\n2. may be some feature not working',
+    },
+    maintenanceCountdown: {
+      days: 0,
+      hours: 2,
+      minutes: 30,
+      seconds: 0,
     },
     updateItems: [
         {

@@ -1,7 +1,8 @@
 
+
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { ArrowLeft, Wrench, Shield, Hourglass, Zap } from 'lucide-react';
@@ -21,13 +22,53 @@ import {
 } from "@/components/ui/alert-dialog"
 import { Input } from "@/components/ui/input"
 
+const CountdownBox = ({ value, label }: { value: string; label: string }) => (
+  <div className="bg-card rounded-lg p-3 w-20 flex flex-col items-center shadow-inner">
+    <span className="text-3xl font-bold text-primary">{value}</span>
+    <span className="text-xs text-muted-foreground">{label}</span>
+  </div>
+);
+
 export function MaintenancePage() {
   const router = useRouter();
-  const { setDevMode } = useMaintenance();
-  const [clickCount, setClickCount] = useState(0);
+  const { maintenanceConfig, setDevMode } = useMaintenance();
+  const { maintenanceCountdown } = maintenanceConfig;
   const { toast } = useToast();
+  
+  const [clickCount, setClickCount] = useState(0);
   const [isPasswordDialogOpen, setIsPasswordDialogOpen] = useState(false);
   const [password, setPassword] = useState('');
+  const [timeLeft, setTimeLeft] = useState(maintenanceCountdown);
+
+  useEffect(() => {
+    setTimeLeft(maintenanceCountdown);
+  }, [maintenanceCountdown]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setTimeLeft(prevTime => {
+        let { days, hours, minutes, seconds } = prevTime;
+        if (seconds > 0) seconds--;
+        else {
+          seconds = 59;
+          if (minutes > 0) minutes--;
+          else {
+            minutes = 59;
+            if (hours > 0) hours--;
+            else {
+              hours = 23;
+              if (days > 0) days--;
+            }
+          }
+        }
+        if(days <= 0 && hours <= 0 && minutes <= 0 && seconds <= 0){
+             return { days: 0, hours: 0, minutes: 0, seconds: 0 };
+        }
+        return { days, hours, minutes, seconds };
+      });
+    }, 1000);
+    return () => clearTimeout(timer);
+  }, [timeLeft]);
 
   const handleIconClick = () => {
     const newClickCount = clickCount + 1;
@@ -43,7 +84,6 @@ export function MaintenancePage() {
       });
     }
 
-    // Reset if time between clicks is too long
     setTimeout(() => {
         if(clickCount < 5) setClickCount(0);
     }, 2000)
@@ -82,10 +122,17 @@ export function MaintenancePage() {
           </div>
 
           <div className="space-y-2">
-            <h1 className="text-4xl font-bold">We&apos;ll Be Back Soon!</h1>
+            <h1 className="text-4xl font-bold">We'll Be Back Soon!</h1>
             <p className="text-muted-foreground">
-              The app is currently undergoing scheduled maintenance.
+              The app is currently undergoing scheduled maintenance. We expect to be back online in:
             </p>
+          </div>
+
+           <div className="flex justify-center gap-3">
+              <CountdownBox value={String(timeLeft.days).padStart(2, '0')} label="DAYS" />
+              <CountdownBox value={String(timeLeft.hours).padStart(2, '0')} label="HOURS" />
+              <CountdownBox value={String(timeLeft.minutes).padStart(2, '0')} label="MINUTES" />
+              <CountdownBox value={String(timeLeft.seconds).padStart(2, '0')} label="SECONDS" />
           </div>
           
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-left">
@@ -95,7 +142,7 @@ export function MaintenancePage() {
                 <div>
                   <h3 className="font-semibold">Minimal Downtime</h3>
                   <p className="text-sm text-muted-foreground">
-                    We&apos;re working as quickly as possible to restore service
+                    We're working as quickly as possible to restore service.
                   </p>
                 </div>
               </CardContent>
@@ -106,7 +153,7 @@ export function MaintenancePage() {
                 <div>
                   <h3 className="font-semibold">Better Experience</h3>
                   <p className="text-sm text-muted-foreground">
-                    Coming back with improved features and performance
+                    Coming back with improved features and performance.
                   </p>
                 </div>
               </CardContent>
