@@ -24,6 +24,7 @@ import {
   Info,
   LogIn,
   LogOut,
+  Settings,
 } from 'lucide-react';
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
@@ -72,6 +73,11 @@ const sidebarNavItems = [
     icon: Hourglass,
     label: 'Stopwatch',
     href: '/stopwatch',
+  },
+    {
+    icon: Settings,
+    label: 'Settings',
+    href: '/settings',
   },
   {
     icon: Info,
