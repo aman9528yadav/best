@@ -2,7 +2,7 @@
 
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Card,
   CardContent,
@@ -47,6 +47,7 @@ import {
   Moon,
   Laptop,
   Code,
+  Volume2,
 } from 'lucide-react';
 import { useMaintenance } from '@/context/MaintenanceContext';
 import { useRouter } from 'next/navigation';
@@ -70,6 +71,7 @@ const appearanceModes = [
 export function SettingsPage() {
   const { toast } = useToast();
   const [saveHistory, setSaveHistory] = useState(true);
+  const [calculatorSounds, setCalculatorSounds] = useState(false);
   const { theme, setTheme } = useTheme();
   const [isPasswordDialogOpen, setIsPasswordDialogOpen] = useState(false);
   const [password, setPassword] = useState('');
@@ -77,6 +79,19 @@ export function SettingsPage() {
   const { isDevMode } = maintenanceConfig;
   const router = useRouter();
   const { user } = useAuth();
+  
+  useEffect(() => {
+    const soundsEnabled = localStorage.getItem('sutradhaar_calculator_sounds') === 'true';
+    setCalculatorSounds(soundsEnabled);
+  }, []);
+
+  const handleCalculatorSoundsChange = (checked: boolean) => {
+    setCalculatorSounds(checked);
+    localStorage.setItem('sutradhaar_calculator_sounds', String(checked));
+    toast({
+      title: `Calculator sounds ${checked ? 'enabled' : 'disabled'}`,
+    });
+  };
 
   const isOwner = user?.email === 'amanyadavyadav9458@gmail.com';
 
@@ -158,6 +173,12 @@ export function SettingsPage() {
                 <Switch
                   checked={saveHistory}
                   onCheckedChange={setSaveHistory}
+                />
+              </SettingRow>
+              <SettingRow label="Calculator Sounds" icon={Volume2}>
+                <Switch
+                  checked={calculatorSounds}
+                  onCheckedChange={handleCalculatorSoundsChange}
                 />
               </SettingRow>
               {isOwner && (
@@ -271,3 +292,5 @@ export function SettingsPage() {
     </div>
   );
 }
+
+    

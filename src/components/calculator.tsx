@@ -1,7 +1,7 @@
 
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { ChevronUp, Divide, Equal, Minus, Plus, X, Percent, Baseline, History, Undo2, Trash2 } from 'lucide-react';
@@ -19,15 +19,36 @@ const CalculatorButton = ({
   children: React.ReactNode;
   className?: string;
   variant?: 'secondary' | 'default' | 'outline' | 'ghost' | 'link' | 'destructive' | null | undefined
-}) => (
-  <Button
-    variant={variant}
-    className={`h-16 text-2xl rounded-xl ${className}`}
-    onClick={onClick}
-  >
-    {children}
-  </Button>
-);
+}) => {
+    const [calculatorSounds, setCalculatorSounds] = useState(false);
+    
+    useEffect(() => {
+        const soundsEnabled = localStorage.getItem('sutradhaar_calculator_sounds') === 'true';
+        setCalculatorSounds(soundsEnabled);
+    }, []);
+
+    const playSound = () => {
+        if (calculatorSounds) {
+            const audio = new Audio('/sounds/keyboard-click.mp3');
+            audio.play().catch(e => console.error("Failed to play sound", e));
+        }
+    };
+    
+    const handleClick = () => {
+        playSound();
+        onClick();
+    }
+  
+  return (
+    <Button
+        variant={variant}
+        className={`h-16 text-2xl rounded-xl ${className}`}
+        onClick={handleClick}
+    >
+        {children}
+    </Button>
+  );
+};
 
 export function Calculator() {
   const [display, setDisplay] = useState('0');
@@ -314,3 +335,5 @@ export function Calculator() {
     </div>
   );
 }
+
+    
