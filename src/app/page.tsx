@@ -111,9 +111,8 @@ const discoverItems = [
 ];
 
 export default function DashboardPage() {
-  const { maintenanceConfig } = useMaintenance();
+  const { maintenanceConfig, isLoading: isMaintenanceLoading } = useMaintenance();
   const { profile } = useProfile();
-  const { appInfo, ownerInfo, updateItems } = maintenanceConfig;
   const [isLoading, setIsLoading] = useState(true);
   const [showMore, setShowMore] = useState(false);
 
@@ -125,6 +124,22 @@ export default function DashboardPage() {
     return () => clearTimeout(timer);
   }, []);
 
+  if (isMaintenanceLoading || isLoading) {
+    return (
+      <div className="flex flex-col items-center w-full min-h-screen bg-background text-foreground">
+        <div className="w-full max-w-[412px] flex flex-col flex-1">
+          <div className="p-4 pt-0">
+            <Header />
+          </div>
+          <main className="flex-1 overflow-y-auto p-4 pt-0 space-y-4">
+            <DashboardSkeleton />
+          </main>
+        </div>
+      </div>
+    )
+  }
+
+  const { appInfo, ownerInfo, updateItems } = maintenanceConfig;
   const { allTimeConversions, todayConversions, streak } = profile.stats;
 
   const visibleQuickAccessItems = showMore ? quickAccessItems : quickAccessItems.slice(0, 6);
@@ -138,9 +153,6 @@ export default function DashboardPage() {
           <Header />
         </div>
         <main className="flex-1 overflow-y-auto p-4 pt-0 space-y-4">
-         {isLoading ? (
-          <DashboardSkeleton />
-        ) : (
         <div className="space-y-6 pb-8">
            <DashboardBanner />
           <div className="grid grid-cols-3 gap-2 text-center">
@@ -345,7 +357,6 @@ export default function DashboardPage() {
             </AccordionItem>
           </Accordion>
         </div>
-        )}
       </main>
       </div>
     </div>
@@ -355,3 +366,4 @@ export default function DashboardPage() {
     
 
     
+
