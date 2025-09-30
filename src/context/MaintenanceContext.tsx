@@ -226,7 +226,7 @@ const defaultMaintenanceConfig: MaintenanceConfig = {
 export const MaintenanceProvider = ({ children }: { children: ReactNode }) => {
   const [isLoaded, setIsLoaded] = useState(false);
   const [isDevMode, setDevModeState] = useState<boolean>(false);
-  const [maintenanceConfig, setMaintenanceConfig] = useState<MaintenanceConfig>(defaultMaintenanceConfig);
+  const [maintenanceConfig, setMaintenanceConfigState] = useState<MaintenanceConfig>(defaultMaintenanceConfig);
 
   useEffect(() => {
     try {
@@ -244,7 +244,9 @@ export const MaintenanceProvider = ({ children }: { children: ReactNode }) => {
       try {
         const docSnap = await getDoc(configDocRef);
         if (!docSnap.exists()) {
+          // If the document doesn't exist, create it with default values.
           await setDoc(configDocRef, defaultMaintenanceConfig);
+           setMaintenanceConfigState(defaultMaintenanceConfig);
         }
       } catch (error) {
         console.error("Error checking/creating maintenance config doc:", error);
@@ -253,14 +255,14 @@ export const MaintenanceProvider = ({ children }: { children: ReactNode }) => {
       const unsubscribe = onSnapshot(configDocRef, (docSnap) => {
           if (docSnap.exists()) {
               const firestoreConfig = { ...defaultMaintenanceConfig, ...docSnap.data() };
-              setMaintenanceConfig(firestoreConfig);
+              setMaintenanceConfigState(firestoreConfig);
           } else {
-              setMaintenanceConfig(defaultMaintenanceConfig);
+              setMaintenanceConfigState(defaultMaintenanceConfig);
           }
           setIsLoaded(true);
       }, (error) => {
           console.error("Error fetching maintenance config:", error);
-          setMaintenanceConfig(defaultMaintenanceConfig);
+          setMaintenanceConfigState(defaultMaintenanceConfig);
           setIsLoaded(true);
       });
 
@@ -276,19 +278,25 @@ export const MaintenanceProvider = ({ children }: { children: ReactNode }) => {
     };
   }, []);
   
-  const updateMaintenanceConfigInDb = (newConfig: Partial<MaintenanceConfig>) => {
+  const updateMaintenanceConfigInDb = async (newConfig: Partial<MaintenanceConfig>) => {
     const configDocRef = doc(db, 'config', 'maintenance');
-    return setDoc(configDocRef, newConfig, { merge: true }).catch(error => {
+    try {
+      await setDoc(configDocRef, newConfig, { merge: true });
+    } catch (error) {
       console.error("Error updating maintenance config:", error);
-    });
+    }
   };
 
   const handleSetConfig = (setter: React.SetStateAction<MaintenanceConfig>) => {
-    setMaintenanceConfig(prevConfig => {
-      const newConfig = typeof setter === 'function' ? setter(prevConfig) : setter;
-      updateMaintenanceConfigInDb(newConfig);
-      return newConfig;
-    });
+     // Get the new state either from the function or the value itself
+    const newConfig = typeof setter === 'function' ? setter(maintenanceConfig) : setter;
+    
+    // We update the local state optimistically, but the real source of truth is Firestore.
+    // The onSnapshot listener will correct any discrepancies.
+    setMaintenanceConfigState(newConfig);
+
+    // And then we write the entire new configuration object to Firestore.
+    updateMaintenanceConfigInDb(newConfig);
   };
   
   const setMaintenanceMode = (isMaintenance: boolean) => {
@@ -305,8 +313,7 @@ export const MaintenanceProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const resetMaintenanceConfig = () => {
-    setMaintenanceConfig(defaultMaintenanceConfig);
-    updateMaintenanceConfigInDb(defaultMaintenanceConfig);
+    handleSetConfig(defaultMaintenanceConfig);
   }
 
   const addUpdateItem = (item: Omit<UpdateItem, 'id'>) => {
