@@ -56,6 +56,7 @@ type Countdown = {
 
 export type MaintenanceConfig = {
     globalMaintenance: boolean;
+    isDevMode: boolean; // Added to sync with DB
     individualPages: string[];
     countdown: Countdown;
     details: string;
@@ -82,13 +83,6 @@ type MaintenanceContextType = {
   setDevMode: (isDev: boolean) => void;
   maintenanceConfig: MaintenanceConfig;
   setMaintenanceConfig: (setter: React.SetStateAction<MaintenanceConfig>) => void;
-  resetMaintenanceConfig: () => void;
-  addUpdateItem: (item: Omit<UpdateItem, 'id'>) => void;
-  editUpdateItem: (item: UpdateItem) => void;
-  deleteUpdateItem: (id: string) => void;
-  addRoadmapItem: (item: Omit<RoadmapItem, 'id'>) => void;
-  editRoadmapItem: (item: RoadmapItem) => void;
-  deleteRoadmapItem: (id: string) => void;
   isLoading: boolean;
 };
 
@@ -96,6 +90,7 @@ const MaintenanceContext = createContext<MaintenanceContextType | undefined>(und
 
 const defaultMaintenanceConfig: MaintenanceConfig = {
     globalMaintenance: false,
+    isDevMode: false,
     individualPages: [],
     countdown: {
         days: 0,
@@ -222,32 +217,26 @@ const defaultMaintenanceConfig: MaintenanceConfig = {
 
 export const MaintenanceProvider = ({ children }: { children: ReactNode }) => {
   const [isLoading, setIsLoading] = useState(true);
-  const [isDevMode, setDevModeState] = useState<boolean>(false);
   const [maintenanceConfig, setMaintenanceConfigState] = useState<MaintenanceConfig>(defaultMaintenanceConfig);
   const configRef = ref(rtdb, 'config');
 
   useEffect(() => {
-    try {
-      const savedDevMode = localStorage.getItem('unitwise_dev_mode');
-      if (savedDevMode) {
-        setDevModeState(JSON.parse(savedDevMode));
-      }
-    } catch (error) {
-      console.error("Failed to load dev mode from localStorage", error);
-    }
-    
     const unsubscribe = onValue(configRef, 
       (snapshot) => {
         if (snapshot.exists()) {
-            setMaintenanceConfigState(snapshot.val());
+            const dbConfig = snapshot.val();
+            // Merge database config with defaults to prevent missing properties
+            setMaintenanceConfigState(prev => ({ ...defaultMaintenanceConfig, ...prev, ...dbConfig }));
         } else {
-            set(configRef, defaultMaintenanceConfig).catch(err => console.error("Error creating default config", err));
+            // If no config in DB, create one from the default
+            set(configRef, defaultMaintenanceConfig).catch(err => console.error("Error creating default config in DB", err));
             setMaintenanceConfigState(defaultMaintenanceConfig);
         }
         setIsLoading(false);
       }, 
       (error) => {
           console.error("Error fetching maintenance config:", error);
+          // Fallback to default config on error
           setMaintenanceConfigState(defaultMaintenanceConfig);
           setIsLoading(false);
       });
@@ -272,82 +261,15 @@ export const MaintenanceProvider = ({ children }: { children: ReactNode }) => {
   };
   
   const setDevMode = (isDev: boolean) => {
-    setDevModeState(isDev);
-     try {
-        localStorage.setItem('unitwise_dev_mode', JSON.stringify(isDev));
-      } catch (error) {
-        console.error("Failed to save dev mode to localStorage", error);
-      }
-  };
-
-  const resetMaintenanceConfig = () => {
-    setMaintenanceConfig(defaultMaintenanceConfig);
-  }
-
-  const addUpdateItem = (item: Omit<UpdateItem, 'id'>) => {
-    setMaintenanceConfig(prev => ({
-        ...prev,
-        updateItems: [{ ...item, id: new Date().toISOString() }, ...prev.updateItems]
-    }));
-  };
-
-  const editUpdateItem = (updatedItem: UpdateItem) => {
-     setMaintenanceConfig(prev => ({
-        ...prev,
-        updateItems: prev.updateItems.map(item => item.id === updatedItem.id ? updatedItem : item)
-     }));
-  };
-
-  const deleteUpdateItem = (id: string) => {
-     setMaintenanceConfig(prev => ({
-        ...prev,
-        updateItems: prev.updateItems.filter(item => item.id !== id)
-     }));
-  };
-
-  const addRoadmapItem = (item: Omit<RoadmapItem, 'id'>) => {
-    setMaintenanceConfig(prev => ({
-      ...prev,
-      aboutPageContent: {
-        ...prev.aboutPageContent,
-        roadmap: [{ ...item, id: new Date().toISOString() }, ...prev.aboutPageContent.roadmap]
-      }
-    }));
-  };
-
-  const editRoadmapItem = (updatedItem: RoadmapItem) => {
-    setMaintenanceConfig(prev => ({
-      ...prev,
-      aboutPageContent: {
-        ...prev.aboutPageContent,
-        roadmap: prev.aboutPageContent.roadmap.map(item => item.id === updatedItem.id ? updatedItem : item)
-      }
-    }));
-  };
-
-  const deleteRoadmapItem = (id: string) => {
-    setMaintenanceConfig(prev => ({
-      ...prev,
-      aboutPageContent: {
-        ...prev.aboutPageContent,
-        roadmap: prev.aboutPageContent.roadmap.filter(item => item.id !== id)
-      }
-    }));
+    setMaintenanceConfig(prev => ({...prev, isDevMode: isDev}));
   };
 
   return (
     <MaintenanceContext.Provider value={{ 
-        isDevMode, 
+        isDevMode: maintenanceConfig.isDevMode, 
         setDevMode, 
         maintenanceConfig, 
         setMaintenanceConfig,
-        resetMaintenanceConfig,
-        addUpdateItem,
-        editUpdateItem,
-        deleteUpdateItem,
-        addRoadmapItem,
-        editRoadmapItem,
-        deleteRoadmapItem,
         isLoading,
     }}>
       {children}
@@ -373,6 +295,8 @@ export const MaintenanceWrapper = ({ children }: { children: ReactNode }) => {
 
         const isUnderMaintenance = maintenanceConfig.globalMaintenance;
         const isMaintenancePage = pathname === '/maintenance';
+        
+        // Developer is allowed to see dev panel and settings even in maintenance mode
         const isAllowedPath = isMaintenancePage || (isDevMode && (pathname.startsWith('/dev') || pathname === '/settings'));
 
         if (isUnderMaintenance && !isAllowedPath) {
@@ -384,16 +308,16 @@ export const MaintenanceWrapper = ({ children }: { children: ReactNode }) => {
         }
 
     }, [maintenanceConfig, pathname, router, isLoading, isDevMode]);
-
+    
+    // While loading, don't render children to prevent components from accessing config prematurely
     if (isLoading) {
         return null;
     }
     
+    // If maintenance is on, and we're not on an allowed path, don't render children to prevent content flashing during redirect
     if (maintenanceConfig.globalMaintenance && !pathname.startsWith('/maintenance') && !(isDevMode && (pathname.startsWith('/dev') || pathname === '/settings'))) {
       return null;
     }
     
     return <>{children}</>;
 };
-
-    

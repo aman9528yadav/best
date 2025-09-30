@@ -18,10 +18,12 @@ const CountdownBox = ({ value, label }: { value: string; label: string }) => (
 
 export function DashboardBanner() {
   const { maintenanceConfig, setMaintenanceConfig } = useMaintenance();
-  const { show, countdown, category } = maintenanceConfig.dashboardBanner;
   
-  const [timeLeft, setTimeLeft] = useState(countdown);
-  const [isVisible, setIsVisible] = useState(show);
+  // Safeguard against dashboardBanner being undefined during initial load
+  const { show, countdown, category } = maintenanceConfig.dashboardBanner || {};
+  
+  const [timeLeft, setTimeLeft] = useState(countdown || { days: 0, hours: 0, minutes: 0, seconds: 0 });
+  const [isVisible, setIsVisible] = useState(show || false);
   const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
@@ -29,12 +31,11 @@ export function DashboardBanner() {
   }, []);
 
   useEffect(() => {
-    setIsVisible(show);
-  }, [show]);
-  
-  useEffect(() => {
-    setTimeLeft(countdown);
-  }, [countdown]);
+    if (maintenanceConfig.dashboardBanner) {
+        setIsVisible(maintenanceConfig.dashboardBanner.show);
+        setTimeLeft(maintenanceConfig.dashboardBanner.countdown);
+    }
+  }, [maintenanceConfig.dashboardBanner]);
 
   useEffect(() => {
     if (!isVisible || !isClient) return;
@@ -77,7 +78,7 @@ export function DashboardBanner() {
     }));
   };
 
-  if (!isVisible) {
+  if (!isVisible || !maintenanceConfig.dashboardBanner) {
     return null;
   }
 

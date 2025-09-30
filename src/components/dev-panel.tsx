@@ -19,11 +19,10 @@ import {
 } from '@/components/ui/accordion';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import { ArrowLeft, Clock, FileEdit, Shield, Trash, ChevronRight } from 'lucide-react';
+import { ArrowLeft, Clock, Shield, Trash } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useMaintenance } from '@/context/MaintenanceContext';
 import { useToast } from '@/hooks/use-toast';
-import Link from 'next/link';
 
 export function DevPanel() {
   const router = useRouter();
@@ -35,7 +34,7 @@ export function DevPanel() {
   } = useMaintenance();
 
   const handleGlobalMaintenanceChange = (checked: boolean) => {
-    setMaintenanceConfig({ globalMaintenance: checked });
+    setMaintenanceConfig(prev => ({...prev, globalMaintenance: checked }));
     toast({
       title: `Global Maintenance ${checked ? 'Enabled' : 'Disabled'}`,
     });
@@ -120,28 +119,6 @@ export function DevPanel() {
                 </AccordionContent>
               </Card>
             </AccordionItem>
-            
-            <AccordionItem value="item-4" asChild>
-              <Card>
-                 <CardHeader className="p-4">
-                  <AccordionTrigger className="p-0 hover:no-underline">
-                    <div className="flex items-center gap-3">
-                      <FileEdit className="h-5 w-5" />
-                      <div>
-                        <CardTitle className="text-lg">Content Management</CardTitle>
-                        <CardDescription>
-                          This section is no longer used.
-                        </CardDescription>
-                      </div>
-                    </div>
-                  </AccordionTrigger>
-                </CardHeader>
-                 <AccordionContent className="px-4 pb-4 space-y-2">
-                    <p className="text-sm text-muted-foreground">The content for pages like "What's New" and "About" is now managed directly in the code for simplicity.</p>
-                </AccordionContent>
-              </Card>
-            </AccordionItem>
-            
             
             <AccordionItem value="item-6" asChild>
               <Card>
