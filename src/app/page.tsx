@@ -59,10 +59,10 @@ const quickAccessItems = [
     href: '/converter',
   },
   { icon: Calculator, label: 'Calculator', href: '/calculator' },
-  { icon: BookText, label: 'Notes' },
+  { icon: BookText, label: 'Notes', href: '#' },
   { icon: History, label: 'History', href: '/history' },
-  { icon: Newspaper, label: 'News' },
-  { icon: Languages, label: 'Translator' },
+  { icon: Newspaper, label: 'News', href: '#' },
+  { icon: Languages, label: 'Translator', href: '#' },
   { icon: Calendar, label: 'Date Calc', href: '/date-calculator' },
   { icon: Timer, label: 'Timer', href: '/timer' },
   { icon: Hourglass, label: 'Stopwatch', href: '/stopwatch' },
@@ -386,9 +386,5 @@ export default function DashboardPage() {
     </div>
   );
 }
-
-    
-
-    
 
     
