@@ -66,8 +66,6 @@ export type MaintenanceConfig = {
     maintenanceMessage: string;
     updateItems: UpdateItem[];
     aboutPageContent: AboutPageContent;
-    appInfo: { version: string; };
-    ownerInfo: { name: string; };
 };
 
 
@@ -153,12 +151,6 @@ const defaultMaintenanceConfig: MaintenanceConfig = {
                 status: 'completed',
             },
         ]
-    },
-    appInfo: {
-        version: "beta 1.5"
-    },
-    ownerInfo: {
-        name: "Aman Yadav"
     }
 };
 
@@ -181,6 +173,10 @@ export const MaintenanceProvider = ({ children }: { children: ReactNode }) => {
                     ...defaultMaintenanceConfig.dashboardBanner,
                     ...(dbConfig.dashboardBanner || {})
                 },
+                maintenanceCountdown: {
+                    ...defaultMaintenanceConfig.maintenanceCountdown,
+                    ...(dbConfig.maintenanceCountdown || {})
+                },
                 aboutPageContent: {
                     ...defaultMaintenanceConfig.aboutPageContent,
                     ...(dbConfig.aboutPageContent || {}),
@@ -190,6 +186,7 @@ export const MaintenanceProvider = ({ children }: { children: ReactNode }) => {
             };
             setMaintenanceConfig(mergedConfig);
         } else {
+            // Set default in DB if it doesn't exist
             set(configRef, defaultMaintenanceConfig).catch(err => console.error("Error creating default config in DB", err));
             setMaintenanceConfig(defaultMaintenanceConfig);
         }
@@ -198,6 +195,7 @@ export const MaintenanceProvider = ({ children }: { children: ReactNode }) => {
       }, 
       (error) => {
           console.error("Error fetching maintenance config:", error);
+          // On error, fall back to defaults
           setMaintenanceConfig(defaultMaintenanceConfig);
           setIsLoading(false);
           isInitialLoad.current = false;
@@ -221,7 +219,7 @@ export const MaintenanceProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const addUpdateItem = (item: Omit<UpdateItem, 'id'>) => {
-    const newItem = { ...item, id: new Date().toISOString() };
+    const newItem = { ...item, id: `${new Date().toISOString()}-${Math.random()}` };
     setMaintenanceConfig(prev => ({ ...prev, updateItems: [newItem, ...prev.updateItems] }));
   };
 
@@ -240,7 +238,7 @@ export const MaintenanceProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const addRoadmapItem = (item: Omit<RoadmapItem, 'id'>) => {
-    const newItem = { ...item, id: new Date().toISOString() };
+    const newItem = { ...item, id: `${new Date().toISOString()}-${Math.random()}` };
     setMaintenanceConfig(prev => ({
       ...prev,
       aboutPageContent: { ...prev.aboutPageContent, roadmap: [newItem, ...prev.aboutPageContent.roadmap] },
@@ -306,6 +304,7 @@ export const MaintenanceWrapper = ({ children }: { children: ReactNode }) => {
         const isUnderMaintenance = maintenanceConfig.globalMaintenance;
         const isMaintenancePage = pathname === '/maintenance';
         
+        // Allow access to dev panel and settings only if dev mode is enabled
         const isAllowedPath = isMaintenancePage || (isDevMode && (pathname.startsWith('/dev') || pathname === '/settings'));
 
         if (isUnderMaintenance && !isAllowedPath) {
@@ -316,12 +315,14 @@ export const MaintenanceWrapper = ({ children }: { children: ReactNode }) => {
             router.replace('/');
         }
 
-    }, [maintenanceConfig, pathname, router, isLoading, isDevMode]);
+    }, [maintenanceConfig.globalMaintenance, isDevMode, pathname, router, isLoading]);
     
     if (isLoading) {
+        // You can return a global loader here if you want
         return null;
     }
     
+    // If maintenance is on, and the current page isn't allowed, don't render it to prevent flashes of content
     if (maintenanceConfig.globalMaintenance && !pathname.startsWith('/maintenance') && !(isDevMode && (pathname.startsWith('/dev') || pathname === '/settings'))) {
       return null;
     }
