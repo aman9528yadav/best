@@ -31,11 +31,11 @@ export default function RootLayout({
           rel="stylesheet"
         />
       </head>
-      <body className="font-body antialiased theme-sutradhaar">
+      <body className="font-body antialiased">
         <ThemeProvider
           attribute="class"
-          defaultTheme="system"
-          enableSystem
+          defaultTheme="sutradhaar"
+          enableSystem={false}
           disableTransitionOnChange
         >
           <AuthProvider>
