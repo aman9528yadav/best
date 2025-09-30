@@ -19,5 +19,11 @@ export default function NewNotePage() {
         router.push(`/notes/${newNote.id}`);
     };
 
-    return <NoteEditor onSave={handleSave} />;
+    return (
+        <div className="flex justify-center w-full">
+            <div className="w-full max-w-[412px]">
+                <NoteEditor onSave={handleSave} />
+            </div>
+        </div>
+    );
 }

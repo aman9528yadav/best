@@ -70,13 +70,17 @@ export default function EditNotePage() {
     }
 
     return (
-        <NoteEditor 
-            note={note} 
-            onSave={handleSave} 
-            onDelete={handleDelete}
-            onDeletePermanently={handleDeletePermanently}
-            onRestore={handleRestore}
-            onFavoriteToggle={handleFavoriteToggle}
-        />
+        <div className="flex justify-center w-full">
+            <div className="w-full max-w-[412px]">
+                <NoteEditor 
+                    note={note} 
+                    onSave={handleSave} 
+                    onDelete={handleDelete}
+                    onDeletePermanently={handleDeletePermanently}
+                    onRestore={handleRestore}
+                    onFavoriteToggle={handleFavoriteToggle}
+                />
+            </div>
+        </div>
     );
 }
