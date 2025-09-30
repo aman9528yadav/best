@@ -32,6 +32,7 @@ interface AuthContextType {
   signInWithGoogle: () => Promise<void>;
   signInWithEmail: (email: string, pass: string) => Promise<User | null>;
   signUpWithEmail: (email: string, pass: string, fullName: string) => Promise<void>;
+  resendVerificationEmail: () => Promise<void>;
   logout: () => Promise<void>;
   changePassword: (currentPass: string, newPass: string) => Promise<boolean>;
   sendPasswordReset: (email: string) => Promise<void>;
@@ -78,6 +79,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
                 description: "Please verify your email before logging in.",
                 variant: "destructive"
             });
+            await signOut(auth); // Log out user if email is not verified
             return null;
         }
         router.push('/auth-action?action=login');
@@ -106,7 +108,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             title: "Congratulations!",
             description: "Your account has been created. Please check your email to verify your account.",
         });
-        router.push('/verify-email');
+        router.push(`/verify-email?email=${email}`);
     } catch (error: any) {
         console.error("Error signing up with email", error);
         toast({
@@ -116,6 +118,28 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         });
     }
   }
+  
+  const resendVerificationEmail = async () => {
+    if (user) {
+      try {
+        await sendEmailVerification(user);
+        toast({
+          title: "Verification Email Sent",
+          description: "A new verification link has been sent to your email address.",
+        });
+      } catch (error: any) {
+        console.error("Error resending verification email", error);
+        toast({
+          title: "Error",
+          description: "Could not send verification email. Please try again later.",
+          variant: "destructive",
+        });
+      }
+    } else {
+        toast({ title: "Not logged in", description: "You need to be logged in to resend a verification email.", variant: "destructive"})
+    }
+  };
+
 
   const changePassword = async (currentPass: string, newPass: string): Promise<boolean> => {
     if (!user || !user.email) {
@@ -179,7 +203,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, signInWithGoogle, signInWithEmail, signUpWithEmail, logout, changePassword, sendPasswordReset }}>
+    <AuthContext.Provider value={{ user, loading, signInWithGoogle, signInWithEmail, signUpWithEmail, resendVerificationEmail, logout, changePassword, sendPasswordReset }}>
       {children}
     </AuthContext.Provider>
   );

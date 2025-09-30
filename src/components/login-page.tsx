@@ -12,6 +12,7 @@ import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { ResendVerification } from './resend-verification';
+import { useRouter } from 'next/navigation';
 
 const GoogleIcon = (props: React.SVGProps<SVGSVGElement>) => (
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="24px" height="24px" {...props}>
@@ -39,6 +40,8 @@ export function LoginPage() {
 
   const { signInWithGoogle, signInWithEmail, signUpWithEmail } = useAuth();
   const { toast } = useToast();
+  const router = useRouter();
+
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -49,6 +52,7 @@ export function LoginPage() {
     }
     const user = await signInWithEmail(loginEmail, loginPassword);
     if (user === null) {
+      // User is not verified, or login failed
       setShowResend(true);
     }
   }
@@ -70,6 +74,23 @@ export function LoginPage() {
   const handleGoogleSignIn = async () => {
     await signInWithGoogle();
   }
+  
+  const handleResendFromLogin = async () => {
+    // This is a simplified approach. A real app might need a dedicated flow
+    // if the user isn't 'partially' logged in.
+    try {
+        await signInWithEmailAndPassword(getAuth(), loginEmail, loginPassword);
+        const currentUser = getAuth().currentUser;
+        if(currentUser && !currentUser.emailVerified) {
+            await sendEmailVerification(currentUser);
+            toast({ title: "Verification Sent", description: "A new verification email has been sent."});
+        }
+    } catch (error) {
+        // Find a way to resend without re-authenticating if possible, or guide the user.
+        router.push(`/verify-email?email=${loginEmail}`);
+    }
+  };
+
 
   return (
     <div className="flex flex-col items-center w-full max-w-sm mx-auto">
@@ -108,7 +129,7 @@ export function LoginPage() {
                     </Button>
                   </div>
                 </div>
-                {showResend && <ResendVerification email={loginEmail} />}
+                {showResend && <ResendVerification email={loginEmail} onResend={handleResendFromLogin} />}
                  <div className="flex items-center justify-between pt-2">
                     <Link href="/forgot-password" className="text-sm text-primary hover:underline">
                     Forgot Password?
@@ -155,16 +176,16 @@ export function LoginPage() {
                 <form onSubmit={handleSignUp} className="space-y-4">
                     <div className="space-y-2">
                         <Label htmlFor="full-name">Full Name</Label>
-                        <Input id="full-name" type="text" placeholder="Aman Yadav" className="bg-white/70" value={signupFullName} onChange={(e) => setSignupFullName(e.target.value)} />
+                        <Input id="full-name" type="text" placeholder="Aman Yadav" className="bg-white/70" value={signupFullName} onChange={(e) => setSignupFullName(e.target.value)} required />
                     </div>
                      <div className="space-y-2">
                         <Label htmlFor="signup-email">Email</Label>
-                        <Input id="signup-email" type="email" placeholder="you@domain.com" className="bg-white/70" value={signupEmail} onChange={(e) => setSignupEmail(e.target.value)} />
+                        <Input id="signup-email" type="email" placeholder="you@domain.com" className="bg-white/70" value={signupEmail} onChange={(e) => setSignupEmail(e.target.value)} required />
                     </div>
                     <div className="space-y-2">
                         <Label htmlFor="signup-password">Password</Label>
                         <div className="relative">
-                            <Input id="signup-password" type={passwordVisible ? 'text' : 'password'} placeholder="Create a strong password" className="bg-white/70" value={signupPassword} onChange={(e) => setSignupPassword(e.target.value)} />
+                            <Input id="signup-password" type={passwordVisible ? 'text' : 'password'} placeholder="Create a strong password" className="bg-white/70" value={signupPassword} onChange={(e) => setSignupPassword(e.target.value)} required />
                             <Button type="button" variant="ghost" size="icon" className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 text-muted-foreground" onClick={() => setPasswordVisible(!passwordVisible)}>
                                 {passwordVisible ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                             </Button>
@@ -173,7 +194,7 @@ export function LoginPage() {
                     <div className="space-y-2">
                         <Label htmlFor="confirm-password">Confirm Password</Label>
                         <div className="relative">
-                            <Input id="confirm-password" type={confirmPasswordVisible ? 'text' : 'password'} placeholder="Re-enter your password" className="bg-white/70" value={signupConfirmPassword} onChange={(e) => setSignupConfirmPassword(e.target.value)} />
+                            <Input id="confirm-password" type={confirmPasswordVisible ? 'text' : 'password'} placeholder="Re-enter your password" className="bg-white/70" value={signupConfirmPassword} onChange={(e) => setSignupConfirmPassword(e.target.value)} required />
                             <Button type="button" variant="ghost" size="icon" className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 text-muted-foreground" onClick={() => setConfirmPasswordVisible(!confirmPasswordVisible)}>
                                 {confirmPasswordVisible ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                             </Button>
