@@ -193,7 +193,7 @@ export function AnalyticsPage() {
                 <CardHeader>
                     <CardTitle>Activity Breakdown</CardTitle>
                 </CardHeader>
-                <CardContent className="flex justify-center items-center h-56">
+                <CardContent className="h-[250px] flex justify-center items-center">
                     <ActivityBreakdownChart />
                 </CardContent>
             </Card>

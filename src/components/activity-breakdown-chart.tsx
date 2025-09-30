@@ -58,7 +58,7 @@ export function ActivityBreakdownChart() {
     return chartData.reduce((acc, curr) => acc + curr.value, 0)
   }, [chartData])
 
-  const activeIndex = React.useRef(0)
+  const [activeIndex, setActiveIndex] = React.useState(0);
 
   return (
       <ChartContainer
@@ -66,12 +66,8 @@ export function ActivityBreakdownChart() {
         className="mx-auto aspect-square h-full"
       >
         <PieChart
-          margin={{
-            left: 12,
-            right: 12,
-          }}
           onMouseEnter={(_, index) => {
-            activeIndex.current = index
+            setActiveIndex(index)
           }}
         >
           <ChartTooltip
@@ -84,7 +80,7 @@ export function ActivityBreakdownChart() {
             nameKey="activity"
             innerRadius="60%"
             strokeWidth={5}
-            activeIndex={activeIndex.current}
+            activeIndex={activeIndex}
             activeShape={(props: PieSectorDataItem) => {
               const {
                 cx,
@@ -95,15 +91,10 @@ export function ActivityBreakdownChart() {
                 endAngle,
                 fill,
                 payload,
+                percent,
+                value
               } = props
-              const RADIAN = Math.PI / 180
-              const sin = Math.sin(-RADIAN * ((startAngle + endAngle) / 2))
-              const cos = Math.cos(-RADIAN * ((startAngle + endAngle) / 2))
-              const mx = cx! + (outerRadius! + 10) * cos
-              const my = cy! + (outerRadius! + 10) * sin
-              const ex = mx + (cos >= 0 ? 1 : -1) * 22
-              const ey = my
-
+              
               return (
                 <g>
                   <Sector
@@ -114,8 +105,9 @@ export function ActivityBreakdownChart() {
                     startAngle={startAngle}
                     endAngle={endAngle}
                     fill={fill}
+                    className="outline-none"
                   />
-                  <Sector
+                   <Sector
                     cx={cx}
                     cy={cy}
                     startAngle={startAngle}
@@ -123,59 +115,34 @@ export function ActivityBreakdownChart() {
                     innerRadius={outerRadius! + 6}
                     outerRadius={outerRadius! + 10}
                     fill={fill}
+                    className="outline-none"
                   />
-                  <path
-                    d={`M${ex},${ey}L${mx},${my}L${mx},${my}`}
-                    stroke={fill}
-                    fill="none"
-                  />
-                  <circle cx={ex} cy={ey} r={2} fill={fill} stroke="none" />
-                  <text
-                    x={ex + (cos >= 0 ? 1 : -1) * 12}
-                    y={ey}
-                    dy={18}
-                    textAnchor={cos >= 0 ? "start" : "end"}
-                    fill="hsl(var(--foreground))"
-                    className="text-sm"
+                   <text
+                    x={cx}
+                    y={cy}
+                    textAnchor="middle"
+                    dominantBaseline="middle"
+                    className="fill-foreground text-center outline-none"
                   >
-                    Rate {((payload.value / totalValue) * 100).toFixed(0)}%
+                    <tspan
+                      x={cx}
+                      y={(cy || 0) - 10}
+                      className="text-2xl font-bold"
+                    >
+                      {value}
+                    </tspan>
+                    <tspan
+                      x={cx}
+                      y={(cy || 0) + 12}
+                      className="text-xs text-muted-foreground"
+                    >
+                     {chartConfig[payload.activity as keyof typeof chartConfig].label}
+                    </tspan>
                   </text>
                 </g>
               )
             }}
           >
-            <Label
-              content={({ viewBox }) => {
-                if (viewBox && "cx" in viewBox && "cy" in viewBox) {
-                  const { cx, cy } = viewBox;
-                  const activeEntry = chartData[activeIndex.current];
-                  return (
-                    <text
-                      x={cx}
-                      y={cy}
-                      textAnchor="middle"
-                      dominantBaseline="middle"
-                      className="fill-foreground text-center"
-                    >
-                      <tspan
-                        x={cx}
-                        y={(cy || 0) - 4}
-                        className="text-lg font-bold"
-                      >
-                        {activeEntry.value}
-                      </tspan>
-                      <tspan
-                        x={cx}
-                        y={(cy || 0) + 16}
-                        className="text-xs text-muted-foreground"
-                      >
-                        {chartConfig[activeEntry.activity as keyof typeof chartConfig].label}
-                      </tspan>
-                    </text>
-                  )
-                }
-              }}
-            />
           </Pie>
         </PieChart>
       </ChartContainer>
