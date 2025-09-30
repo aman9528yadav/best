@@ -32,6 +32,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { useNotifications } from '@/context/NotificationContext';
 import { formatDistanceToNow } from 'date-fns';
+import { SearchDialog } from './search-dialog';
 
 export function Header() {
   const { setDevMode } = useMaintenance();
@@ -41,6 +42,7 @@ export function Header() {
   const router = useRouter();
   const [showLoginDialog, setShowLoginDialog] = useState(false);
   const { notifications, markAllAsRead, unreadCount, removeNotification } = useNotifications();
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
 
   const handleLogoClick = () => {
     const newClickCount = clickCount + 1;
@@ -91,7 +93,7 @@ export function Header() {
                 <Home className="h-5 w-5" />
               </Link>
             </Button>
-            <Button variant="ghost" size="icon" aria-label="Search">
+            <Button variant="ghost" size="icon" aria-label="Search" onClick={() => setIsSearchOpen(true)}>
               <Search className="h-5 w-5" />
             </Button>
             
@@ -141,6 +143,7 @@ export function Header() {
           </div>
         </div>
       </Card>
+      <SearchDialog open={isSearchOpen} onOpenChange={setIsSearchOpen} />
        <AlertDialog open={showLoginDialog} onOpenChange={setShowLoginDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
