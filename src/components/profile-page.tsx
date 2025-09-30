@@ -71,6 +71,8 @@ export function ProfilePage() {
     const displayAvatar = user?.photoURL;
     const avatarFallback = displayName.charAt(0).toUpperCase();
 
+    const isOwner = displayEmail === 'amanyadavyadav9458@gmail.com';
+
     return (
         <div className="w-full space-y-6 pb-12">
             <Card className="shadow-lg overflow-visible">
@@ -103,7 +105,11 @@ export function ProfilePage() {
                     <div className="space-y-1">
                         <h2 className="text-2xl font-bold">{displayName}</h2>
                         <div className="flex items-center justify-center gap-2">
-                             <Badge variant="outline" className="border-yellow-500 text-yellow-500">Owner</Badge>
+                            {isOwner ? (
+                                <Badge variant="outline" className="border-yellow-500 text-yellow-500">Owner</Badge>
+                            ) : (
+                                <Badge variant="secondary">Member</Badge>
+                            )}
                         </div>
                         <p className="text-sm text-muted-foreground">{displayEmail}</p>
                     </div>
