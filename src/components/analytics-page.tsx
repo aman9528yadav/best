@@ -31,6 +31,7 @@ import {
   ChevronDown,
 } from 'lucide-react';
 import { useHistory } from '@/context/HistoryContext';
+import { useProfile } from '@/context/ProfileContext';
 import { isToday, isYesterday, formatDistanceToNow } from 'date-fns';
 import { UsageTrendChart } from './usage-trend-chart';
 import { ActivityBreakdownChart } from './activity-breakdown-chart';
@@ -87,20 +88,28 @@ const DayOverDayComparison = ({ label, value }: { label: string, value: number }
 
 export function AnalyticsPage() {
     const { history, favorites } = useHistory();
+    const { profile } = useProfile();
     const [showMoreStats, setShowMoreStats] = useState(false);
     const [usageTrendType, setUsageTrendType] = useState('bar');
     const [usageTrendPeriod, setUsageTrendPeriod] = useState('weekly');
 
     const analyticsData = useMemo(() => {
-        const today = new Date();
         const conversions = history.filter(h => h.type === 'conversion');
         const calculatorOps = history.filter(h => h.type === 'calculator');
+        // This is a placeholder, you'd need to add a history type for date calculations
+        const dateCalculations = history.filter(h => h.type === 'date_calculation').length;
         
-        const conversionsToday = conversions.filter(c => isToday(new Date(c.timestamp))).length;
-        const conversionsYesterday = conversions.filter(c => isYesterday(new Date(c.timestamp))).length;
+        const getCountForDay = (items: any[], dateFn: (d: Date) => boolean) => {
+            return items.filter(c => dateFn(new Date(c.timestamp))).length;
+        }
 
-        const calculatorOpsToday = calculatorOps.filter(c => isToday(new Date(c.timestamp))).length;
-        const calculatorOpsYesterday = calculatorOps.filter(c => isYesterday(new Date(c.timestamp))).length;
+        const conversionsToday = getCountForDay(conversions, isToday);
+        const conversionsYesterday = getCountForDay(conversions, isYesterday);
+        const calculatorOpsToday = getCountForDay(calculatorOps, isToday);
+        const calculatorOpsYesterday = getCountForDay(calculatorOps, isYesterday);
+        // Placeholder for date calcs until history is implemented
+        const dateCalculationsToday = 0;
+        const dateCalculationsYesterday = 0;
         
         const calcPercentageChange = (todayCount: number, yesterdayCount: number) => {
             if (yesterdayCount === 0) return todayCount > 0 ? 100 : 0;
@@ -116,13 +125,16 @@ export function AnalyticsPage() {
                 value: calculatorOps.length,
                 change: calcPercentageChange(calculatorOpsToday, calculatorOpsYesterday)
             },
-            dateCalculations: { value: 19, change: -100 }, // Dummy data
-            currentStreak: { value: '0', description: 'Best Streak: 3 days' }, // Dummy data
-            savedNotes: { value: 3, change: 0 }, // Dummy data
-            recycleBin: { value: 5, description: 'Items in bin' }, // Dummy data
+            dateCalculations: { 
+                value: dateCalculations, 
+                change: calcPercentageChange(dateCalculationsToday, dateCalculationsYesterday)
+            },
+            currentStreak: { value: profile.stats.streak, description: 'Best Streak: 3 days' }, // Assuming best streak is tracked elsewhere
+            savedNotes: { value: 3, change: 0 }, // Placeholder
+            recycleBin: { value: 5, description: 'Items in bin' }, // Placeholder
             favoriteConversions: { value: favorites.length, description: 'Your top conversions' },
         };
-    }, [history, favorites]);
+    }, [history, favorites, profile.stats.streak]);
 
     const lastActivities = history.slice(0, 2).map(item => {
         let title = '';
@@ -147,6 +159,12 @@ export function AnalyticsPage() {
     ];
 
     const visibleStats = showMoreStats ? allStats : allStats.slice(0, 4);
+    
+    const dayOverDayConversions = getCountForDay(history.filter(h => h.type === 'conversion'), isToday) - getCountForDay(history.filter(h => h.type === 'conversion'), isYesterday);
+    const dayOverDayCalculator = getCountForDay(history.filter(h => h.type === 'calculator'), isToday) - getCountForDay(history.filter(h => h.type === 'calculator'), isYesterday);
+    // Placeholder until date calc history is implemented
+    const dayOverDayDateCalcs = 0;
+
 
     return (
         <div className="w-full space-y-6 pb-12">
@@ -203,9 +221,9 @@ export function AnalyticsPage() {
                     <CardTitle>Day-over-Day Comparison</CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <DayOverDayComparison label="Conversions" value={-2} />
-                    <DayOverDayComparison label="Calculator" value={0} />
-                    <DayOverDayComparison label="Date Calcs" value={-3} />
+                    <DayOverDayComparison label="Conversions" value={dayOverDayConversions} />
+                    <DayOverDayComparison label="Calculator" value={dayOverDayCalculator} />
+                    <DayOverDayComparison label="Date Calcs" value={dayOverDayDateCalcs} />
                 </CardContent>
             </Card>
 

@@ -43,15 +43,15 @@ export function ActivityBreakdownChart() {
   const chartData = React.useMemo(() => {
     const conversions = history.filter((h) => h.type === "conversion").length
     const calculator = history.filter((h) => h.type === "calculator").length
-    // Assuming you'll add date and notes history later
-    const date = 19; // Dummy data
-    const notes = 3; // Dummy data
+    // This is placeholder data until the history context is updated to track these
+    const date = history.filter((h) => h.type === "date_calculation").length;
+    const notes = history.filter((h) => h.type === "note").length;
     return [
       { activity: "conversions", value: conversions, fill: "var(--color-conversions)" },
       { activity: "calculator", value: calculator, fill: "var(--color-calculator)" },
       { activity: "date", value: date, fill: "var(--color-date)" },
       { activity: "notes", value: notes, fill: "var(--color-notes)" },
-    ]
+    ].filter(d => d.value > 0);
   }, [history]);
 
   const totalValue = React.useMemo(() => {
@@ -59,6 +59,15 @@ export function ActivityBreakdownChart() {
   }, [chartData])
 
   const [activeIndex, setActiveIndex] = React.useState(0);
+  
+  if (chartData.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
+        <p>No activity yet.</p>
+        <p className="text-xs">Start using the app to see your breakdown.</p>
+      </div>
+    )
+  }
 
   return (
       <ChartContainer
