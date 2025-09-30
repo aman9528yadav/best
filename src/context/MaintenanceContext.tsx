@@ -5,7 +5,7 @@
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { Wrench, Rocket, User, Languages, Bug, Icon as LucideIcon, GitBranch, Sparkles } from 'lucide-react';
-import { doc, getDoc, setDoc, onSnapshot } from 'firebase/firestore';
+import { get, ref, onValue, set } from 'firebase/database';
 import { db } from '@/lib/firebase';
 
 export type UpdateItem = {
@@ -175,7 +175,7 @@ const defaultMaintenanceConfig: MaintenanceConfig = {
                 version: 'Beta 1.1',
                 date: '12 Aug, 2024',
                 title: 'First Beta Release',
-                description: 'Our journey begins! You may face some bugs🐞, but we\'re improving every day. Thanks for testing 🙏.',
+                description: 'Our journey begins! You may face some bugs🐞, but we\'\'\'re improving every day. Thanks for testing 🙏.',
                 details: ['Unit converter added', 'Notes app added'],
                 icon: 'GitBranch',
                 status: 'completed',
@@ -224,7 +224,7 @@ export const MaintenanceProvider = ({ children }: { children: ReactNode }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [isDevMode, setDevModeState] = useState<boolean>(false);
   const [maintenanceConfig, setMaintenanceConfigState] = useState<MaintenanceConfig>(defaultMaintenanceConfig);
-  const configDocRef = doc(db, 'config', 'maintenance');
+  const configRef = ref(db, 'config');
 
   useEffect(() => {
     try {
@@ -236,13 +236,13 @@ export const MaintenanceProvider = ({ children }: { children: ReactNode }) => {
       console.error("Failed to load dev mode from localStorage", error);
     }
     
-    const unsubscribe = onSnapshot(configDocRef, 
-      (docSnap) => {
-        if (docSnap.exists()) {
-            setMaintenanceConfigState(docSnap.data() as MaintenanceConfig);
+    const unsubscribe = onValue(configRef, 
+      (snapshot) => {
+        if (snapshot.exists()) {
+            setMaintenanceConfigState(snapshot.val());
         } else {
-            // Document doesn't exist, so create it with default values
-            setDoc(configDocRef, defaultMaintenanceConfig).catch(err => console.error("Error creating default config", err));
+            // Data doesn't exist, so create it with default values
+            set(configRef, defaultMaintenanceConfig).catch(err => console.error("Error creating default config", err));
             setMaintenanceConfigState(defaultMaintenanceConfig);
         }
         setIsLoading(false);
@@ -258,17 +258,17 @@ export const MaintenanceProvider = ({ children }: { children: ReactNode }) => {
   
   const updateMaintenanceConfigInDb = async (newConfig: MaintenanceConfig) => {
     try {
-      await setDoc(configDocRef, newConfig, { merge: true });
+      await set(configRef, newConfig);
     } catch (error) {
       console.error("Error updating maintenance config:", error);
     }
   };
 
   const setMaintenanceConfig = (setter: React.SetStateAction<MaintenanceConfig>) => {
-    // This function will be called with the new state value or a function to update the state.
-    // We get the current state, compute the new state, and then write it to Firestore.
-    // The `onSnapshot` listener will then update the local state for all clients.
     const newConfig = typeof setter === 'function' ? setter(maintenanceConfig) : setter;
+    // We update the state optimistically and then write to the DB.
+    // The onValue listener will handle any remote changes.
+    setMaintenanceConfigState(newConfig);
     updateMaintenanceConfigInDb(newConfig);
   };
   
