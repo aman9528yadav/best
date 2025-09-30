@@ -35,7 +35,6 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -163,7 +162,6 @@ export default function ManageUpdatesPage() {
   const [itemToDelete, setItemToDelete] = useState<string | null>(null);
   const [isClearAllDialogOpen, setIsClearAllDialogOpen] = useState(false);
 
-
   const addUpdateItem = (item: Omit<UpdateItem, 'id'>) => {
     const newItem = { ...item, id: `${Date.now()}-${Math.random().toString(36).substring(2, 9)}` };
     setMaintenanceConfig(prev => ({...prev, updateItems: [newItem, ...prev.updateItems]}));
@@ -221,9 +219,25 @@ export default function ManageUpdatesPage() {
             </div>
           </div>
           <div className="flex gap-2">
-            <Button size="sm" variant="destructive" className="gap-2" onClick={() => setIsClearAllDialogOpen(true)}>
-                <Trash2 className="h-4 w-4" /> Clear All
-            </Button>
+             <AlertDialog open={isClearAllDialogOpen} onOpenChange={setIsClearAllDialogOpen}>
+              <AlertDialogTrigger asChild>
+                <Button size="sm" variant="destructive" className="gap-2">
+                  <Trash2 className="h-4 w-4" /> Clear All
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This action cannot be undone. This will permanently delete all update items.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction onClick={clearAllUpdateItems}>Continue</AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
             <Button
               size="sm"
               className="gap-2"
@@ -266,9 +280,25 @@ export default function ManageUpdatesPage() {
                         >
                           <Pencil className="h-4 w-4" />
                         </Button>
-                        <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => setItemToDelete(item.id)}>
-                            <Trash2 className="h-4 w-4" />
-                        </Button>
+                        <AlertDialog open={itemToDelete === item.id} onOpenChange={(open) => !open && setItemToDelete(null)}>
+                            <AlertDialogTrigger asChild>
+                                <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => setItemToDelete(item.id)}>
+                                    <Trash2 className="h-4 w-4" />
+                                </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                                <AlertDialogHeader>
+                                <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                    This will permanently delete the update item.
+                                </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                <AlertDialogCancel onClick={() => setItemToDelete(null)}>Cancel</AlertDialogCancel>
+                                <AlertDialogAction onClick={() => deleteUpdateItem(item.id)}>Delete</AlertDialogAction>
+                                </AlertDialogFooter>
+                            </AlertDialogContent>
+                        </AlertDialog>
                     </div>
                   </div>
                 </CardContent>
@@ -298,37 +328,6 @@ export default function ManageUpdatesPage() {
           />
         </DialogContent>
       </Dialog>
-      
-      <AlertDialog open={itemToDelete !== null} onOpenChange={() => setItemToDelete(null)}>
-        <AlertDialogContent>
-            <AlertDialogHeader>
-            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-            <AlertDialogDescription>
-                This will permanently delete the update item.
-            </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-            <AlertDialogCancel onClick={() => setItemToDelete(null)}>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={() => deleteUpdateItem(itemToDelete!)}>Delete</AlertDialogAction>
-            </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-
-      <AlertDialog open={isClearAllDialogOpen} onOpenChange={setIsClearAllDialogOpen}>
-        <AlertDialogContent>
-            <AlertDialogHeader>
-            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-            <AlertDialogDescription>
-                This action cannot be undone. This will permanently delete all update items.
-            </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={clearAllUpdateItems}>Continue</AlertDialogAction>
-            </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-
     </div>
   );
 }

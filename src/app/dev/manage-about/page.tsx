@@ -162,6 +162,8 @@ export default function ManageAboutPage() {
   
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<RoadmapItem | null>(null);
+  const [itemToDelete, setItemToDelete] = useState<string | null>(null);
+  const [isClearAllDialogOpen, setIsClearAllDialogOpen] = useState(false);
 
   const founderImage = PlaceHolderImages.find(p => p.id === ownerInfo.photoId);
 
@@ -188,6 +190,7 @@ export default function ManageAboutPage() {
         roadmap: prev.aboutPageContent.roadmap.filter(i => i.id !== id)
       }
     }));
+    setItemToDelete(null);
   };
   
   const clearAllRoadmapItems = () => {
@@ -198,6 +201,7 @@ export default function ManageAboutPage() {
         roadmap: []
       }
     }));
+    setIsClearAllDialogOpen(false);
   }
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>, section: string, field: string) => {
@@ -305,7 +309,7 @@ export default function ManageAboutPage() {
                 <CardHeader className="flex flex-row items-center justify-between">
                     <CardTitle>Release Plan</CardTitle>
                     <div className="flex gap-2">
-                        <AlertDialog>
+                        <AlertDialog open={isClearAllDialogOpen} onOpenChange={setIsClearAllDialogOpen}>
                             <AlertDialogTrigger asChild>
                                 <Button size="sm" variant="destructive" className="gap-2"><Trash2 className="h-4 w-4" />Clear All</Button>
                             </AlertDialogTrigger>
@@ -339,9 +343,9 @@ export default function ManageAboutPage() {
                             </div>
                             <div className="flex flex-col ml-2 gap-2">
                                 <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleEditRoadmap(item)}><Pencil className="h-4 w-4" /></Button>
-                                <AlertDialog>
+                                <AlertDialog open={itemToDelete === item.id} onOpenChange={(open) => !open && setItemToDelete(null)}>
                                     <AlertDialogTrigger asChild>
-                                        <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive"><Trash2 className="h-4 w-4" /></Button>
+                                        <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => setItemToDelete(item.id)}><Trash2 className="h-4 w-4" /></Button>
                                     </AlertDialogTrigger>
                                     <AlertDialogContent>
                                         <AlertDialogHeader>
