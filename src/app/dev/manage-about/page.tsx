@@ -23,6 +23,17 @@ import {
   DialogDescription,
   DialogFooter,
 } from '@/components/ui/dialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -228,18 +239,6 @@ export default function ManageAboutPage() {
     setEditingItem(null);
   };
 
-  const handleDeleteRoadmap = (id: string) => {
-    if (confirm('Are you sure you want to delete this roadmap item?')) {
-        deleteRoadmapItem(id);
-    }
-  };
-
-  const handleClearAllRoadmap = () => {
-    if (confirm('Are you sure you want to delete ALL roadmap items? This cannot be undone.')) {
-        clearAllRoadmapItems();
-    }
-  }
-
   return (
     <div className="flex flex-col items-center w-full min-h-screen bg-background text-foreground p-4">
       <div className="w-full max-w-[412px] flex flex-col flex-1">
@@ -306,7 +305,23 @@ export default function ManageAboutPage() {
                 <CardHeader className="flex flex-row items-center justify-between">
                     <CardTitle>Release Plan</CardTitle>
                     <div className="flex gap-2">
-                        <Button size="sm" variant="destructive" className="gap-2" onClick={handleClearAllRoadmap}><Trash2 className="h-4 w-4" />Clear All</Button>
+                        <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                                <Button size="sm" variant="destructive" className="gap-2"><Trash2 className="h-4 w-4" />Clear All</Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                                <AlertDialogHeader>
+                                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                    This action cannot be undone. This will permanently delete all roadmap items.
+                                </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                <AlertDialogAction onClick={clearAllRoadmapItems}>Continue</AlertDialogAction>
+                                </AlertDialogFooter>
+                            </AlertDialogContent>
+                        </AlertDialog>
                         <Button size="sm" className="gap-2" onClick={handleAddNewRoadmap}><Plus className="h-4 w-4" />Add Item</Button>
                     </div>
                 </CardHeader>
@@ -324,7 +339,23 @@ export default function ManageAboutPage() {
                             </div>
                             <div className="flex flex-col ml-2 gap-2">
                                 <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleEditRoadmap(item)}><Pencil className="h-4 w-4" /></Button>
-                                <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => handleDeleteRoadmap(item.id)}><Trash2 className="h-4 w-4" /></Button>
+                                <AlertDialog>
+                                    <AlertDialogTrigger asChild>
+                                        <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive"><Trash2 className="h-4 w-4" /></Button>
+                                    </AlertDialogTrigger>
+                                    <AlertDialogContent>
+                                        <AlertDialogHeader>
+                                        <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                                        <AlertDialogDescription>
+                                            This will permanently delete the roadmap item "{item.title}".
+                                        </AlertDialogDescription>
+                                        </AlertDialogHeader>
+                                        <AlertDialogFooter>
+                                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                        <AlertDialogAction onClick={() => deleteRoadmapItem(item.id)}>Delete</AlertDialogAction>
+                                        </AlertDialogFooter>
+                                    </AlertDialogContent>
+                                </AlertDialog>
                             </div>
                         </div>
                     </Card>
@@ -359,3 +390,5 @@ export default function ManageAboutPage() {
     </div>
   );
 }
+
+    

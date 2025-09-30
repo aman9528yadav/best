@@ -26,6 +26,17 @@ import {
   DialogDescription,
   DialogFooter,
 } from '@/components/ui/dialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -187,18 +198,6 @@ export default function ManageUpdatesPage() {
     setEditingItem(null);
   };
 
-  const handleDelete = (id: string) => {
-    if (window.confirm('Are you sure you want to delete this update item?')) {
-        deleteUpdateItem(id);
-    }
-  };
-
-  const handleClearAll = () => {
-    if (window.confirm('Are you sure you want to delete ALL update items? This cannot be undone.')) {
-        clearAllUpdateItems();
-    }
-  }
-
   return (
     <div className="flex flex-col items-center w-full min-h-screen bg-background text-foreground p-4">
       <div className="w-full max-w-[412px] flex flex-col flex-1">
@@ -217,15 +216,25 @@ export default function ManageUpdatesPage() {
             </div>
           </div>
           <div className="flex gap-2">
-            <Button
-              size="sm"
-              variant="destructive"
-              className="gap-2"
-              onClick={handleClearAll}
-            >
-              <Trash2 className="h-4 w-4" />
-              Clear All
-            </Button>
+            <AlertDialog>
+                <AlertDialogTrigger asChild>
+                    <Button size="sm" variant="destructive" className="gap-2">
+                        <Trash2 className="h-4 w-4" /> Clear All
+                    </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                    <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                        This action cannot be undone. This will permanently delete all update items.
+                    </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction onClick={clearAllUpdateItems}>Continue</AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
             <Button
               size="sm"
               className="gap-2"
@@ -268,14 +277,25 @@ export default function ManageUpdatesPage() {
                         >
                           <Pencil className="h-4 w-4" />
                         </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 text-destructive"
-                          onClick={() => handleDelete(item.id)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
+                        <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                                <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive">
+                                    <Trash2 className="h-4 w-4" />
+                                </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                                <AlertDialogHeader>
+                                <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                    This will permanently delete the update item "{item.title}".
+                                </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                <AlertDialogAction onClick={() => deleteUpdateItem(item.id)}>Delete</AlertDialogAction>
+                                </AlertDialogFooter>
+                            </AlertDialogContent>
+                        </AlertDialog>
                     </div>
                   </div>
                 </CardContent>
@@ -308,3 +328,5 @@ export default function ManageUpdatesPage() {
     </div>
   );
 }
+
+    
