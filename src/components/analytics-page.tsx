@@ -92,24 +92,22 @@ export function AnalyticsPage() {
     const [showMoreStats, setShowMoreStats] = useState(false);
     const [usageTrendType, setUsageTrendType] = useState('bar');
     const [usageTrendPeriod, setUsageTrendPeriod] = useState('weekly');
+    
+    const getCountForDay = (items: any[], dateFn: (d: Date) => boolean) => {
+        return items.filter(c => dateFn(new Date(c.timestamp))).length;
+    }
 
     const analyticsData = useMemo(() => {
         const conversions = history.filter(h => h.type === 'conversion');
         const calculatorOps = history.filter(h => h.type === 'calculator');
-        // This is a placeholder, you'd need to add a history type for date calculations
         const dateCalculations = history.filter(h => h.type === 'date_calculation').length;
         
-        const getCountForDay = (items: any[], dateFn: (d: Date) => boolean) => {
-            return items.filter(c => dateFn(new Date(c.timestamp))).length;
-        }
-
         const conversionsToday = getCountForDay(conversions, isToday);
         const conversionsYesterday = getCountForDay(conversions, isYesterday);
         const calculatorOpsToday = getCountForDay(calculatorOps, isToday);
         const calculatorOpsYesterday = getCountForDay(calculatorOps, isYesterday);
-        // Placeholder for date calcs until history is implemented
-        const dateCalculationsToday = 0;
-        const dateCalculationsYesterday = 0;
+        const dateCalculationsToday = getCountForDay(history.filter(h => h.type === 'date_calculation'), isToday);
+        const dateCalculationsYesterday = getCountForDay(history.filter(h => h.type === 'date_calculation'), isYesterday);
         
         const calcPercentageChange = (todayCount: number, yesterdayCount: number) => {
             if (yesterdayCount === 0) return todayCount > 0 ? 100 : 0;
@@ -129,12 +127,12 @@ export function AnalyticsPage() {
                 value: dateCalculations, 
                 change: calcPercentageChange(dateCalculationsToday, dateCalculationsYesterday)
             },
-            currentStreak: { value: profile.stats.streak, description: 'Best Streak: 3 days' }, // Assuming best streak is tracked elsewhere
+            currentStreak: { value: profile.stats.streak, description: `Best: ${profile.stats.streak} days` },
             savedNotes: { value: 3, change: 0 }, // Placeholder
             recycleBin: { value: 5, description: 'Items in bin' }, // Placeholder
             favoriteConversions: { value: favorites.length, description: 'Your top conversions' },
         };
-    }, [history, favorites, profile.stats.streak]);
+    }, [history, favorites, profile.stats.streak, getCountForDay]);
 
     const lastActivities = history.slice(0, 2).map(item => {
         let title = '';
@@ -162,8 +160,7 @@ export function AnalyticsPage() {
     
     const dayOverDayConversions = getCountForDay(history.filter(h => h.type === 'conversion'), isToday) - getCountForDay(history.filter(h => h.type === 'conversion'), isYesterday);
     const dayOverDayCalculator = getCountForDay(history.filter(h => h.type === 'calculator'), isToday) - getCountForDay(history.filter(h => h.type === 'calculator'), isYesterday);
-    // Placeholder until date calc history is implemented
-    const dayOverDayDateCalcs = 0;
+    const dayOverDayDateCalcs = getCountForDay(history.filter(h => h.type === 'date_calculation'), isToday) - getCountForDay(history.filter(h => h.type === 'date_calculation'), isYesterday);
 
 
     return (
