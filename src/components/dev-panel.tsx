@@ -292,10 +292,16 @@ export function DevPanel() {
                       onChange={(e) => setBroadcastMessage(e.target.value)}
                       rows={4}
                     />
-                    <Button className="w-full gap-2" onClick={handleSendBroadcast}>
-                      <Send className="h-4 w-4" />
-                      Send Broadcast
-                    </Button>
+                    <div className="flex gap-2">
+                      <Button variant="outline" className="w-full gap-2" onClick={() => setBroadcastMessage('')}>
+                          <Trash className="h-4 w-4" />
+                          Clear
+                      </Button>
+                      <Button className="w-full gap-2" onClick={handleSendBroadcast}>
+                        <Send className="h-4 w-4" />
+                        Send Broadcast
+                      </Button>
+                    </div>
                 </AccordionContent>
               </Card>
             </AccordionItem>
