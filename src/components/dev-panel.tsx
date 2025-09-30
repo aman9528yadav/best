@@ -2,7 +2,7 @@
 
 "use client";
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -19,13 +19,15 @@ import {
 } from '@/components/ui/accordion';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import { ArrowLeft, Clock, Shield, Trash, Megaphone, Pencil, ChevronRight } from 'lucide-react';
+import { ArrowLeft, Clock, Shield, Trash, Megaphone, Pencil, ChevronRight, Send } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useMaintenance } from '@/context/MaintenanceContext';
 import { useToast } from '@/hooks/use-toast';
 import { Input } from './ui/input';
 import { Textarea } from './ui/textarea';
 import Link from 'next/link';
+import { ref, set } from 'firebase/database';
+import { rtdb } from '@/lib/firebase';
 
 export function DevPanel() {
   const router = useRouter();
@@ -36,6 +38,8 @@ export function DevPanel() {
     isLoading,
   } = useMaintenance();
   const { globalMaintenance, dashboardBanner, maintenanceCountdown, maintenanceMessage } = maintenanceConfig;
+  const [broadcastMessage, setBroadcastMessage] = useState('');
+
 
   const handleGlobalMaintenanceChange = (checked: boolean) => {
     setMaintenanceConfig(prev => ({...prev, globalMaintenance: checked }));
@@ -97,6 +101,25 @@ export function DevPanel() {
   const handleMaintenanceMessageChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setMaintenanceConfig(prev => ({ ...prev, maintenanceMessage: e.target.value }));
   }
+
+  const handleSendBroadcast = () => {
+    if (!broadcastMessage.trim()) {
+      toast({ title: 'Cannot send empty message', variant: 'destructive' });
+      return;
+    }
+    const messageRef = ref(rtdb, 'broadcast/message');
+    set(messageRef, {
+      text: broadcastMessage,
+      timestamp: new Date().toISOString(),
+    })
+    .then(() => {
+      toast({ title: 'Broadcast Sent!' });
+      setBroadcastMessage('');
+    })
+    .catch((error) => {
+      toast({ title: 'Broadcast Failed', description: error.message, variant: 'destructive' });
+    });
+  };
 
 
   return (
@@ -243,6 +266,36 @@ export function DevPanel() {
                       <ChevronRight className="h-4 w-4" />
                     </Link>
                   </Button>
+                </AccordionContent>
+              </Card>
+            </AccordionItem>
+
+            <AccordionItem value="item-4" asChild>
+              <Card>
+                 <CardHeader className="p-4">
+                  <AccordionTrigger className="p-0 hover:no-underline">
+                    <div className="flex items-center gap-3">
+                      <Send className="h-5 w-5" />
+                      <div>
+                        <CardTitle className="text-lg">Broadcast Message</CardTitle>
+                        <CardDescription>
+                          Send a real-time message to all users.
+                        </CardDescription>
+                      </div>
+                    </div>
+                  </AccordionTrigger>
+                </CardHeader>
+                <AccordionContent className="px-4 pb-4 space-y-4">
+                    <Textarea 
+                      placeholder="Type your broadcast message here..." 
+                      value={broadcastMessage}
+                      onChange={(e) => setBroadcastMessage(e.target.value)}
+                      rows={4}
+                    />
+                    <Button className="w-full gap-2" onClick={handleSendBroadcast}>
+                      <Send className="h-4 w-4" />
+                      Send Broadcast
+                    </Button>
                 </AccordionContent>
               </Card>
             </AccordionItem>

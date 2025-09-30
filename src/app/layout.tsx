@@ -1,3 +1,4 @@
+
 import type { Metadata } from 'next';
 import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
@@ -6,6 +7,7 @@ import { ProfileProvider } from '@/context/ProfileContext';
 import { MaintenanceProvider, MaintenanceWrapper } from '@/context/MaintenanceContext';
 import { AuthProvider } from '@/context/AuthContext';
 import { ThemeProvider } from '@/components/theme-provider';
+import { BroadcastListener } from '@/components/broadcast-listener';
 
 
 export const metadata: Metadata = {
@@ -43,6 +45,7 @@ export default function RootLayout({
                     {children}
                   </MaintenanceWrapper>
                   <Toaster />
+                  <BroadcastListener />
                 </HistoryProvider>
               </ProfileProvider>
             </MaintenanceProvider>
@@ -52,5 +55,3 @@ export default function RootLayout({
     </html>
   );
 }
-
-    
