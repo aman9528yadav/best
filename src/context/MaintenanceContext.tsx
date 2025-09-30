@@ -157,8 +157,8 @@ const defaultMaintenanceConfig: MaintenanceConfig = {
 export const MaintenanceProvider = ({ children }: { children: ReactNode }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [maintenanceConfig, setMaintenanceConfig] = useState<MaintenanceConfig>(defaultMaintenanceConfig);
-  const isInitialLoad = useRef(true);
   const configRef = ref(rtdb, 'config');
+  const isInitialLoad = useRef(true);
 
   useEffect(() => {
     const unsubscribe = onValue(configRef, 
@@ -186,7 +186,6 @@ export const MaintenanceProvider = ({ children }: { children: ReactNode }) => {
             };
             setMaintenanceConfig(mergedConfig);
         } else {
-            // Set default in DB if it doesn't exist
             set(configRef, defaultMaintenanceConfig).catch(err => console.error("Error creating default config in DB", err));
             setMaintenanceConfig(defaultMaintenanceConfig);
         }
@@ -195,7 +194,6 @@ export const MaintenanceProvider = ({ children }: { children: ReactNode }) => {
       }, 
       (error) => {
           console.error("Error fetching maintenance config:", error);
-          // On error, fall back to defaults
           setMaintenanceConfig(defaultMaintenanceConfig);
           setIsLoading(false);
           isInitialLoad.current = false;
@@ -204,13 +202,11 @@ export const MaintenanceProvider = ({ children }: { children: ReactNode }) => {
     return () => unsubscribe();
   }, []);
   
-  // This useEffect reliably syncs any state change to the database
   useEffect(() => {
-    // We skip the very first load to prevent writing default data over the DB data
     if (!isLoading && !isInitialLoad.current) {
-      set(configRef, maintenanceConfig).catch(error => {
-          console.error("Error updating maintenance config:", error);
-      });
+        set(configRef, maintenanceConfig).catch(error => {
+            console.error("Error updating maintenance config:", error);
+        });
     }
   }, [maintenanceConfig, isLoading]);
   
@@ -304,7 +300,6 @@ export const MaintenanceWrapper = ({ children }: { children: ReactNode }) => {
         const isUnderMaintenance = maintenanceConfig.globalMaintenance;
         const isMaintenancePage = pathname === '/maintenance';
         
-        // Allow access to dev panel and settings only if dev mode is enabled
         const isAllowedPath = isMaintenancePage || (isDevMode && (pathname.startsWith('/dev') || pathname === '/settings'));
 
         if (isUnderMaintenance && !isAllowedPath) {
@@ -318,11 +313,9 @@ export const MaintenanceWrapper = ({ children }: { children: ReactNode }) => {
     }, [maintenanceConfig.globalMaintenance, isDevMode, pathname, router, isLoading]);
     
     if (isLoading) {
-        // You can return a global loader here if you want
         return null;
     }
     
-    // If maintenance is on, and the current page isn't allowed, don't render it to prevent flashes of content
     if (maintenanceConfig.globalMaintenance && !pathname.startsWith('/maintenance') && !(isDevMode && (pathname.startsWith('/dev') || pathname === '/settings'))) {
       return null;
     }

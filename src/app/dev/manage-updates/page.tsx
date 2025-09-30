@@ -207,33 +207,35 @@ export default function ManageUpdatesPage() {
             const ItemIcon = iconMap[item.icon] || Bug;
             return (
               <Card key={item.id}>
-                <CardContent className="p-3 flex justify-between items-center">
-                  <div className="flex items-center gap-3 flex-1">
-                    <ItemIcon className="h-4 w-4 text-muted-foreground" />
-                    <div className="flex-1">
-                      <p className="font-medium">{item.title}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {item.date}
-                      </p>
+                <CardContent className="p-3">
+                  <div className="flex justify-between items-start">
+                    <div className="flex items-center gap-3 flex-1">
+                        <ItemIcon className="h-4 w-4 text-muted-foreground" />
+                        <div className="flex-1">
+                        <p className="font-medium">{item.title}</p>
+                        <p className="text-xs text-muted-foreground">
+                            {item.date}
+                        </p>
+                        </div>
                     </div>
-                  </div>
-                  <div className="flex items-center">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8"
-                      onClick={() => handleEdit(item)}
-                    >
-                      <Pencil className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8 text-destructive"
-                       onClick={() => handleDelete(item.id)}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+                    <div className="flex items-center">
+                        <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8"
+                        onClick={() => handleEdit(item)}
+                        >
+                        <Pencil className="h-4 w-4" />
+                        </Button>
+                        <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-destructive"
+                        onClick={() => handleDelete(item.id)}
+                        >
+                        <Trash2 className="h-4 w-4" />
+                        </Button>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
