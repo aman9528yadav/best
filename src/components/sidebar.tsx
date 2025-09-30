@@ -57,7 +57,7 @@ const sidebarNavItems = [
   {
     icon: BookText,
     label: 'Notes',
-    href: '#',
+    href: '/notes',
   },
   {
     icon: Calendar,
