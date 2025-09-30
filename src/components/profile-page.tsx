@@ -6,7 +6,7 @@ import {
   Card,
   CardContent,
 } from '@/components/ui/card';
-import { Avatar, AvatarImage } from '@/components/ui/avatar';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import {
   Heart,
@@ -27,6 +27,7 @@ import {
   Pencil,
   Settings,
   Share2,
+  LogOut,
 } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
@@ -35,6 +36,7 @@ import { PlaceHolderImages } from '@/lib/placeholder-images';
 import Link from 'next/link';
 import { useProfile } from '@/context/ProfileContext';
 import { useHistory } from '@/context/HistoryContext';
+import { useAuth } from '@/context/AuthContext';
 
 const DetailItem = ({ icon: Icon, label, value }: { icon: React.ElementType, label: string, value: string }) => (
     <div className="flex justify-between items-center text-sm py-3 border-b border-border/50">
@@ -46,46 +48,64 @@ const DetailItem = ({ icon: Icon, label, value }: { icon: React.ElementType, lab
     </div>
 );
 
-const QuickActionButton = ({ icon: Icon, label }: { icon: React.ElementType, label: string }) => (
-    <Button variant="outline" className="flex-1 bg-accent/50 border-none justify-start gap-2 py-5">
-        <Icon className="h-4 w-4 text-primary" />
-        <span className="font-medium">{label}</span>
-    </Button>
-);
+const QuickActionButton = ({ icon: Icon, label, href }: { icon: React.ElementType, label: string, href?: string }) => {
+    const content = (
+         <Button variant="outline" className="flex-1 bg-accent/50 border-none justify-start gap-2 py-5">
+            <Icon className="h-4 w-4 text-primary" />
+            <span className="font-medium">{label}</span>
+        </Button>
+    );
+    return href ? <Link href={href}>{content}</Link> : content;
+};
 
 export function ProfilePage() {
     const { profile } = useProfile();
     const { history } = useHistory();
-    const userAvatar = PlaceHolderImages.find(p => p.id === 'user-avatar');
+    const { user, logout } = useAuth();
     
     const totalConversions = history.filter(item => item.type === 'conversion').length;
     const daysActive = new Set(history.map(item => new Date(item.timestamp).toDateString())).size;
+
+    const displayName = user?.displayName || profile.name;
+    const displayEmail = user?.email || profile.email;
+    const displayAvatar = user?.photoURL;
+    const avatarFallback = displayName.charAt(0).toUpperCase();
 
     return (
         <div className="w-full space-y-6 pb-12">
             <Card className="shadow-lg overflow-visible">
                 <CardContent className="p-6 text-center relative">
-                     <Button asChild variant="outline" size="sm" className="absolute top-4 right-4 gap-2">
-                        <Link href="/profile/edit">
-                            <Pencil className="h-3 w-3" />
-                            Edit Profile
-                        </Link>
-                     </Button>
+                     <div className="absolute top-4 right-4 flex gap-2">
+                        <Button asChild variant="outline" size="sm" className="gap-2">
+                            <Link href="/profile/edit">
+                                <Pencil className="h-3 w-3" />
+                                Edit
+                            </Link>
+                        </Button>
+                        {user && (
+                            <Button variant="destructive" size="sm" className="gap-2" onClick={logout}>
+                                <LogOut className="h-3 w-3" />
+                                Logout
+                            </Button>
+                        )}
+                     </div>
                     <div className="flex justify-center mb-4 pt-8">
                         <Avatar className="h-24 w-24 border-4 border-background shadow-md">
-                            {userAvatar && <AvatarImage src={userAvatar.imageUrl} alt={profile.name} />}
-                            <div className="h-full w-full rounded-full bg-gradient-to-br from-primary to-purple-400 flex items-center justify-center">
-                                <span className="text-4xl font-bold text-primary-foreground">{profile.name.charAt(0)}</span>
-                            </div>
+                            {displayAvatar ? <AvatarImage src={displayAvatar} alt={displayName} /> : (
+                                <div className="h-full w-full rounded-full bg-gradient-to-br from-primary to-purple-400 flex items-center justify-center">
+                                    <span className="text-4xl font-bold text-primary-foreground">{avatarFallback}</span>
+                                </div>
+                            )}
+                            <AvatarFallback>{avatarFallback}</AvatarFallback>
                         </Avatar>
                     </div>
 
                     <div className="space-y-1">
-                        <h2 className="text-2xl font-bold">{profile.name}</h2>
+                        <h2 className="text-2xl font-bold">{displayName}</h2>
                         <div className="flex items-center justify-center gap-2">
                              <Badge variant="outline" className="border-yellow-500 text-yellow-500">Owner</Badge>
                         </div>
-                        <p className="text-sm text-muted-foreground">{profile.email}</p>
+                        <p className="text-sm text-muted-foreground">{displayEmail}</p>
                     </div>
                 </CardContent>
             </Card>
@@ -102,7 +122,7 @@ export function ProfilePage() {
                 <QuickActionButton icon={Globe} label="Region" />
                 <QuickActionButton icon={Shield} label="Security" />
                 <QuickActionButton icon={Palette} label="Theme" />
-                <QuickActionButton icon={History} label="History" />
+                <QuickActionButton icon={History} label="History" href="/history" />
             </div>
 
             <div className="grid grid-cols-3 gap-4 text-center">

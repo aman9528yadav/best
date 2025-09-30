@@ -9,7 +9,6 @@ import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Eye, EyeOff, ArrowRight, ArrowLeft, UserPlus } from 'lucide-react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 
 const GoogleIcon = (props: React.SVGProps<SVGSVGElement>) => (
@@ -25,10 +24,12 @@ const GoogleIcon = (props: React.SVGProps<SVGSVGElement>) => (
 export function LoginPage({ onLoginSuccess }: { onLoginSuccess: () => void }) {
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [confirmPasswordVisible, setConfirmPasswordVisible] = useState(false);
-  const router = useRouter();
   const { signInWithGoogle } = useAuth();
 
-  const handleLogin = () => {
+  const handleLogin = (e: React.FormEvent) => {
+    e.preventDefault();
+    // For now, we'll just call the success handler.
+    // A real implementation would validate credentials.
     onLoginSuccess();
   }
 
@@ -53,7 +54,7 @@ export function LoginPage({ onLoginSuccess }: { onLoginSuccess: () => void }) {
                 </p>
               </div>
 
-              <div className="space-y-4">
+              <form onSubmit={handleLogin} className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="email">Email or Username</Label>
                   <Input id="email" type="email" placeholder="name@example.com" className="bg-white/70" />
@@ -73,16 +74,15 @@ export function LoginPage({ onLoginSuccess }: { onLoginSuccess: () => void }) {
                     </Button>
                   </div>
                 </div>
-              </div>
-
-              <div className="flex items-center justify-between">
-                <Link href="#" className="text-sm text-primary hover:underline">
-                  Forgot Password?
-                </Link>
-                <Button onClick={handleLogin} className="gap-2">
-                  Login <ArrowRight className="h-4 w-4" />
-                </Button>
-              </div>
+                 <div className="flex items-center justify-between pt-2">
+                    <Link href="#" className="text-sm text-primary hover:underline">
+                    Forgot Password?
+                    </Link>
+                    <Button type="submit" className="gap-2">
+                    Login <ArrowRight className="h-4 w-4" />
+                    </Button>
+                </div>
+              </form>
 
               <div className="flex items-center gap-4">
                 <div className="flex-1 border-t"></div>
@@ -152,7 +152,7 @@ export function LoginPage({ onLoginSuccess }: { onLoginSuccess: () => void }) {
 
                 <div className="flex items-center justify-between">
                     <Button variant="link" className="text-muted-foreground">Skip for now</Button>
-                    <Button onClick={handleLogin} className="gap-2">
+                    <Button onClick={onLoginSuccess} className="gap-2">
                          <UserPlus className="h-4 w-4" />
                          Sign Up
                     </Button>
@@ -172,7 +172,7 @@ export function LoginPage({ onLoginSuccess }: { onLoginSuccess: () => void }) {
        <Button asChild variant="ghost" className="mt-6 text-muted-foreground">
         <Link href="/">
           <ArrowLeft className="h-4 w-4 mr-2" />
-          Skip
+          Skip to App
         </Link>
       </Button>
     </div>

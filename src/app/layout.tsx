@@ -9,8 +9,8 @@ import { ThemeProvider } from '@/components/theme-provider';
 
 
 export const metadata: Metadata = {
-  title: 'UnitWise',
-  description: 'Smart Unit Conversion',
+  title: 'Sutradhaar',
+  description: 'Smart Unit Converter & Calculator',
 };
 
 export default function RootLayout({

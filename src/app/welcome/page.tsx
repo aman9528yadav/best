@@ -6,9 +6,11 @@ import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { Header } from '@/components/header';
 import { HandshakeIcon } from '@/components/ui/icons';
+import { useAuth } from '@/context/AuthContext';
 
 export default function WelcomePage() {
   const router = useRouter();
+  const { user } = useAuth();
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -39,7 +41,7 @@ export default function WelcomePage() {
                 transition={{ duration: 0.5, delay: 0.2 }}
                 className="space-y-2"
             >
-                <h1 className="text-3xl font-bold">Welcome to Sutradhaar</h1>
+                <h1 className="text-3xl font-bold">Welcome, {user?.displayName || 'Guest'}!</h1>
                 <p className="text-muted-foreground">
                     You are now logged in. Redirecting to your dashboard...
                 </p>

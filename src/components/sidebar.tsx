@@ -23,11 +23,13 @@ import {
   History,
   Info,
   LogIn,
+  LogOut,
 } from 'lucide-react';
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { ScrollArea } from './ui/scroll-area';
+import { useAuth } from '@/context/AuthContext';
 
 const sidebarNavItems = [
   {
@@ -75,20 +77,21 @@ const sidebarNavItems = [
     label: 'About',
     href: '/about',
   },
-  {
-    icon: LogIn,
-    label: 'Login',
-    href: '/login',
-  },
 ];
 
 export function Sidebar() {
   const [isOpen, setIsOpen] = useState(false);
   const [isClient, setIsClient] = useState(false);
+  const { user, logout } = useAuth();
 
   useEffect(() => {
     setIsClient(true);
   }, []);
+
+  const displayName = user?.displayName || 'Guest';
+  const avatarUrl = user?.photoURL;
+  const avatarFallback = displayName.charAt(0).toUpperCase();
+
 
   if (!isClient) {
     return (
@@ -122,15 +125,18 @@ export function Sidebar() {
               <Link href="/profile" onClick={() => setIsOpen(false)}>
                 <div className="flex items-center gap-4 p-4 bg-card rounded-xl shadow-sm hover:bg-accent transition-colors">
                   <Avatar className="h-14 w-14">
-                     <div className="h-14 w-14 rounded-full bg-gradient-to-br from-primary to-purple-400 flex items-center justify-center">
-                      <span className="text-2xl font-bold text-primary-foreground">G</span>
-                     </div>
+                     {avatarUrl ? <AvatarImage src={avatarUrl} alt={displayName} /> : (
+                        <div className="h-14 w-14 rounded-full bg-gradient-to-br from-primary to-purple-400 flex items-center justify-center">
+                            <span className="text-2xl font-bold text-primary-foreground">{avatarFallback}</span>
+                        </div>
+                     )}
+                     <AvatarFallback>{avatarFallback}</AvatarFallback>
                   </Avatar>
                   <div>
                     <p className="text-sm text-muted-foreground">
                       Welcome back,
                     </p>
-                    <p className="font-bold text-lg">Guest</p>
+                    <p className="font-bold text-lg">{displayName}</p>
                   </div>
                 </div>
               </Link>
@@ -153,6 +159,27 @@ export function Sidebar() {
                         </Button>
                     </Link>
                     ))}
+                    {user ? (
+                         <Button
+                            variant="ghost"
+                            className="w-full justify-start gap-3 h-12 text-base font-medium"
+                            onClick={() => { logout(); setIsOpen(false); }}
+                            >
+                            <LogOut className="h-5 w-5 text-primary" />
+                            Logout
+                        </Button>
+                    ) : (
+                         <Link href="/login">
+                            <Button
+                            variant="ghost"
+                            className="w-full justify-start gap-3 h-12 text-base font-medium"
+                            onClick={() => setIsOpen(false)}
+                            >
+                            <LogIn className="h-5 w-5 text-primary" />
+                            Login
+                            </Button>
+                        </Link>
+                    )}
                 </div>
               </nav>
             </div>
