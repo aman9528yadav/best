@@ -11,6 +11,7 @@ import { Eye, EyeOff, ArrowRight, ArrowLeft, UserPlus } from 'lucide-react';
 import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/hooks/use-toast';
+import { ResendVerification } from './resend-verification';
 
 const GoogleIcon = (props: React.SVGProps<SVGSVGElement>) => (
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="24px" height="24px" {...props}>
@@ -34,16 +35,22 @@ export function LoginPage() {
   const [signupPassword, setSignupPassword] = useState('');
   const [signupConfirmPassword, setSignupConfirmPassword] = useState('');
 
+  const [showResend, setShowResend] = useState(false);
+
   const { signInWithGoogle, signInWithEmail, signUpWithEmail } = useAuth();
   const { toast } = useToast();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    setShowResend(false);
     if (!loginEmail || !loginPassword) {
         toast({ title: "Missing Fields", description: "Please enter both email and password.", variant: "destructive" });
         return;
     }
-    await signInWithEmail(loginEmail, loginPassword);
+    const user = await signInWithEmail(loginEmail, loginPassword);
+    if (user === null) {
+      setShowResend(true);
+    }
   }
 
   const handleSignUp = async (e: React.FormEvent) => {
@@ -101,6 +108,7 @@ export function LoginPage() {
                     </Button>
                   </div>
                 </div>
+                {showResend && <ResendVerification email={loginEmail} />}
                  <div className="flex items-center justify-between pt-2">
                     <Link href="/forgot-password" className="text-sm text-primary hover:underline">
                     Forgot Password?
@@ -157,7 +165,7 @@ export function LoginPage() {
                         <Label htmlFor="signup-password">Password</Label>
                         <div className="relative">
                             <Input id="signup-password" type={passwordVisible ? 'text' : 'password'} placeholder="Create a strong password" className="bg-white/70" value={signupPassword} onChange={(e) => setSignupPassword(e.target.value)} />
-                            <Button type="button" variant="ghost" size="icon" className="absolute right-1 top-1.2 -translate-y-1.2 h-7 w-7 text-muted-foreground" onClick={() => setPasswordVisible(!passwordVisible)}>
+                            <Button type="button" variant="ghost" size="icon" className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 text-muted-foreground" onClick={() => setPasswordVisible(!passwordVisible)}>
                                 {passwordVisible ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                             </Button>
                         </div>
@@ -166,7 +174,7 @@ export function LoginPage() {
                         <Label htmlFor="confirm-password">Confirm Password</Label>
                         <div className="relative">
                             <Input id="confirm-password" type={confirmPasswordVisible ? 'text' : 'password'} placeholder="Re-enter your password" className="bg-white/70" value={signupConfirmPassword} onChange={(e) => setSignupConfirmPassword(e.target.value)} />
-                            <Button type="button" variant="ghost" size="icon" className="absolute right-1 top-1.2 -translate-y-1.2 h-7 w-7 text-muted-foreground" onClick={() => setConfirmPasswordVisible(!confirmPasswordVisible)}>
+                            <Button type="button" variant="ghost" size="icon" className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 text-muted-foreground" onClick={() => setConfirmPasswordVisible(!confirmPasswordVisible)}>
                                 {confirmPasswordVisible ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                             </Button>
                         </div>

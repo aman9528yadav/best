@@ -12,6 +12,7 @@ import {
     signInWithEmailAndPassword,
     createUserWithEmailAndPassword,
     updateProfile,
+    sendEmailVerification,
     AuthCredential,
     EmailAuthProvider,
     reauthenticateWithCredential,
@@ -29,7 +30,7 @@ interface AuthContextType {
   user: User | null;
   loading: boolean;
   signInWithGoogle: () => Promise<void>;
-  signInWithEmail: (email: string, pass: string) => Promise<void>;
+  signInWithEmail: (email: string, pass: string) => Promise<User | null>;
   signUpWithEmail: (email: string, pass: string, fullName: string) => Promise<void>;
   logout: () => Promise<void>;
   changePassword: (currentPass: string, newPass: string) => Promise<boolean>;
@@ -68,10 +69,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const signInWithEmail = async (email: string, pass: string) => {
+  const signInWithEmail = async (email: string, pass: string): Promise<User | null> => {
     try {
-        await signInWithEmailAndPassword(auth, email, pass);
+        const userCredential = await signInWithEmailAndPassword(auth, email, pass);
+        if (!userCredential.user.emailVerified) {
+            toast({
+                title: "Email Not Verified",
+                description: "Please verify your email before logging in.",
+                variant: "destructive"
+            });
+            return null;
+        }
         router.push('/auth-action?action=login');
+        return userCredential.user;
     } catch (error: any) {
         console.error("Error signing in with email", error);
         toast({
@@ -79,6 +89,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             description: "Invalid email or password. Please try again.",
             variant: "destructive"
         });
+        return null;
     }
   }
   
@@ -87,14 +98,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         const userCredential = await createUserWithEmailAndPassword(auth, email, pass);
         if(userCredential.user) {
             await updateProfile(userCredential.user, { displayName: fullName });
+            await sendEmailVerification(userCredential.user);
             // Manually trigger a state update for the user to reflect the new display name immediately
             setUser(auth.currentUser); 
         }
         toast({
             title: "Congratulations!",
-            description: "Your account has been created successfully.",
+            description: "Your account has been created. Please check your email to verify your account.",
         });
-        router.push('/auth-action?action=signup');
+        router.push('/verify-email');
     } catch (error: any) {
         console.error("Error signing up with email", error);
         toast({
