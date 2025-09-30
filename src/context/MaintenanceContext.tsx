@@ -172,10 +172,23 @@ export const MaintenanceProvider = ({ children }: { children: ReactNode }) => {
       (snapshot) => {
         if (snapshot.exists()) {
             const dbConfig = snapshot.val();
-            // Merge database config with local defaults to prevent missing properties
-            setMaintenanceConfigState(prev => ({ ...defaultMaintenanceConfig, ...prev, ...dbConfig }));
+            // Deep merge to avoid losing nested defaults
+            const mergedConfig = {
+                ...defaultMaintenanceConfig,
+                ...dbConfig,
+                dashboardBanner: {
+                    ...defaultMaintenanceConfig.dashboardBanner,
+                    ...(dbConfig.dashboardBanner || {})
+                },
+                aboutPageContent: {
+                    ...defaultMaintenanceConfig.aboutPageContent,
+                    ...(dbConfig.aboutPageContent || {}),
+                    roadmap: dbConfig.aboutPageContent?.roadmap || defaultMaintenanceConfig.aboutPageContent.roadmap,
+                },
+                updateItems: dbConfig.updateItems || defaultMaintenanceConfig.updateItems,
+            };
+            setMaintenanceConfigState(mergedConfig);
         } else {
-            // If no config in DB, create one with defaults
             set(configRef, defaultMaintenanceConfig).catch(err => console.error("Error creating default config in DB", err));
             setMaintenanceConfigState(defaultMaintenanceConfig);
         }
@@ -183,7 +196,6 @@ export const MaintenanceProvider = ({ children }: { children: ReactNode }) => {
       }, 
       (error) => {
           console.error("Error fetching maintenance config:", error);
-          // Fallback to default config on error
           setMaintenanceConfigState(defaultMaintenanceConfig);
           setIsLoading(false);
       });
@@ -200,11 +212,9 @@ export const MaintenanceProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const setMaintenanceConfig = (setter: React.SetStateAction<MaintenanceConfig>) => {
-    setMaintenanceConfigState(prevConfig => {
-        const newConfig = typeof setter === 'function' ? setter(prevConfig) : setter;
-        updateMaintenanceConfigInDb(newConfig);
-        return newConfig;
-    });
+    const newConfig = typeof setter === 'function' ? setter(maintenanceConfig) : setter;
+    setMaintenanceConfigState(newConfig);
+    updateMaintenanceConfigInDb(newConfig);
   };
   
   const setDevMode = (isDev: boolean) => {
@@ -319,5 +329,3 @@ export const MaintenanceWrapper = ({ children }: { children: ReactNode }) => {
     
     return <>{children}</>;
 };
-
-    
