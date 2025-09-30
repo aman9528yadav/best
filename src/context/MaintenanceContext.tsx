@@ -265,11 +265,11 @@ export const MaintenanceProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const setMaintenanceConfig = (setter: React.SetStateAction<MaintenanceConfig>) => {
-    const newConfig = typeof setter === 'function' ? setter(maintenanceConfig) : setter;
-    // We update the state optimistically and then write to the DB.
-    // The onValue listener will handle any remote changes.
-    setMaintenanceConfigState(newConfig);
-    updateMaintenanceConfigInDb(newConfig);
+    setMaintenanceConfigState(prevConfig => {
+        const newConfig = typeof setter === 'function' ? setter(prevConfig) : setter;
+        updateMaintenanceConfigInDb(newConfig);
+        return newConfig;
+    });
   };
   
   const setDevMode = (isDev: boolean) => {
@@ -369,41 +369,38 @@ export const MaintenanceWrapper = ({ children }: { children: ReactNode }) => {
     const router = useRouter();
     const pathname = usePathname();
 
-    const { globalMaintenance, individualPages } = maintenanceConfig;
-
-    const allowedPaths = ['/maintenance', '/login'];
-    if (isDevMode) {
-      allowedPaths.push('/dev', '/settings', '/profile/edit', '/dev/manage-updates', '/dev/manage-about');
-    }
-    
-    const isIndividuallyMaintained = individualPages.includes(pathname);
-
     useEffect(() => {
         if (isLoading) return; // Don't perform redirects until the config is loaded
 
+        const { globalMaintenance, individualPages } = maintenanceConfig;
+
+        const allowedPaths = ['/maintenance', '/login'];
+        if (isDevMode) {
+          allowedPaths.push('/dev', '/settings', '/profile/edit', '/dev/manage-updates', '/dev/manage-about');
+        }
+        
+        const isIndividuallyMaintained = individualPages?.includes(pathname) ?? false;
+        
         const isPathAllowed = allowedPaths.some(p => pathname.startsWith(p));
         const isInMaintenance = globalMaintenance || isIndividuallyMaintained;
 
         if (isInMaintenance && !isPathAllowed) {
             router.replace('/maintenance');
         }
-        // This case is implicitly handled by Next.js routing, but we can be explicit
-        // if (!isInMaintenance && pathname === '/maintenance') {
-        //     router.replace('/');
-        // }
-    }, [globalMaintenance, isIndividuallyMaintained, pathname, router, allowedPaths, isLoading, isDevMode]);
+    }, [maintenanceConfig, pathname, router, isLoading, isDevMode]);
 
     if (isLoading) {
         // You can return a global loader here if you want
         return null;
     }
     
-    const isPathAllowed = allowedPaths.some(p => pathname.startsWith(p));
+    const { globalMaintenance, individualPages } = maintenanceConfig;
+    const isIndividuallyMaintained = individualPages?.includes(pathname) ?? false;
+    const isPathAllowed = ['/maintenance', '/login', '/dev'].some(p => pathname.startsWith(p)) || (isDevMode && ['/settings', '/profile/edit', '/dev/manage-updates', '/dev/manage-about'].some(p => pathname.startsWith(p)));
+
     if ((globalMaintenance || isIndividuallyMaintained) && !isPathAllowed) {
         return null; // Render nothing while redirecting
     }
     
     return <>{children}</>;
 };
-
-    
