@@ -71,7 +71,8 @@ export function SettingsPage() {
   const { theme, setTheme } = useTheme();
   const [isPasswordDialogOpen, setIsPasswordDialogOpen] = useState(false);
   const [password, setPassword] = useState('');
-  const { isDevMode, setMaintenanceConfig } = useMaintenance();
+  const { maintenanceConfig, setMaintenanceConfig } = useMaintenance();
+  const { isDevMode } = maintenanceConfig;
   const router = useRouter();
 
 
@@ -114,7 +115,11 @@ export function SettingsPage() {
   };
 
   const handleOpenDevPanelClick = () => {
-    setIsPasswordDialogOpen(true);
+    if (isDevMode) {
+      router.push('/dev');
+    } else {
+      setIsPasswordDialogOpen(true);
+    }
   };
 
 
@@ -196,7 +201,7 @@ export function SettingsPage() {
                 ))}
               </div>
               <SettingRow label="Theme" icon={Palette}>
-                <Select value={theme} onValueChange={setTheme}>
+                <Select value={theme?.replace('theme-','') || 'sutradhaar'} onValueChange={(v) => setTheme(`theme-${v}`)}>
                   <SelectTrigger className="w-[150px]">
                     <SelectValue />
                   </SelectTrigger>

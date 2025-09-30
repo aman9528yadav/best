@@ -31,10 +31,10 @@ export default function RootLayout({
           rel="stylesheet"
         />
       </head>
-      <body className="font-body antialiased">
+      <body>
         <ThemeProvider
           attribute="class"
-          defaultTheme="sutradhaar"
+          defaultTheme="theme-sutradhaar"
           enableSystem={false}
           disableTransitionOnChange
         >
