@@ -34,7 +34,7 @@ export function DevPanel() {
     setMaintenanceConfig,
     isLoading,
   } = useMaintenance();
-  const { globalMaintenance, dashboardBanner, maintenanceCountdown } = maintenanceConfig;
+  const { globalMaintenance, dashboardBanner, maintenanceCountdown, maintenanceMessage } = maintenanceConfig;
 
   const handleGlobalMaintenanceChange = (checked: boolean) => {
     setMaintenanceConfig(prev => ({...prev, globalMaintenance: checked }));
@@ -91,6 +91,10 @@ export function DevPanel() {
             [field]: parseInt(value, 10) || 0
         }
     }));
+  }
+
+  const handleMaintenanceMessageChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setMaintenanceConfig(prev => ({ ...prev, maintenanceMessage: e.target.value }));
   }
 
 
@@ -160,6 +164,10 @@ export function DevPanel() {
                         <div><Label className="text-xs">Seconds</Label><Input type="number" value={maintenanceCountdown.seconds} onChange={e => handleMaintenanceCountdownChange('seconds', e.target.value)} /></div>
                       </div>
                    </div>
+                    <div className="bg-accent/50 p-4 rounded-lg space-y-2">
+                        <Label htmlFor="maintenance-message">Maintenance Page Message</Label>
+                        <Textarea id="maintenance-message" value={maintenanceMessage} onChange={handleMaintenanceMessageChange} rows={4} />
+                    </div>
                   </div>
                 </AccordionContent>
               </Card>
@@ -236,3 +244,5 @@ export function DevPanel() {
     </div>
   );
 }
+
+    

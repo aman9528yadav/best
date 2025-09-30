@@ -63,6 +63,7 @@ export type MaintenanceConfig = {
         upcomingFeatureDetails: string;
     };
     maintenanceCountdown: Countdown;
+    maintenanceMessage: string;
     updateItems: UpdateItem[];
     aboutPageContent: AboutPageContent;
     appInfo: { version: string; };
@@ -106,6 +107,7 @@ const defaultMaintenanceConfig: MaintenanceConfig = {
       minutes: 30,
       seconds: 0,
     },
+    maintenanceMessage: "We're currently performing scheduled maintenance to improve our services. We're working as quickly as possible to restore service.",
     updateItems: [
         {
             id: '1',
@@ -317,3 +319,5 @@ export const MaintenanceWrapper = ({ children }: { children: ReactNode }) => {
     
     return <>{children}</>;
 };
+
+    

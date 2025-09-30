@@ -32,7 +32,7 @@ const CountdownBox = ({ value, label }: { value: string; label: string }) => (
 export function MaintenancePage() {
   const router = useRouter();
   const { maintenanceConfig, setDevMode } = useMaintenance();
-  const { maintenanceCountdown } = maintenanceConfig;
+  const { maintenanceCountdown, maintenanceMessage } = maintenanceConfig;
   const { toast } = useToast();
   
   const [clickCount, setClickCount] = useState(0);
@@ -134,6 +134,13 @@ export function MaintenancePage() {
               <CountdownBox value={String(timeLeft.minutes).padStart(2, '0')} label="MINUTES" />
               <CountdownBox value={String(timeLeft.seconds).padStart(2, '0')} label="SECONDS" />
           </div>
+
+          <Card>
+            <CardContent className="p-4 text-left">
+                <h3 className="font-semibold mb-2">A message from the team:</h3>
+                <p className="text-sm text-muted-foreground whitespace-pre-line">{maintenanceMessage}</p>
+            </CardContent>
+          </Card>
           
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-left">
             <Card className="bg-accent/50 border-none">
@@ -204,3 +211,5 @@ export function MaintenancePage() {
     </div>
   );
 }
+
+    
