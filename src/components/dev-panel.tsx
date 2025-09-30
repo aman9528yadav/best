@@ -19,12 +19,13 @@ import {
 } from '@/components/ui/accordion';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import { ArrowLeft, Clock, Shield, Trash, Megaphone } from 'lucide-react';
+import { ArrowLeft, Clock, Shield, Trash, Megaphone, Pencil, ChevronRight } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useMaintenance } from '@/context/MaintenanceContext';
 import { useToast } from '@/hooks/use-toast';
 import { Input } from './ui/input';
 import { Textarea } from './ui/textarea';
+import Link from 'next/link';
 
 export function DevPanel() {
   const router = useRouter();
@@ -173,6 +174,40 @@ export function DevPanel() {
               </Card>
             </AccordionItem>
             
+             <AccordionItem value="item-3" asChild>
+                <Card>
+                  <CardHeader className="p-4">
+                    <AccordionTrigger className="p-0 hover:no-underline">
+                      <div className="flex items-center gap-3">
+                        <Pencil className="h-5 w-5" />
+                        <div>
+                          <CardTitle className="text-lg">Content Management</CardTitle>
+                          <CardDescription>
+                            Edit app content in real-time.
+                          </CardDescription>
+                        </div>
+                      </div>
+                    </AccordionTrigger>
+                  </CardHeader>
+                  <AccordionContent className="px-4 pb-4">
+                     <div className="flex flex-col gap-2">
+                        <Link href="/dev/manage-updates">
+                            <div className="flex items-center justify-between rounded-lg p-3 bg-accent/50 hover:bg-accent transition-colors">
+                                <span>Manage "What's New"</span>
+                                <ChevronRight className="h-5 w-5"/>
+                            </div>
+                        </Link>
+                         <Link href="/dev/manage-about">
+                            <div className="flex items-center justify-between rounded-lg p-3 bg-accent/50 hover:bg-accent transition-colors">
+                                <span>Manage About Page</span>
+                                <ChevronRight className="h-5 w-5"/>
+                            </div>
+                        </Link>
+                     </div>
+                  </AccordionContent>
+                </Card>
+            </AccordionItem>
+
             <AccordionItem value="item-2" asChild>
               <Card>
                 <CardHeader className="p-4">
