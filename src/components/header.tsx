@@ -21,6 +21,17 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Badge } from '@/components/ui/badge';
+import { useNotifications } from '@/context/NotificationContext';
+import { formatDistanceToNow } from 'date-fns';
 
 export function Header() {
   const { setDevMode } = useMaintenance();
@@ -29,6 +40,7 @@ export function Header() {
   const { user } = useAuth();
   const router = useRouter();
   const [showLoginDialog, setShowLoginDialog] = useState(false);
+  const { notifications, markAllAsRead, unreadCount } = useNotifications();
 
   const handleLogoClick = () => {
     const newClickCount = clickCount + 1;
@@ -82,9 +94,37 @@ export function Header() {
             <Button variant="ghost" size="icon" aria-label="Search">
               <Search className="h-5 w-5" />
             </Button>
-            <Button variant="ghost" size="icon" aria-label="Notifications">
-              <Bell className="h-5 w-5" />
-            </Button>
+            
+            <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="icon" aria-label="Notifications" className="relative" onClick={markAllAsRead}>
+                        <Bell className="h-5 w-5" />
+                        {unreadCount > 0 && (
+                            <Badge variant="destructive" className="absolute -top-1 -right-1 h-4 w-4 justify-center rounded-full p-0 text-xs">
+                                {unreadCount}
+                            </Badge>
+                        )}
+                    </Button>
+                </DropdownMenuTrigger>
+                 <DropdownMenuContent align="end" className="w-80">
+                    <DropdownMenuLabel>Notifications</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    {notifications.length > 0 ? (
+                        notifications.slice(0, 5).map(notification => (
+                            <DropdownMenuItem key={notification.id} className="flex flex-col items-start gap-1">
+                                <p className="font-medium">{notification.title}</p>
+                                <p className="text-xs text-muted-foreground">{notification.body}</p>
+                                <p className="text-xs text-muted-foreground/80 self-end">
+                                    {formatDistanceToNow(new Date(notification.timestamp), { addSuffix: true })}
+                                </p>
+                            </DropdownMenuItem>
+                        ))
+                    ) : (
+                        <DropdownMenuItem>No new notifications</DropdownMenuItem>
+                    )}
+                </DropdownMenuContent>
+            </DropdownMenu>
+
             <Button variant="ghost" size="icon" aria-label="Profile" onClick={handleProfileClick}>
                 <CircleUser className="h-5 w-5" />
             </Button>

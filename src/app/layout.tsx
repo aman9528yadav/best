@@ -8,6 +8,7 @@ import { MaintenanceProvider, MaintenanceWrapper } from '@/context/MaintenanceCo
 import { AuthProvider } from '@/context/AuthContext';
 import { ThemeProvider } from '@/components/theme-provider';
 import { BroadcastListener } from '@/components/broadcast-listener';
+import { NotificationProvider } from '@/context/NotificationContext';
 
 
 export const metadata: Metadata = {
@@ -38,17 +39,19 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <AuthProvider>
-            <MaintenanceProvider>
-              <ProfileProvider>
-                <HistoryProvider>
-                  <MaintenanceWrapper>
-                    {children}
-                  </MaintenanceWrapper>
-                  <Toaster />
-                  <BroadcastListener />
-                </HistoryProvider>
-              </ProfileProvider>
-            </MaintenanceProvider>
+            <NotificationProvider>
+              <MaintenanceProvider>
+                <ProfileProvider>
+                  <HistoryProvider>
+                    <MaintenanceWrapper>
+                      {children}
+                    </MaintenanceWrapper>
+                    <Toaster />
+                    <BroadcastListener />
+                  </HistoryProvider>
+                </ProfileProvider>
+              </MaintenanceProvider>
+            </NotificationProvider>
           </AuthProvider>
         </ThemeProvider>
       </body>
