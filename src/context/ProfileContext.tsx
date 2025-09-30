@@ -5,12 +5,13 @@ import React, { createContext, useContext, useState, ReactNode, useEffect } from
 import { doc, getDoc, setDoc, onSnapshot } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useAuth } from './AuthContext';
-import { isToday, differenceInCalendarDays, startOfDay } from 'date-fns';
+import { isToday, differenceInCalendarDays, startOfDay, isYesterday } from 'date-fns';
 
 export type UserStats = {
   allTimeConversions: number;
   todayConversions: number;
   lastConversionDate: string | null;
+  lastAppOpenDate: string | null;
   streak: number;
 };
 
@@ -32,8 +33,9 @@ export type UserProfile = {
 
 type ProfileContextType = {
   profile: UserProfile;
-  setProfile: (profile: UserProfile) => void;
+  setProfile: (profile: UserProfile | ((prevState: UserProfile) => UserProfile)) => void;
   updateStatsForNewConversion: () => void;
+  checkAndUpdateStreak: () => void;
   isLoading: boolean;
 };
 
@@ -43,6 +45,7 @@ const defaultStats: UserStats = {
     allTimeConversions: 0,
     todayConversions: 0,
     lastConversionDate: null,
+    lastAppOpenDate: null,
     streak: 0,
 };
 
@@ -96,11 +99,9 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
           const savedProfile = localStorage.getItem('unitwise_profile');
           if (savedProfile) {
             const parsedProfile = JSON.parse(savedProfile);
-            // Ensure stats object is not missing
-            if (!parsedProfile.stats) {
-              parsedProfile.stats = defaultStats;
-            }
-            setProfileState(parsedProfile);
+            // Ensure stats object is not missing and has all properties
+            const stats = { ...defaultStats, ...(parsedProfile.stats || {}) };
+            setProfileState({ ...parsedProfile, stats });
           } else {
             setProfileState(guestProfileDefault);
           }
@@ -122,17 +123,22 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
       
       const unsubscribe = onSnapshot(docRef, async (snapshot) => {
         if (snapshot.exists()) {
-          const fetchedData = snapshot.data() as UserProfile;
+          const fetchedData = snapshot.data() as Partial<UserProfile>;
           const today = startOfDay(new Date()).toISOString().split('T')[0];
           
-          if (!fetchedData.stats) {
-            fetchedData.stats = defaultStats;
+          const stats = { ...defaultStats, ...(fetchedData.stats || {}) };
+
+          if (stats.lastConversionDate !== today) {
+            stats.todayConversions = 0;
           }
 
-          if (fetchedData.stats.lastConversionDate !== today) {
-            fetchedData.stats.todayConversions = 0;
-          }
-          setProfileState(fetchedData);
+          const fullProfile = {
+            ...getInitialProfile(),
+            ...fetchedData,
+            stats,
+          };
+          setProfileState(fullProfile);
+
         } else {
           // Create a new profile for a new user if it doesn't exist
           const newProfile: UserProfile = {
@@ -156,48 +162,81 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
 
   const setProfile = async (newProfileData: UserProfile | ((prevState: UserProfile) => UserProfile)) => {
     const newProfile = typeof newProfileData === 'function' ? newProfileData(profile) : newProfileData;
-    setProfileState(newProfile);
     
-    if (user) {
-        const docRef = doc(db, 'users', user.uid);
-        await setDoc(docRef, newProfile, { merge: true });
-    } else {
-        try {
-          localStorage.setItem('unitwise_profile', JSON.stringify(newProfile));
-        } catch (error) {
-          console.error("Failed to save profile to localStorage", error);
+    // Use a functional update for the state to avoid race conditions
+    setProfileState(currentProfile => {
+        const updatedProfile = typeof newProfileData === 'function' ? newProfileData(currentProfile) : newProfileData;
+        
+        // Now save to persistence layer
+        if (user) {
+            const docRef = doc(db, 'users', user.uid);
+            setDoc(docRef, updatedProfile, { merge: true });
+        } else {
+            try {
+              localStorage.setItem('unitwise_profile', JSON.stringify(updatedProfile));
+            } catch (error) {
+              console.error("Failed to save profile to localStorage", error);
+            }
         }
-    }
+        return updatedProfile;
+    });
   };
 
-  const updateStatsForNewConversion = () => {
-    const newStats = {...profile.stats};
+  const checkAndUpdateStreak = () => {
     const today = startOfDay(new Date());
+    const lastOpen = profile.stats.lastAppOpenDate ? startOfDay(new Date(profile.stats.lastAppOpenDate)) : null;
 
-    newStats.allTimeConversions = (newStats.allTimeConversions || 0) + 1;
-
-    const lastDate = newStats.lastConversionDate ? startOfDay(new Date(newStats.lastConversionDate)) : null;
-
-    if (lastDate && isToday(lastDate)) {
-        newStats.todayConversions = (newStats.todayConversions || 0) + 1;
-    } else {
-        newStats.todayConversions = 1;
-    }
-    
-    if (lastDate && differenceInCalendarDays(today, lastDate) === 1) {
-        newStats.streak = (newStats.streak || 0) + 1;
-    } else if (!lastDate || differenceInCalendarDays(today, lastDate) > 1) {
-        newStats.streak = 1;
+    // Only run this logic once per day
+    if (lastOpen && isToday(lastOpen)) {
+      return;
     }
 
-    newStats.lastConversionDate = today.toISOString();
-    
-    setProfile(prevProfile => ({ ...prevProfile, stats: newStats }));
-};
+    setProfile(prevProfile => {
+        const newStats = { ...prevProfile.stats };
+        
+        // Update streak
+        if (lastOpen && isYesterday(lastOpen)) {
+            newStats.streak = (newStats.streak || 0) + 1;
+        } else if (!lastOpen || !isToday(lastOpen)) {
+            // Reset streak if last open was not yesterday or today
+            newStats.streak = 1;
+        }
+
+        newStats.lastAppOpenDate = today.toISOString();
+        
+        // Reset today's conversions if it's a new day
+        const lastConversion = prevProfile.stats.lastConversionDate ? startOfDay(new Date(prevProfile.stats.lastConversionDate)) : null;
+        if (!lastConversion || !isToday(lastConversion)) {
+            newStats.todayConversions = 0;
+        }
+
+        return { ...prevProfile, stats: newStats };
+    });
+  };
+
+
+  const updateStatsForNewConversion = () => {
+    setProfile(prevProfile => {
+        const newStats = {...prevProfile.stats};
+        const todayISO = startOfDay(new Date()).toISOString();
+
+        newStats.allTimeConversions = (newStats.allTimeConversions || 0) + 1;
+        
+        const lastConversionDate = newStats.lastConversionDate;
+        if (lastConversionDate && startOfDay(new Date(lastConversionDate)).toISOString().split('T')[0] === todayISO.split('T')[0]) {
+             newStats.todayConversions = (newStats.todayConversions || 0) + 1;
+        } else {
+             newStats.todayConversions = 1;
+        }
+        newStats.lastConversionDate = todayISO;
+
+        return { ...prevProfile, stats: newStats };
+    });
+  };
 
 
   return (
-    <ProfileContext.Provider value={{ profile, setProfile, updateStatsForNewConversion, isLoading }}>
+    <ProfileContext.Provider value={{ profile, setProfile, updateStatsForNewConversion, checkAndUpdateStreak, isLoading }}>
       {children}
     </ProfileContext.Provider>
   );

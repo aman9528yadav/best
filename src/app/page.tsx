@@ -125,7 +125,7 @@ const discoverItems = [
 
 export default function DashboardPage() {
   const { maintenanceConfig, isLoading: isMaintenanceLoading } = useMaintenance();
-  const { profile, isLoading: isProfileLoading } = useProfile();
+  const { profile, isLoading: isProfileLoading, checkAndUpdateStreak } = useProfile();
   const { user } = useAuth();
   const router = useRouter();
 
@@ -141,6 +141,12 @@ export default function DashboardPage() {
     return () => clearTimeout(timer);
   }, []);
 
+  useEffect(() => {
+    if (!isProfileLoading) {
+      checkAndUpdateStreak();
+    }
+  }, [isProfileLoading, checkAndUpdateStreak]);
+
   const handleQuickAccessClick = (e: React.MouseEvent<HTMLAnchorElement>, item: (typeof quickAccessItems)[0]) => {
     if (item.requiresAuth && !user) {
       e.preventDefault();
@@ -148,7 +154,9 @@ export default function DashboardPage() {
     }
   };
 
-  if (isMaintenanceLoading || isProfileLoading || isLoading) {
+  const isPageLoading = isMaintenanceLoading || isProfileLoading || isLoading;
+
+  if (isPageLoading) {
     return (
       <div className="flex flex-col items-center w-full min-h-screen bg-background text-foreground">
         <div className="w-full max-w-[412px] flex flex-col flex-1">
