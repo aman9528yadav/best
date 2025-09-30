@@ -12,7 +12,10 @@ import {
     signInWithEmailAndPassword,
     createUserWithEmailAndPassword,
     updateProfile,
-    AuthCredential
+    AuthCredential,
+    EmailAuthProvider,
+    reauthenticateWithCredential,
+    updatePassword,
 } from 'firebase/auth';
 import { app } from '@/lib/firebase';
 import { useRouter } from 'next/navigation';
@@ -27,6 +30,7 @@ interface AuthContextType {
   signInWithEmail: (email: string, pass: string) => Promise<void>;
   signUpWithEmail: (email: string, pass: string, fullName: string) => Promise<void>;
   logout: () => Promise<void>;
+  changePassword: (currentPass: string, newPass: string) => Promise<boolean>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -98,6 +102,34 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   }
 
+  const changePassword = async (currentPass: string, newPass: string): Promise<boolean> => {
+    if (!user || !user.email) {
+      toast({ title: "Not authenticated", description: "You must be logged in to change your password.", variant: "destructive" });
+      return false;
+    }
+    
+    const credential = EmailAuthProvider.credential(user.email, currentPass);
+    
+    try {
+      await reauthenticateWithCredential(user, credential);
+      await updatePassword(user, newPass);
+      toast({ title: "Password Updated", description: "Your password has been changed successfully." });
+      return true;
+    } catch (error: any) {
+      console.error("Error changing password", error);
+      let description = "An unknown error occurred.";
+      if (error.code === 'auth/wrong-password') {
+        description = "The current password you entered is incorrect. Please try again.";
+      }
+       toast({
+        title: "Password Change Failed",
+        description: description,
+        variant: "destructive"
+      });
+      return false;
+    }
+  };
+
 
   const logout = async () => {
     try {
@@ -114,7 +146,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, signInWithGoogle, signInWithEmail, signUpWithEmail, logout }}>
+    <AuthContext.Provider value={{ user, loading, signInWithGoogle, signInWithEmail, signUpWithEmail, logout, changePassword }}>
       {!loading && children}
     </AuthContext.Provider>
   );
