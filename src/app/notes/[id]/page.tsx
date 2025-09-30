@@ -11,7 +11,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 export default function EditNotePage() {
     const router = useRouter();
     const params = useParams();
-    const { getNoteById, updateNote, deleteNote, toggleFavoriteNote } = useProfile();
+    const { getNoteById, updateNote, deleteNote, toggleFavoriteNote, restoreNote, deleteNotePermanently } = useProfile();
     const [note, setNote] = useState<NoteItem | null | undefined>(undefined);
     const noteId = Array.isArray(params.id) ? params.id[0] : params.id;
 
@@ -29,9 +29,23 @@ export default function EditNotePage() {
         }
     };
     
-    const handleDelete = (permanently: boolean) => {
+    const handleDelete = () => {
         if (note) {
-            deleteNote(note.id, permanently);
+            deleteNote(note.id);
+            router.push('/notes');
+        }
+    }
+    
+    const handleDeletePermanently = () => {
+        if (note) {
+            deleteNotePermanently(note.id);
+            router.push('/notes');
+        }
+    }
+
+    const handleRestore = () => {
+        if (note) {
+            restoreNote(note.id);
             router.push('/notes');
         }
     }
@@ -60,6 +74,8 @@ export default function EditNotePage() {
             note={note} 
             onSave={handleSave} 
             onDelete={handleDelete}
+            onDeletePermanently={handleDeletePermanently}
+            onRestore={handleRestore}
             onFavoriteToggle={handleFavoriteToggle}
         />
     );

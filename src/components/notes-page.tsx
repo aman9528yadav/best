@@ -13,6 +13,17 @@ import {
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
 } from '@/components/ui/dropdown-menu';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   Plus,
@@ -22,6 +33,8 @@ import {
   Star,
   Trash,
   Clock,
+  Trash2,
+  Undo2,
 } from 'lucide-react';
 import { useProfile } from '@/context/ProfileContext';
 import Link from 'next/link';
@@ -33,7 +46,7 @@ type ViewMode = 'list' | 'card';
 type SortMode = 'updatedAt' | 'createdAt' | 'title';
 
 export function NotesPage() {
-  const { profile } = useProfile();
+  const { profile, restoreNote, deleteNotePermanently } = useProfile();
   const { notes } = profile;
   const router = useRouter();
   
@@ -44,7 +57,7 @@ export function NotesPage() {
   const filteredAndSortedNotes = useMemo(() => {
     let filtered = notes;
     if (activeTab === 'favorites') {
-      filtered = notes.filter(note => note.isFavorite);
+      filtered = notes.filter(note => note.isFavorite && !note.isTrashed);
     } else if (activeTab === 'trash') {
       filtered = notes.filter(note => note.isTrashed);
     } else {
@@ -62,24 +75,49 @@ export function NotesPage() {
   }, [notes, activeTab, sortMode]);
   
   const handleNoteClick = (noteId: string) => {
+      if(activeTab === 'trash') return;
       router.push(`/notes/${noteId}`);
   }
 
   const NoteItem = ({ note }: { note: typeof notes[0] }) => (
     <Card 
-        className="p-4 cursor-pointer hover:bg-accent transition-colors"
+        className="p-4 cursor-pointer hover:bg-accent transition-colors flex flex-col"
         onClick={() => handleNoteClick(note.id)}
     >
-        <div className="flex justify-between items-start">
-            <h3 className="font-semibold">{note.title || 'Untitled Note'}</h3>
-            {note.isFavorite && !note.isTrashed && <Star className="h-4 w-4 text-yellow-500 fill-yellow-400" />}
+        <div className="flex-1">
+            <div className="flex justify-between items-start">
+                <h3 className="font-semibold">{note.title || 'Untitled Note'}</h3>
+                {note.isFavorite && !note.isTrashed && <Star className="h-4 w-4 text-yellow-500 fill-yellow-400" />}
+            </div>
+          <p className="text-sm text-muted-foreground truncate">{note.content.substring(0, 100)}</p>
         </div>
-      <p className="text-sm text-muted-foreground truncate">{note.content.substring(0, 100)}</p>
       <div className="flex items-center justify-between mt-2 text-xs text-muted-foreground">
         <div className="flex items-center gap-1">
           <Clock className="h-3 w-3" />
           <span>Updated {formatDistanceToNow(new Date(note.updatedAt), { addSuffix: true })}</span>
         </div>
+        {activeTab === 'trash' && (
+            <div className="flex items-center">
+                <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                        <Button variant="ghost" size="icon" className="h-8 w-8"><Trash2 className="h-4 w-4 text-destructive" /></Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                        <AlertDialogHeader>
+                        <AlertDialogTitle>Delete Permanently?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            This action cannot be undone. This will permanently delete the note.
+                        </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={() => deleteNotePermanently(note.id)}>Delete</AlertDialogAction>
+                        </AlertDialogFooter>
+                    </AlertDialogContent>
+                </AlertDialog>
+                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => restoreNote(note.id)}><Undo2 className="h-4 w-4" /></Button>
+            </div>
+        )}
       </div>
     </Card>
   );
@@ -137,8 +175,10 @@ export function NotesPage() {
 
       {filteredAndSortedNotes.length === 0 ? (
         <div className="text-center py-20">
-          <p className="text-lg font-medium text-muted-foreground">No Notes Yet</p>
-          <p className="text-sm text-muted-foreground">Click the '+' button to create your first note.</p>
+          <p className="text-lg font-medium text-muted-foreground">
+            {activeTab === 'trash' ? 'Trash is empty' : 'No Notes Yet'}
+          </p>
+           {activeTab !== 'trash' && <p className="text-sm text-muted-foreground">Click the '+' button to create your first note.</p>}
         </div>
       ) : (
          <div className={`grid gap-3 ${viewMode === 'card' ? 'grid-cols-2' : 'grid-cols-1'}`}>

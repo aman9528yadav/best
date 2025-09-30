@@ -25,14 +25,28 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuSeparator
 } from '@/components/ui/dropdown-menu';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { useRouter } from 'next/navigation';
 import type { NoteItem } from '@/context/ProfileContext';
 
 interface NoteEditorProps {
   note?: NoteItem;
   onSave: (title: string, content: string) => void;
-  onDelete?: (permanently: boolean) => void;
+  onDelete?: (permanently?: boolean) => void;
+  onDeletePermanently?: () => void;
+  onRestore?: () => void;
   onFavoriteToggle?: () => void;
 }
 
@@ -41,7 +55,7 @@ type HistoryStack = {
   cursor: number;
 };
 
-export function NoteEditor({ note, onSave, onDelete, onFavoriteToggle }: NoteEditorProps) {
+export function NoteEditor({ note, onSave, onDelete, onDeletePermanently, onRestore, onFavoriteToggle }: NoteEditorProps) {
   const router = useRouter();
   const [title, setTitle] = useState(note?.title || '');
   const [content, setContent] = useState(note?.content || '');
@@ -50,6 +64,7 @@ export function NoteEditor({ note, onSave, onDelete, onFavoriteToggle }: NoteEdi
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   
   const isFavorite = note?.isFavorite || false;
+  const isTrashed = note?.isTrashed || false;
 
   useEffect(() => {
     const timeout = setTimeout(() => {
@@ -120,25 +135,60 @@ export function NoteEditor({ note, onSave, onDelete, onFavoriteToggle }: NoteEdi
             value={title} 
             onChange={(e) => setTitle(e.target.value)} 
             className="text-lg font-bold border-none focus-visible:ring-0 shadow-none p-0 h-auto"
+            readOnly={isTrashed}
           />
         </div>
         <div className="flex items-center gap-1">
-          <Button variant="ghost" size="icon" onClick={handleUndo} disabled={historyIndex === 0}><Undo className="h-5 w-5" /></Button>
-          <Button variant="ghost" size="icon" onClick={handleRedo} disabled={historyIndex === history.length - 1}><Redo className="h-5 w-5" /></Button>
-          <Button variant="ghost" size="icon" onClick={() => onSave(title, content)}><Save className="h-5 w-5" /></Button>
-          {note && onDelete && onFavoriteToggle && (
+          {!isTrashed && (
+            <>
+              <Button variant="ghost" size="icon" onClick={handleUndo} disabled={historyIndex === 0}><Undo className="h-5 w-5" /></Button>
+              <Button variant="ghost" size="icon" onClick={handleRedo} disabled={historyIndex === history.length - 1}><Redo className="h-5 w-5" /></Button>
+              <Button variant="ghost" size="icon" onClick={() => onSave(title, content)}><Save className="h-5 w-5" /></Button>
+            </>
+          )}
+          {note && (onDelete || onDeletePermanently) && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="icon"><MoreVertical className="h-5 w-5" /></Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={onFavoriteToggle} className="gap-2">
-                  <Star className={`h-4 w-4 ${isFavorite ? 'text-yellow-500 fill-yellow-400' : ''}`} />
-                  {isFavorite ? 'Unfavorite' : 'Favorite'}
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => onDelete(false)} className="gap-2 text-destructive">
-                  <Trash2 className="h-4 w-4" /> Move to Trash
-                </DropdownMenuItem>
+                {isTrashed ? (
+                  <>
+                    <DropdownMenuItem onClick={onRestore} className="gap-2">
+                      <Undo2 className="h-4 w-4" /> Restore
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                     <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="gap-2 text-destructive">
+                           <Trash2 className="h-4 w-4" /> Delete Permanently
+                        </DropdownMenuItem>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            This action cannot be undone. This will permanently delete this note.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogAction onClick={onDeletePermanently}>Delete</AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  </>
+                ) : (
+                  <>
+                    <DropdownMenuItem onClick={onFavoriteToggle} className="gap-2">
+                      <Star className={`h-4 w-4 ${isFavorite ? 'text-yellow-500 fill-yellow-400' : ''}`} />
+                      {isFavorite ? 'Unfavorite' : 'Favorite'}
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => onDelete && onDelete(false)} className="gap-2 text-destructive">
+                      <Trash2 className="h-4 w-4" /> Move to Trash
+                    </DropdownMenuItem>
+                  </>
+                )}
               </DropdownMenuContent>
             </DropdownMenu>
           )}
@@ -149,20 +199,23 @@ export function NoteEditor({ note, onSave, onDelete, onFavoriteToggle }: NoteEdi
           ref={textareaRef}
           value={content}
           onChange={(e) => setContent(e.target.value)}
-          placeholder="Start writing your note..."
+          placeholder={isTrashed ? "This note is in the trash." : "Start writing your note..."}
           className="w-full h-full resize-none border-none focus-visible:ring-0 text-base p-0"
+          readOnly={isTrashed}
         />
       </main>
-      <footer className="p-2 flex justify-center">
-        <div className="bg-card border shadow-sm rounded-full flex items-center gap-1 p-1">
-            <Button variant="ghost" size="icon" onClick={() => applyFormatting('bold')}><Bold className="h-5 w-5"/></Button>
-            <Button variant="ghost" size="icon" onClick={() => applyFormatting('italic')}><Italic className="h-5 w-5"/></Button>
-            <Button variant="ghost" size="icon" onClick={() => applyFormatting('underline')}><Underline className="h-5 w-5"/></Button>
-            <Button variant="ghost" size="icon" onClick={() => applyFormatting('strike')}><Strikethrough className="h-5 w-5"/></Button>
-            <Button variant="ghost" size="icon" onClick={() => applyList('unordered')}><List className="h-5 w-5"/></Button>
-            <Button variant="ghost" size="icon" onClick={() => applyList('ordered')}><ListOrdered className="h-5 w-5"/></Button>
-        </div>
-      </footer>
+      {!isTrashed && (
+        <footer className="p-2 flex justify-center">
+            <div className="bg-card border shadow-sm rounded-full flex items-center gap-1 p-1">
+                <Button variant="ghost" size="icon" onClick={() => applyFormatting('bold')}><Bold className="h-5 w-5"/></Button>
+                <Button variant="ghost" size="icon" onClick={() => applyFormatting('italic')}><Italic className="h-5 w-5"/></Button>
+                <Button variant="ghost" size="icon" onClick={() => applyFormatting('underline')}><Underline className="h-5 w-5"/></Button>
+                <Button variant="ghost" size="icon" onClick={() => applyFormatting('strike')}><Strikethrough className="h-5 w-5"/></Button>
+                <Button variant="ghost" size="icon" onClick={() => applyList('unordered')}><List className="h-5 w-5"/></Button>
+                <Button variant="ghost" size="icon" onClick={() => applyList('ordered')}><ListOrdered className="h-5 w-5"/></Button>
+            </div>
+        </footer>
+      )}
     </div>
   );
 }

@@ -50,7 +50,9 @@ type ProfileContextType = {
   isLoading: boolean;
   addNote: (note: Omit<NoteItem, 'id' | 'createdAt' | 'updatedAt'>) => NoteItem;
   updateNote: (note: NoteItem) => void;
-  deleteNote: (id: string, permanently?: boolean) => void;
+  deleteNote: (id: string) => void;
+  deleteNotePermanently: (id: string) => void;
+  restoreNote: (id: string) => void;
   toggleFavoriteNote: (id: string) => void;
   getNoteById: (id: string) => NoteItem | undefined;
 };
@@ -216,16 +218,22 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
     setProfile(p => ({ ...p, notes: p.notes.map(n => n.id === updatedNote.id ? updatedNote : n) }));
   };
 
-  const deleteNote = (id: string, permanently: boolean = false) => {
-    setProfile(p => {
-        if(permanently) {
-            return { ...p, notes: p.notes.filter(n => n.id !== id) };
-        }
-        return {
-            ...p,
-            notes: p.notes.map(n => n.id === id ? {...n, isTrashed: true, updatedAt: new Date().toISOString()} : n)
-        };
-    });
+  const deleteNote = (id: string) => {
+    setProfile(p => ({
+        ...p,
+        notes: p.notes.map(n => n.id === id ? {...n, isTrashed: true, updatedAt: new Date().toISOString()} : n)
+    }));
+  };
+  
+  const deleteNotePermanently = (id: string) => {
+    setProfile(p => ({ ...p, notes: p.notes.filter(n => n.id !== id) }));
+  };
+
+  const restoreNote = (id: string) => {
+    setProfile(p => ({
+        ...p,
+        notes: p.notes.map(n => n.id === id ? {...n, isTrashed: false, updatedAt: new Date().toISOString()} : n)
+    }));
   };
 
   const toggleFavoriteNote = (id: string) => {
@@ -296,6 +304,8 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
         addNote,
         updateNote,
         deleteNote,
+        deleteNotePermanently,
+        restoreNote,
         toggleFavoriteNote,
         getNoteById,
     }}>
