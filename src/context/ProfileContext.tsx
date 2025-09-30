@@ -135,6 +135,7 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
           const fullProfile = {
             ...getInitialProfile(),
             ...fetchedData,
+            name: fetchedData.name || user.displayName || "New User", // Prioritize fetched name, then auth name
             stats,
           };
           setProfileState(fullProfile);
@@ -144,7 +145,7 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
           const newProfile: UserProfile = {
             ...getInitialProfile(),
             email: user.email || '',
-            name: user.displayName || 'New User',
+            name: user.displayName || 'New User', // Use the displayName from AuthContext
           };
           await setDoc(docRef, newProfile);
           setProfileState(newProfile);
