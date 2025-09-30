@@ -156,7 +156,7 @@ const defaultMaintenanceConfig: MaintenanceConfig = {
 
 export const MaintenanceProvider = ({ children }: { children: ReactNode }) => {
   const [isLoading, setIsLoading] = useState(true);
-  const [maintenanceConfig, setMaintenanceConfig] = useState<MaintenanceConfig>(defaultMaintenanceConfig);
+  const [maintenanceConfig, setMaintenanceConfigState] = useState<MaintenanceConfig>(defaultMaintenanceConfig);
   const configRef = ref(rtdb, 'config');
   const isInitialLoad = useRef(true);
 
@@ -166,6 +166,12 @@ export const MaintenanceProvider = ({ children }: { children: ReactNode }) => {
       console.error("Error updating maintenance config:", error);
     });
   };
+  
+  const setMaintenanceConfig = (value: React.SetStateAction<MaintenanceConfig>) => {
+      const newConfig = typeof value === 'function' ? value(maintenanceConfig) : value;
+      setMaintenanceConfigState(newConfig);
+      updateConfigInDb(newConfig);
+  }
 
   useEffect(() => {
     const unsubscribe = onValue(configRef, 
@@ -185,18 +191,18 @@ export const MaintenanceProvider = ({ children }: { children: ReactNode }) => {
                     roadmap: dbConfig.aboutPageContent?.roadmap || defaultMaintenanceConfig.aboutPageContent.roadmap,
                 },
             };
-            setMaintenanceConfig(mergedConfig);
+            setMaintenanceConfigState(mergedConfig);
         } else {
             // If no config in DB, set the default one
             updateConfigInDb(defaultMaintenanceConfig);
-            setMaintenanceConfig(defaultMaintenanceConfig);
+            setMaintenanceConfigState(defaultMaintenanceConfig);
         }
         setIsLoading(false);
         isInitialLoad.current = false;
       }, 
       (error) => {
           console.error("Error fetching maintenance config:", error);
-          setMaintenanceConfig(defaultMaintenanceConfig); // Fallback to default
+          setMaintenanceConfigState(defaultMaintenanceConfig); // Fallback to default
           setIsLoading(false);
           isInitialLoad.current = false;
       });
@@ -206,68 +212,42 @@ export const MaintenanceProvider = ({ children }: { children: ReactNode }) => {
   }, []);
   
   const setDevMode = (isDev: boolean) => {
-    const newConfig = {...maintenanceConfig, isDevMode: isDev };
-    setMaintenanceConfig(newConfig);
-    updateConfigInDb(newConfig);
+    setMaintenanceConfig(prev => ({...prev, isDevMode: isDev }));
   };
 
   const addUpdateItem = (item: Omit<UpdateItem, 'id'>) => {
     const newItem = { ...item, id: `${new Date().toISOString()}-${Math.random()}` };
-    const newItems = [newItem, ...maintenanceConfig.updateItems];
-    const newConfig = {...maintenanceConfig, updateItems: newItems};
-    setMaintenanceConfig(newConfig);
-    updateConfigInDb(newConfig);
+    setMaintenanceConfig(prev => ({...prev, updateItems: [newItem, ...prev.updateItems]}));
   };
 
   const editUpdateItem = (itemToEdit: UpdateItem) => {
-    const newItems = maintenanceConfig.updateItems.map(item => (item.id === itemToEdit.id ? itemToEdit : item));
-    const newConfig = { ...maintenanceConfig, updateItems: newItems };
-    setMaintenanceConfig(newConfig);
-    updateConfigInDb(newConfig);
+    setMaintenanceConfig(prev => ({...prev, updateItems: prev.updateItems.map(item => (item.id === itemToEdit.id ? itemToEdit : item))}));
   };
 
   const deleteUpdateItem = (id: string) => {
-    const newItems = maintenanceConfig.updateItems.filter(i => i.id !== id);
-    const newConfig = {...maintenanceConfig, updateItems: newItems};
-    setMaintenanceConfig(newConfig);
-    updateConfigInDb(newConfig);
+    setMaintenanceConfig(prev => ({...prev, updateItems: prev.updateItems.filter(i => i.id !== id)}));
   };
 
   const addRoadmapItem = (item: Omit<RoadmapItem, 'id'>) => {
     const newItem = { ...item, id: `${new Date().toISOString()}-${Math.random()}` };
-    const newRoadmap = [newItem, ...maintenanceConfig.aboutPageContent.roadmap];
-    const newConfig = {
-      ...maintenanceConfig,
-      aboutPageContent: { ...maintenanceConfig.aboutPageContent, roadmap: newRoadmap },
-    };
-    setMaintenanceConfig(newConfig);
-    updateConfigInDb(newConfig);
+    setMaintenanceConfig(prev => ({
+        ...prev,
+        aboutPageContent: {...prev.aboutPageContent, roadmap: [newItem, ...prev.aboutPageContent.roadmap]},
+    }));
   };
 
   const editRoadmapItem = (itemToEdit: RoadmapItem) => {
-    const newRoadmap = maintenanceConfig.aboutPageContent.roadmap.map(i => (i.id === itemToEdit.id ? itemToEdit : i));
-    const newConfig = {
-      ...maintenanceConfig,
-      aboutPageContent: {
-        ...maintenanceConfig.aboutPageContent,
-        roadmap: newRoadmap,
-      },
-    };
-    setMaintenanceConfig(newConfig);
-    updateConfigInDb(newConfig);
+    setMaintenanceConfig(prev => ({
+        ...prev,
+        aboutPageContent: {...prev.aboutPageContent, roadmap: prev.aboutPageContent.roadmap.map(i => (i.id === itemToEdit.id ? itemToEdit : i))},
+    }));
   };
 
   const deleteRoadmapItem = (id: string) => {
-    const newRoadmap = maintenanceConfig.aboutPageContent.roadmap.filter(i => i.id !== id);
-    const newConfig = {
-      ...maintenanceConfig,
-      aboutPageContent: {
-        ...maintenanceConfig.aboutPageContent,
-        roadmap: newRoadmap,
-      },
-    };
-    setMaintenanceConfig(newConfig);
-    updateConfigInDb(newConfig);
+    setMaintenanceConfig(prev => ({
+        ...prev,
+        aboutPageContent: {...prev.aboutPageContent, roadmap: prev.aboutPageContent.roadmap.filter(i => i.id !== id)},
+    }));
   };
 
 
