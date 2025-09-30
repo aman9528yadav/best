@@ -168,11 +168,13 @@ export default function ManageAboutPage() {
   const founderImage = PlaceHolderImages.find(p => p.id === ownerInfo.photoId);
 
   const addRoadmapItem = (item: Omit<RoadmapItem, 'id'>) => {
-    const newItem = { ...item, id: `${Date.now()}-${Math.random().toString(36).substring(2, 9)}` };
-    setMaintenanceConfig(prev => ({
-        ...prev,
-        aboutPageContent: {...prev.aboutPageContent, roadmap: [newItem, ...prev.aboutPageContent.roadmap]},
-    }));
+    setMaintenanceConfig(prev => {
+        const newItem = { ...item, id: `${Date.now()}-${Math.random().toString(36).substring(2, 9)}` };
+        return {
+            ...prev,
+            aboutPageContent: {...prev.aboutPageContent, roadmap: [newItem, ...prev.aboutPageContent.roadmap]},
+        };
+    });
   };
 
   const editRoadmapItem = (itemToEdit: RoadmapItem) => {
@@ -369,7 +371,7 @@ export default function ManageAboutPage() {
         </main>
       </div>
 
-      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+      <Dialog open={isDialogOpen} onOpenChange={(open) => { if (!open) setEditingItem(null); setIsDialogOpen(open); }}>
         <DialogContent>
           <RoadmapForm
             item={
@@ -394,6 +396,8 @@ export default function ManageAboutPage() {
     </div>
   );
 }
+
+    
 
     
 

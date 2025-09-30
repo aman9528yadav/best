@@ -164,8 +164,10 @@ export default function ManageUpdatesPage() {
   const [isClearAllDialogOpen, setIsClearAllDialogOpen] = useState(false);
 
   const addUpdateItem = (item: Omit<UpdateItem, 'id'>) => {
-    const newItem = { ...item, id: `${Date.now()}-${Math.random().toString(36).substring(2, 9)}` };
-    setMaintenanceConfig(prev => ({...prev, updateItems: [newItem, ...prev.updateItems]}));
+    setMaintenanceConfig(prev => {
+        const newItem = { ...item, id: `${Date.now()}-${Math.random().toString(36).substring(2, 9)}` };
+        return {...prev, updateItems: [newItem, ...prev.updateItems]};
+    });
   };
 
   const editUpdateItem = (itemToEdit: UpdateItem) => {
@@ -309,7 +311,7 @@ export default function ManageUpdatesPage() {
         </main>
       </div>
 
-      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+      <Dialog open={isDialogOpen} onOpenChange={(open) => { if (!open) setEditingItem(null); setIsDialogOpen(open); }}>
         <DialogContent>
           <UpdateForm
             item={
@@ -332,6 +334,8 @@ export default function ManageUpdatesPage() {
     </div>
   );
 }
+    
+
     
 
     
