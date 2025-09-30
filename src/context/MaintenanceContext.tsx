@@ -228,8 +228,6 @@ export const MaintenanceProvider = ({ children }: { children: ReactNode }) => {
   const [isDevMode, setDevModeState] = useState<boolean>(false);
   const [maintenanceConfig, setMaintenanceConfig] = useState<MaintenanceConfig>(defaultMaintenanceConfig);
 
-  const { user } = useAuth(); // Use user to decide whether to use localStorage
-
   useEffect(() => {
     // Dev mode is local to the browser, so it's fine to keep it in localStorage.
     try {
@@ -243,25 +241,44 @@ export const MaintenanceProvider = ({ children }: { children: ReactNode }) => {
     
     // Set up Firestore listener for the maintenance config
     const configDocRef = doc(db, 'config', 'maintenance');
-    const unsubscribe = onSnapshot(configDocRef, (docSnap) => {
-        if (docSnap.exists()) {
-            // Merge with default config to prevent missing fields if a new field is added to the default
-            const firestoreConfig = { ...defaultMaintenanceConfig, ...docSnap.data() };
-            setMaintenanceConfig(firestoreConfig);
-        } else {
-            // If doc doesn't exist, create it with the default config
-            setDoc(configDocRef, defaultMaintenanceConfig);
-            setMaintenanceConfig(defaultMaintenanceConfig);
-        }
-        setIsLoaded(true);
-    }, (error) => {
-        console.error("Error fetching maintenance config:", error);
-        // Fallback to default if there's an error
-        setMaintenanceConfig(defaultMaintenanceConfig);
-        setIsLoaded(true);
-    });
 
-    return () => unsubscribe(); // Cleanup listener on unmount
+    const initializeAndListen = async () => {
+      try {
+        const docSnap = await getDoc(configDocRef);
+        if (!docSnap.exists()) {
+          // If doc doesn't exist, create it with the default config
+          await setDoc(configDocRef, defaultMaintenanceConfig);
+        }
+      } catch (error) {
+        console.error("Error checking/creating maintenance config doc:", error);
+      }
+      
+      const unsubscribe = onSnapshot(configDocRef, (docSnap) => {
+          if (docSnap.exists()) {
+              // Merge with default config to prevent missing fields if a new field is added to the default
+              const firestoreConfig = { ...defaultMaintenanceConfig, ...docSnap.data() };
+              setMaintenanceConfig(firestoreConfig);
+          } else {
+              setMaintenanceConfig(defaultMaintenanceConfig);
+          }
+          setIsLoaded(true);
+      }, (error) => {
+          console.error("Error fetching maintenance config:", error);
+          // Fallback to default if there's an error
+          setMaintenanceConfig(defaultMaintenanceConfig);
+          setIsLoaded(true);
+      });
+
+      return unsubscribe;
+    };
+    
+    const unsubscribePromise = initializeAndListen();
+
+    return () => {
+      unsubscribePromise.then(unsubscribe => {
+        if(unsubscribe) unsubscribe();
+      });
+    };
   }, []);
 
   const updateMaintenanceConfig = (newConfig: MaintenanceConfig) => {
