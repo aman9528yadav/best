@@ -19,10 +19,12 @@ import {
 } from '@/components/ui/accordion';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import { ArrowLeft, Clock, Shield, Trash } from 'lucide-react';
+import { ArrowLeft, Clock, Shield, Trash, Megaphone } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useMaintenance } from '@/context/MaintenanceContext';
 import { useToast } from '@/hooks/use-toast';
+import { Input } from './ui/input';
+import { Textarea } from './ui/textarea';
 
 export function DevPanel() {
   const router = useRouter();
@@ -32,6 +34,7 @@ export function DevPanel() {
     setMaintenanceConfig,
     isLoading,
   } = useMaintenance();
+  const { globalMaintenance, dashboardBanner } = maintenanceConfig;
 
   const handleGlobalMaintenanceChange = (checked: boolean) => {
     setMaintenanceConfig(prev => ({...prev, globalMaintenance: checked }));
@@ -55,6 +58,29 @@ export function DevPanel() {
             variant: "destructive",
         });
     }
+  }
+
+  const handleBannerChange = (field: string, value: any) => {
+     setMaintenanceConfig(prev => ({
+        ...prev,
+        dashboardBanner: {
+            ...prev.dashboardBanner,
+            [field]: value
+        }
+    }));
+  }
+  
+  const handleCountdownChange = (field: 'days' | 'hours' | 'minutes' | 'seconds', value: string) => {
+     setMaintenanceConfig(prev => ({
+        ...prev,
+        dashboardBanner: {
+            ...prev.dashboardBanner,
+            countdown: {
+                ...prev.dashboardBanner.countdown,
+                [field]: parseInt(value, 10) || 0
+            }
+        }
+    }));
   }
 
 
@@ -110,12 +136,53 @@ export function DevPanel() {
                       ) : (
                         <Switch
                           id="global-maintenance"
-                          checked={maintenanceConfig.globalMaintenance}
+                          checked={globalMaintenance}
                           onCheckedChange={handleGlobalMaintenanceChange}
                         />
                       )}
                     </div>
                   </div>
+                </AccordionContent>
+              </Card>
+            </AccordionItem>
+            
+            <AccordionItem value="item-2" asChild>
+              <Card>
+                <CardHeader className="p-4">
+                  <AccordionTrigger className="p-0 hover:no-underline">
+                    <div className="flex items-center gap-3">
+                      <Megaphone className="h-5 w-5" />
+                      <div>
+                        <CardTitle className="text-lg">Dashboard Banner</CardTitle>
+                        <CardDescription>
+                          Control the promotional banner content.
+                        </CardDescription>
+                      </div>
+                    </div>
+                  </AccordionTrigger>
+                </CardHeader>
+                <AccordionContent className="px-4 pb-4 space-y-4">
+                  <div className="bg-accent/50 p-4 rounded-lg flex items-center justify-between">
+                    <Label htmlFor="show-banner">Show Banner</Label>
+                    <Switch id="show-banner" checked={dashboardBanner.show} onCheckedChange={(c) => handleBannerChange('show', c)} />
+                  </div>
+                   <div className="bg-accent/50 p-4 rounded-lg space-y-2">
+                      <Label>Countdown Timer</Label>
+                      <div className="grid grid-cols-2 gap-2">
+                        <div><Label className="text-xs">Days</Label><Input type="number" value={dashboardBanner.countdown.days} onChange={e => handleCountdownChange('days', e.target.value)} /></div>
+                        <div><Label className="text-xs">Hours</Label><Input type="number" value={dashboardBanner.countdown.hours} onChange={e => handleCountdownChange('hours', e.target.value)} /></div>
+                        <div><Label className="text-xs">Minutes</Label><Input type="number" value={dashboardBanner.countdown.minutes} onChange={e => handleCountdownChange('minutes', e.target.value)} /></div>
+                        <div><Label className="text-xs">Seconds</Label><Input type="number" value={dashboardBanner.countdown.seconds} onChange={e => handleCountdownChange('seconds', e.target.value)} /></div>
+                      </div>
+                   </div>
+                   <div className="bg-accent/50 p-4 rounded-lg space-y-2">
+                      <Label htmlFor="banner-category">Category</Label>
+                      <Input id="banner-category" value={dashboardBanner.category} onChange={e => handleBannerChange('category', e.target.value)} />
+                   </div>
+                   <div className="bg-accent/50 p-4 rounded-lg space-y-2">
+                      <Label htmlFor="banner-details">Upcoming Feature Details</Label>
+                      <Textarea id="banner-details" value={dashboardBanner.upcomingFeatureDetails} onChange={e => handleBannerChange('upcomingFeatureDetails', e.target.value)} />
+                   </div>
                 </AccordionContent>
               </Card>
             </AccordionItem>

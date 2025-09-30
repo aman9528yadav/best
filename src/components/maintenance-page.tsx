@@ -1,10 +1,9 @@
 
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, Wrench, Shield, Hourglass, Zap } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';

@@ -163,8 +163,10 @@ export const MaintenanceProvider = ({ children }: { children: ReactNode }) => {
       (snapshot) => {
         if (snapshot.exists()) {
             const dbConfig = snapshot.val();
-            setMaintenanceConfigState(prev => ({ ...prev, ...dbConfig }));
+            // Merge database config with local defaults to prevent missing properties
+            setMaintenanceConfigState(prev => ({ ...defaultMaintenanceConfig, ...prev, ...dbConfig }));
         } else {
+            // If no config in DB, create one with defaults
             set(configRef, defaultMaintenanceConfig).catch(err => console.error("Error creating default config in DB", err));
             setMaintenanceConfigState(defaultMaintenanceConfig);
         }
@@ -172,6 +174,7 @@ export const MaintenanceProvider = ({ children }: { children: ReactNode }) => {
       }, 
       (error) => {
           console.error("Error fetching maintenance config:", error);
+          // Fallback to default config on error
           setMaintenanceConfigState(defaultMaintenanceConfig);
           setIsLoading(false);
       });
