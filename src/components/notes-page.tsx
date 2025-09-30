@@ -41,12 +41,13 @@ import Link from 'next/link';
 import { Card } from '@/components/ui/card';
 import { formatDistanceToNow } from 'date-fns';
 import { useRouter } from 'next/navigation';
+import { cn } from '@/lib/utils';
 
 type ViewMode = 'list' | 'card';
 type SortMode = 'updatedAt' | 'createdAt' | 'title';
 
 export function NotesPage() {
-  const { profile, restoreNote, deleteNotePermanently } = useProfile();
+  const { profile, restoreNote, deleteNotePermanently, deleteNote, toggleFavoriteNote } = useProfile();
   const { notes } = profile;
   const router = useRouter();
   
@@ -75,19 +76,17 @@ export function NotesPage() {
   }, [notes, activeTab, sortMode]);
   
   const handleNoteClick = (noteId: string) => {
-      if(activeTab === 'trash') return;
       router.push(`/notes/${noteId}`);
   }
 
   const NoteItem = ({ note }: { note: typeof notes[0] }) => (
     <Card 
-        className="p-4 cursor-pointer hover:bg-accent transition-colors flex flex-col"
-        onClick={() => handleNoteClick(note.id)}
+        className="p-4 flex flex-col group"
+        
     >
-        <div className="flex-1">
+        <div className="flex-1 cursor-pointer" onClick={() => handleNoteClick(note.id)}>
             <div className="flex justify-between items-start">
-                <h3 className="font-semibold">{note.title || 'Untitled Note'}</h3>
-                {note.isFavorite && !note.isTrashed && <Star className="h-4 w-4 text-yellow-500 fill-yellow-400" />}
+                <h3 className="font-semibold pr-8">{note.title || 'Untitled Note'}</h3>
             </div>
           <p className="text-sm text-muted-foreground truncate">{note.content.substring(0, 100)}</p>
         </div>
@@ -96,28 +95,40 @@ export function NotesPage() {
           <Clock className="h-3 w-3" />
           <span>Updated {formatDistanceToNow(new Date(note.updatedAt), { addSuffix: true })}</span>
         </div>
-        {activeTab === 'trash' && (
-            <div className="flex items-center">
-                <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                        <Button variant="ghost" size="icon" className="h-8 w-8"><Trash2 className="h-4 w-4 text-destructive" /></Button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                        <AlertDialogHeader>
-                        <AlertDialogTitle>Delete Permanently?</AlertDialogTitle>
-                        <AlertDialogDescription>
-                            This action cannot be undone. This will permanently delete the note.
-                        </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction onClick={() => deleteNotePermanently(note.id)}>Delete</AlertDialogAction>
-                        </AlertDialogFooter>
-                    </AlertDialogContent>
-                </AlertDialog>
-                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => restoreNote(note.id)}><Undo2 className="h-4 w-4" /></Button>
-            </div>
-        )}
+
+        <div className="flex items-center opacity-0 group-hover:opacity-100 transition-opacity">
+            {note.isTrashed ? (
+                <>
+                    <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                            <Button variant="ghost" size="icon" className="h-8 w-8"><Trash2 className="h-4 w-4 text-destructive" /></Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                            <AlertDialogHeader>
+                            <AlertDialogTitle>Delete Permanently?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                                This action cannot be undone. This will permanently delete the note.
+                            </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction onClick={() => deleteNotePermanently(note.id)}>Delete</AlertDialogAction>
+                            </AlertDialogFooter>
+                        </AlertDialogContent>
+                    </AlertDialog>
+                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => restoreNote(note.id)}><Undo2 className="h-4 w-4" /></Button>
+                </>
+            ) : (
+                <>
+                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => toggleFavoriteNote(note.id)}>
+                        <Star className={cn("h-4 w-4", note.isFavorite && 'text-yellow-500 fill-yellow-400')} />
+                    </Button>
+                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => deleteNote(note.id)}>
+                        <Trash className="h-4 w-4" />
+                    </Button>
+                </>
+            )}
+        </div>
       </div>
     </Card>
   );
