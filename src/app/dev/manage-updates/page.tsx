@@ -146,7 +146,7 @@ const UpdateForm = ({
 
 export default function ManageUpdatesPage() {
   const router = useRouter();
-  const { maintenanceConfig, addUpdateItem, editUpdateItem, deleteUpdateItem } = useMaintenance();
+  const { maintenanceConfig, addUpdateItem, editUpdateItem, deleteUpdateItem, clearAllUpdateItems } = useMaintenance();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<UpdateItem | null>(null);
 
@@ -176,6 +176,12 @@ export default function ManageUpdatesPage() {
     }
   };
 
+  const handleClearAll = () => {
+    if (window.confirm('Are you sure you want to delete ALL update items? This cannot be undone.')) {
+        clearAllUpdateItems();
+    }
+  }
+
   return (
     <div className="flex flex-col items-center w-full min-h-screen bg-background text-foreground p-4">
       <div className="w-full max-w-[412px] flex flex-col flex-1">
@@ -193,14 +199,25 @@ export default function ManageUpdatesPage() {
               <h1 className="text-xl font-bold">Manage Updates</h1>
             </div>
           </div>
-          <Button
-            size="sm"
-            className="gap-2"
-            onClick={handleAddNew}
-          >
-            <Plus className="h-4 w-4" />
-            Add New
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              size="sm"
+              variant="destructive"
+              className="gap-2"
+              onClick={handleClearAll}
+            >
+              <Trash2 className="h-4 w-4" />
+              Clear All
+            </Button>
+            <Button
+              size="sm"
+              className="gap-2"
+              onClick={handleAddNew}
+            >
+              <Plus className="h-4 w-4" />
+              Add New
+            </Button>
+          </div>
         </div>
 
         <main className="flex-1 space-y-4 pb-12">

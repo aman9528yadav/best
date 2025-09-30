@@ -78,9 +78,11 @@ type MaintenanceContextType = {
   addUpdateItem: (item: Omit<UpdateItem, 'id'>) => void;
   editUpdateItem: (item: UpdateItem) => void;
   deleteUpdateItem: (id: string) => void;
+  clearAllUpdateItems: () => void;
   addRoadmapItem: (item: Omit<RoadmapItem, 'id'>) => void;
   editRoadmapItem: (item: RoadmapItem) => void;
   deleteRoadmapItem: (id: string) => void;
+  clearAllRoadmapItems: () => void;
 };
 
 const MaintenanceContext = createContext<MaintenanceContextType | undefined>(undefined);
@@ -229,6 +231,10 @@ export const MaintenanceProvider = ({ children }: { children: ReactNode }) => {
   const deleteUpdateItem = (id: string) => {
     setMaintenanceConfig(prev => ({...prev, updateItems: prev.updateItems.filter(i => i.id !== id)}));
   };
+  
+  const clearAllUpdateItems = () => {
+    setMaintenanceConfig(prev => ({...prev, updateItems: []}));
+  }
 
   const addRoadmapItem = (item: Omit<RoadmapItem, 'id'>) => {
     const newItem = { ...item, id: `${new Date().toISOString()}-${Math.random()}` };
@@ -251,6 +257,13 @@ export const MaintenanceProvider = ({ children }: { children: ReactNode }) => {
         aboutPageContent: {...prev.aboutPageContent, roadmap: prev.aboutPageContent.roadmap.filter(i => i.id !== id)},
     }));
   };
+  
+  const clearAllRoadmapItems = () => {
+    setMaintenanceConfig(prev => ({
+        ...prev,
+        aboutPageContent: {...prev.aboutPageContent, roadmap: []},
+    }));
+  }
 
 
   return (
@@ -263,9 +276,11 @@ export const MaintenanceProvider = ({ children }: { children: ReactNode }) => {
         addUpdateItem,
         editUpdateItem,
         deleteUpdateItem,
+        clearAllUpdateItems,
         addRoadmapItem,
         editRoadmapItem,
         deleteRoadmapItem,
+        clearAllRoadmapItems,
     }}>
       {children}
     </MaintenanceContext.Provider>

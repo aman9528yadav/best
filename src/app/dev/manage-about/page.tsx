@@ -146,7 +146,7 @@ const RoadmapForm = ({
 export default function ManageAboutPage() {
   const router = useRouter();
   const { toast } = useToast();
-  const { maintenanceConfig, setMaintenanceConfig, addRoadmapItem, editRoadmapItem, deleteRoadmapItem } = useMaintenance();
+  const { maintenanceConfig, setMaintenanceConfig, addRoadmapItem, editRoadmapItem, deleteRoadmapItem, clearAllRoadmapItems } = useMaintenance();
   const { stats, ownerInfo, appInfo, roadmap } = maintenanceConfig.aboutPageContent;
   
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -197,6 +197,12 @@ export default function ManageAboutPage() {
         deleteRoadmapItem(id);
     }
   };
+
+  const handleClearAllRoadmap = () => {
+    if (confirm('Are you sure you want to delete ALL roadmap items? This cannot be undone.')) {
+        clearAllRoadmapItems();
+    }
+  }
 
   return (
     <div className="flex flex-col items-center w-full min-h-screen bg-background text-foreground p-4">
@@ -263,7 +269,10 @@ export default function ManageAboutPage() {
              <Card>
                 <CardHeader className="flex flex-row items-center justify-between">
                     <CardTitle>Release Plan</CardTitle>
-                    <Button size="sm" className="gap-2" onClick={handleAddNewRoadmap}><Plus className="h-4 w-4" />Add Item</Button>
+                    <div className="flex gap-2">
+                        <Button size="sm" variant="destructive" className="gap-2" onClick={handleClearAllRoadmap}><Trash2 className="h-4 w-4" />Clear All</Button>
+                        <Button size="sm" className="gap-2" onClick={handleAddNewRoadmap}><Plus className="h-4 w-4" />Add Item</Button>
+                    </div>
                 </CardHeader>
                 <CardContent className="space-y-3">
                     {roadmap.map((item) => (

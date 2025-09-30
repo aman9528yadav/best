@@ -214,6 +214,38 @@ export function DevPanel() {
                 </AccordionContent>
               </Card>
             </AccordionItem>
+
+            <AccordionItem value="item-3" asChild>
+              <Card>
+                <CardHeader className="p-4">
+                  <AccordionTrigger className="p-0 hover:no-underline">
+                    <div className="flex items-center gap-3">
+                      <Pencil className="h-5 w-5" />
+                      <div>
+                        <CardTitle className="text-lg">Content Management</CardTitle>
+                        <CardDescription>
+                          Edit content for various app pages.
+                        </CardDescription>
+                      </div>
+                    </div>
+                  </AccordionTrigger>
+                </CardHeader>
+                <AccordionContent className="px-4 pb-4 space-y-2">
+                  <Button asChild variant="ghost" className="w-full justify-between">
+                    <Link href="/dev/manage-updates">
+                      Manage "What's New"
+                      <ChevronRight className="h-4 w-4" />
+                    </Link>
+                  </Button>
+                  <Button asChild variant="ghost" className="w-full justify-between">
+                    <Link href="/dev/manage-about">
+                      Manage "About" Page
+                      <ChevronRight className="h-4 w-4" />
+                    </Link>
+                  </Button>
+                </AccordionContent>
+              </Card>
+            </AccordionItem>
             
             <AccordionItem value="item-6" asChild>
               <Card>
@@ -245,5 +277,3 @@ export function DevPanel() {
     </div>
   );
 }
-
-    
