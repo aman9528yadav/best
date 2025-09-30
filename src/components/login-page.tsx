@@ -83,7 +83,7 @@ export function LoginPage() {
 
               <form onSubmit={handleLogin} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="email">Email or Username</Label>
+                  <Label htmlFor="email">Email</Label>
                   <Input id="email" type="email" placeholder="name@example.com" className="bg-white/70" value={loginEmail} onChange={(e) => setLoginEmail(e.target.value)} />
                 </div>
                 <div className="space-y-2">
@@ -102,7 +102,7 @@ export function LoginPage() {
                   </div>
                 </div>
                  <div className="flex items-center justify-between pt-2">
-                    <Link href="#" className="text-sm text-primary hover:underline">
+                    <Link href="/forgot-password" className="text-sm text-primary hover:underline">
                     Forgot Password?
                     </Link>
                     <Button type="submit" className="gap-2">
@@ -200,5 +200,3 @@ export function LoginPage() {
     </div>
   );
 }
-
-    

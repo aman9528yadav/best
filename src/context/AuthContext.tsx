@@ -16,6 +16,7 @@ import {
     EmailAuthProvider,
     reauthenticateWithCredential,
     updatePassword,
+    sendPasswordResetEmail,
 } from 'firebase/auth';
 import { app } from '@/lib/firebase';
 import { useRouter } from 'next/navigation';
@@ -32,6 +33,7 @@ interface AuthContextType {
   signUpWithEmail: (email: string, pass: string, fullName: string) => Promise<void>;
   logout: () => Promise<void>;
   changePassword: (currentPass: string, newPass: string) => Promise<boolean>;
+  sendPasswordReset: (email: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -130,6 +132,24 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       return false;
     }
   };
+  
+  const sendPasswordReset = async (email: string) => {
+    try {
+      await sendPasswordResetEmail(auth, email);
+      toast({
+        title: 'Password Reset Email Sent',
+        description: `If an account exists for ${email}, you will receive an email with instructions to reset your password.`,
+      });
+      router.push('/login');
+    } catch (error: any) {
+      console.error('Error sending password reset email', error);
+      toast({
+        title: 'Error',
+        description: 'Could not send password reset email. Please try again.',
+        variant: 'destructive',
+      });
+    }
+  };
 
 
   const logout = async () => {
@@ -147,7 +167,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, signInWithGoogle, signInWithEmail, signUpWithEmail, logout, changePassword }}>
+    <AuthContext.Provider value={{ user, loading, signInWithGoogle, signInWithEmail, signUpWithEmail, logout, changePassword, sendPasswordReset }}>
       {children}
     </AuthContext.Provider>
   );
