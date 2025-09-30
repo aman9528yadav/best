@@ -50,22 +50,35 @@ import { DashboardSkeleton } from '@/components/dashboard-skeleton';
 import { useMaintenance } from '@/context/MaintenanceContext';
 import { DashboardBanner } from '@/components/dashboard-banner';
 import { useProfile } from '@/context/ProfileContext';
+import { useAuth } from '@/context/AuthContext';
+import { useRouter } from 'next/navigation';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 const quickAccessItems = [
   {
     icon: ArrowRightLeft,
     label: 'Converter',
     href: '/converter',
+    requiresAuth: false,
   },
-  { icon: Calculator, label: 'Calculator', href: '/calculator' },
-  { icon: BookText, label: 'Notes', href: '#' },
-  { icon: History, label: 'History', href: '/history' },
-  { icon: Newspaper, label: 'News', href: 'https://aman9528.wixstudio.com/my-site-3' },
-  { icon: Languages, label: 'Translator', href: '#' },
-  { icon: Calendar, label: 'Date Calc', href: '/date-calculator' },
-  { icon: Timer, label: 'Timer', href: '/timer' },
-  { icon: Hourglass, label: 'Stopwatch', href: '/stopwatch' },
-  { icon: Settings, label: 'Settings', href: '/settings' },
+  { icon: Calculator, label: 'Calculator', href: '/calculator', requiresAuth: false },
+  { icon: BookText, label: 'Notes', href: '#', requiresAuth: true },
+  { icon: History, label: 'History', href: '/history', requiresAuth: true },
+  { icon: Newspaper, label: 'News', href: 'https://aman9528.wixstudio.com/my-site-3', requiresAuth: false },
+  { icon: Languages, label: 'Translator', href: '#', requiresAuth: true },
+  { icon: Calendar, label: 'Date Calc', href: '/date-calculator', requiresAuth: false },
+  { icon: Timer, label: 'Timer', href: '/timer', requiresAuth: false },
+  { icon: Hourglass, label: 'Stopwatch', href: '/stopwatch', requiresAuth: false },
+  { icon: Settings, label: 'Settings', href: '/settings', requiresAuth: true },
 ];
 
 const comingSoonItems = [
@@ -113,8 +126,12 @@ const discoverItems = [
 export default function DashboardPage() {
   const { maintenanceConfig, isLoading: isMaintenanceLoading } = useMaintenance();
   const { profile, isLoading: isProfileLoading } = useProfile();
+  const { user } = useAuth();
+  const router = useRouter();
+
   const [isLoading, setIsLoading] = useState(true);
   const [showMore, setShowMore] = useState(false);
+  const [showLoginDialog, setShowLoginDialog] = useState(false);
 
   useEffect(() => {
     // Simulate loading time
@@ -123,6 +140,13 @@ export default function DashboardPage() {
     }, 500); 
     return () => clearTimeout(timer);
   }, []);
+
+  const handleQuickAccessClick = (e: React.MouseEvent<HTMLAnchorElement>, item: (typeof quickAccessItems)[0]) => {
+    if (item.requiresAuth && !user) {
+      e.preventDefault();
+      setShowLoginDialog(true);
+    }
+  };
 
   if (isMaintenanceLoading || isProfileLoading || isLoading) {
     return (
@@ -210,7 +234,11 @@ export default function DashboardPage() {
             </div>
             <div className="grid grid-cols-3 gap-2">
               {visibleQuickAccessItems.map((item) => (
-                <Link href={item.href || '#'} key={item.label}>
+                <Link 
+                  href={item.href || '#'} 
+                  key={item.label}
+                  onClick={(e) => handleQuickAccessClick(e, item)}
+                >
                   <Card className="h-full hover:bg-accent transition-colors">
                     <CardContent className="p-3 flex flex-col items-center justify-center text-center gap-2">
                       <div className="p-3 bg-accent rounded-lg">
@@ -358,16 +386,22 @@ export default function DashboardPage() {
           </Accordion>
         </div>
       </main>
+      <AlertDialog open={showLoginDialog} onOpenChange={setShowLoginDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Authentication Required</AlertDialogTitle>
+            <AlertDialogDescription>
+              You need to be logged in to access this feature. Please log in to continue.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={() => router.push('/login')}>Go to Login</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
       </div>
     </div>
   );
 }
-    
-
-    
-
-
-
-    
-
     
