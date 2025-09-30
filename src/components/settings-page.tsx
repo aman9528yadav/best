@@ -51,6 +51,8 @@ import {
 import { useMaintenance } from '@/context/MaintenanceContext';
 import { useRouter } from 'next/navigation';
 import { useTheme } from 'next-themes';
+import { useAuth } from '@/context/AuthContext';
+
 
 const themes = [
   { name: 'Sutradhaar', value: 'sutradhaar' },
@@ -74,6 +76,9 @@ export function SettingsPage() {
   const { maintenanceConfig, setMaintenanceConfig } = useMaintenance();
   const { isDevMode } = maintenanceConfig;
   const router = useRouter();
+  const { user } = useAuth();
+
+  const isOwner = user?.email === 'amanyadavyadav9458@gmail.com';
 
 
   const SettingRow = ({
@@ -99,6 +104,9 @@ export function SettingsPage() {
       setIsPasswordDialogOpen(true);
     } else {
       setMaintenanceConfig(p => ({...p, isDevMode: checked}));
+       if (!checked) {
+        toast({ title: 'Developer Mode Disabled' });
+      }
     }
   };
 
@@ -152,16 +160,18 @@ export function SettingsPage() {
                   onCheckedChange={setSaveHistory}
                 />
               </SettingRow>
-              <SettingRow label="Developer Mode" icon={Code}>
-                <Switch
-                  checked={isDevMode}
-                  onCheckedChange={handleDevModeChange}
-                />
-              </SettingRow>
+              {isOwner && (
+                <SettingRow label="Developer Mode" icon={Code}>
+                  <Switch
+                    checked={isDevMode}
+                    onCheckedChange={handleDevModeChange}
+                  />
+                </SettingRow>
+              )}
             </CardContent>
           </Card>
           
-          {isDevMode && (
+          {isDevMode && isOwner && (
              <Card className="mt-6">
                 <CardHeader>
                     <CardTitle className='flex items-center gap-2'><Code className='h-5 w-5' />Developer Options</CardTitle>
