@@ -4,7 +4,7 @@
 import { Bar, BarChart, Line, LineChart, Area, AreaChart, ResponsiveContainer, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
 import { useHistory } from '@/context/HistoryContext';
 import { useMemo } from 'react';
-import { eachDayOfInterval, format, subDays, isSameDay, eachWeekOfInterval, eachMonthOfInterval, getWeek, getMonth, getYear } from 'date-fns';
+import { eachDayOfInterval, format, subDays, isSameDay, eachWeekOfInterval, eachMonthOfInterval, getWeek, getMonth, getYear, startOfWeek, endOfWeek, startOfMonth, endOfMonth, startOfYear, endOfYear, isWithinInterval } from 'date-fns';
 
 const chartConfig = {
   conversions: {
@@ -35,21 +35,27 @@ export function UsageTrendChart({ type = 'bar', period = 'weekly' }: { type: 'ba
     }
     
     if (period === 'monthly') {
-        const weeks = eachWeekOfInterval({ start: subDays(today, 28), end: today });
-        return weeks.map(weekStart => ({
-            name: `Week ${getWeek(weekStart)}`,
-            conversions: conversions.filter(item => getWeek(new Date(item.timestamp)) === getWeek(weekStart) && getYear(new Date(item.timestamp)) === getYear(weekStart)).length,
-            calculations: calculations.filter(item => getWeek(new Date(item.timestamp)) === getWeek(weekStart) && getYear(new Date(item.timestamp)) === getYear(weekStart)).length,
-        }));
+        const weeks = eachWeekOfInterval({ start: subDays(today, 28), end: today }, { weekStartsOn: 1 });
+        return weeks.map(weekStart => {
+            const weekEnd = endOfWeek(weekStart, { weekStartsOn: 1 });
+            return {
+                name: `Week ${getWeek(weekStart)}`,
+                conversions: conversions.filter(item => isWithinInterval(new Date(item.timestamp), { start: weekStart, end: weekEnd })).length,
+                calculations: calculations.filter(item => isWithinInterval(new Date(item.timestamp), { start: weekStart, end: weekEnd })).length,
+            };
+        });
     }
 
     if (period === 'yearly') {
         const months = eachMonthOfInterval({ start: subDays(today, 365), end: today });
-        return months.map(monthStart => ({
-            name: format(monthStart, 'MMM'),
-            conversions: conversions.filter(item => getMonth(new Date(item.timestamp)) === getMonth(monthStart) && getYear(new Date(item.timestamp)) === getYear(monthStart)).length,
-            calculations: calculations.filter(item => getMonth(new Date(item.timestamp)) === getMonth(monthStart) && getYear(new Date(item.timestamp)) === getYear(monthStart)).length,
-        }));
+        return months.map(monthStart => {
+            const monthEnd = endOfMonth(monthStart);
+            return {
+                name: format(monthStart, 'MMM'),
+                conversions: conversions.filter(item => isWithinInterval(new Date(item.timestamp), { start: monthStart, end: monthEnd })).length,
+                calculations: calculations.filter(item => isWithinInterval(new Date(item.timestamp), { start: monthStart, end: monthEnd })).length,
+            };
+        });
     }
 
     return [];
