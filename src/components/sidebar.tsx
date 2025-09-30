@@ -30,6 +30,7 @@ import { useState, useEffect } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { ScrollArea } from './ui/scroll-area';
 import { useAuth } from '@/context/AuthContext';
+import { useProfile } from '@/context/ProfileContext';
 
 const sidebarNavItems = [
   {
@@ -83,12 +84,13 @@ export function Sidebar() {
   const [isOpen, setIsOpen] = useState(false);
   const [isClient, setIsClient] = useState(false);
   const { user, logout } = useAuth();
+  const { profile } = useProfile();
 
   useEffect(() => {
     setIsClient(true);
   }, []);
 
-  const displayName = user?.displayName || 'Guest';
+  const displayName = user ? (user.displayName || profile.name) : 'Guest';
   const avatarUrl = user?.photoURL;
   const avatarFallback = displayName.charAt(0).toUpperCase();
 
