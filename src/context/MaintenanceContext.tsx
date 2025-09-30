@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
@@ -93,6 +92,7 @@ type MaintenanceContextType = {
   addRoadmapItem: (item: Omit<RoadmapItem, 'id'>) => void;
   editRoadmapItem: (item: RoadmapItem) => void;
   deleteRoadmapItem: (id: string) => void;
+  isLoading: boolean;
 };
 
 const MaintenanceContext = createContext<MaintenanceContextType | undefined>(undefined);
@@ -224,7 +224,7 @@ const defaultMaintenanceConfig: MaintenanceConfig = {
 };
 
 export const MaintenanceProvider = ({ children }: { children: ReactNode }) => {
-  const [isLoaded, setIsLoaded] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [isDevMode, setDevModeState] = useState<boolean>(false);
   const [maintenanceConfig, setMaintenanceConfigState] = useState<MaintenanceConfig>(defaultMaintenanceConfig);
   const configDocRef = doc(db, 'config', 'maintenance');
@@ -239,56 +239,50 @@ export const MaintenanceProvider = ({ children }: { children: ReactNode }) => {
       console.error("Failed to load dev mode from localStorage", error);
     }
     
-    const initializeAndListen = async () => {
-      try {
-        const docSnap = await getDoc(configDocRef);
-        if (!docSnap.exists()) {
-          await setDoc(configDocRef, defaultMaintenanceConfig);
+    const unsubscribe = onSnapshot(configDocRef, 
+      (docSnap) => {
+        if (docSnap.exists()) {
+            setMaintenanceConfigState(docSnap.data() as MaintenanceConfig);
+        } else {
+            // Document doesn't exist, so create it with default values
+            setDoc(configDocRef, defaultMaintenanceConfig).then(() => {
+                 setMaintenanceConfigState(defaultMaintenanceConfig);
+            });
         }
-      } catch (error) {
-        console.error("Error initializing maintenance config:", error);
-      }
-      
-      const unsubscribe = onSnapshot(configDocRef, (docSnap) => {
-          if (docSnap.exists()) {
-              setMaintenanceConfigState({ ...defaultMaintenanceConfig, ...docSnap.data() });
-          } else {
-              setMaintenanceConfigState(defaultMaintenanceConfig);
-          }
-          setIsLoaded(true);
-      }, (error) => {
+        setIsLoading(false);
+      }, 
+      (error) => {
           console.error("Error fetching maintenance config:", error);
           setMaintenanceConfigState(defaultMaintenanceConfig);
-          setIsLoaded(true);
+          setIsLoading(false);
       });
 
-      return unsubscribe;
-    };
-    
-    const unsubscribePromise = initializeAndListen();
-
-    return () => {
-      unsubscribePromise.then(unsubscribe => {
-        if(unsubscribe) unsubscribe();
-      });
-    };
+    return () => unsubscribe();
   }, []);
   
   const updateMaintenanceConfigInDb = async (newConfig: MaintenanceConfig) => {
     try {
-      await setDoc(configDocRef, newConfig);
+      await setDoc(configDocRef, newConfig, { merge: true });
     } catch (error) {
       console.error("Error updating maintenance config:", error);
     }
   };
 
   const handleSetConfig = (setter: React.SetStateAction<MaintenanceConfig>) => {
-    const newConfig = typeof setter === 'function' ? setter(maintenanceConfig) : setter;
-    updateMaintenanceConfigInDb(newConfig);
+    // We get the latest state from the state itself to avoid race conditions
+    setMaintenanceConfigState(prevState => {
+        const newConfig = typeof setter === 'function' ? setter(prevState) : setter;
+        // Then we update the database, but the local state is already optimistically updated
+        // For a strict "read-from-db" flow, we'd only update on the snapshot listener.
+        // But for a better UX in the dev panel, we update locally and remotely.
+        // The key is that all other clients ONLY update from the listener.
+        updateMaintenanceConfigInDb(newConfig);
+        return newConfig;
+    });
   };
   
   const setMaintenanceMode = (isMaintenance: boolean) => {
-    handleSetConfig(prev => ({ ...prev, globalMaintenance: isMaintenance }));
+    updateMaintenanceConfigInDb({ ...maintenanceConfig, globalMaintenance: isMaintenance });
   };
   
   const setDevMode = (isDev: boolean) => {
@@ -301,72 +295,82 @@ export const MaintenanceProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const resetMaintenanceConfig = () => {
-    handleSetConfig(defaultMaintenanceConfig);
+    updateMaintenanceConfigInDb(defaultMaintenanceConfig);
   }
 
   const addUpdateItem = (item: Omit<UpdateItem, 'id'>) => {
-    handleSetConfig(prev => ({
-        ...prev,
-        updateItems: [{ ...item, id: new Date().toISOString() }, ...prev.updateItems ]
-    }));
+    const newConfig = {
+      ...maintenanceConfig,
+      updateItems: [{ ...item, id: new Date().toISOString() }, ...maintenanceConfig.updateItems ]
+    };
+    updateMaintenanceConfigInDb(newConfig);
   };
 
   const editUpdateItem = (updatedItem: UpdateItem) => {
-     handleSetConfig(prev => ({
-        ...prev,
-        updateItems: prev.updateItems.map(item => item.id === updatedItem.id ? updatedItem : item)
-    }));
+     const newConfig = {
+        ...maintenanceConfig,
+        updateItems: maintenanceConfig.updateItems.map(item => item.id === updatedItem.id ? updatedItem : item)
+     };
+     updateMaintenanceConfigInDb(newConfig);
   };
 
   const deleteUpdateItem = (id: string) => {
-     handleSetConfig(prev => ({
-        ...prev,
-        updateItems: prev.updateItems.filter(item => item.id !== id)
-    }));
+     const newConfig = {
+        ...maintenanceConfig,
+        updateItems: maintenanceConfig.updateItems.filter(item => item.id !== id)
+     };
+     updateMaintenanceConfigInDb(newConfig);
   };
 
   const addRoadmapItem = (item: Omit<RoadmapItem, 'id'>) => {
-    handleSetConfig(prev => ({
-      ...prev,
+    const newConfig = {
+      ...maintenanceConfig,
       aboutPageContent: {
-        ...prev.aboutPageContent,
-        roadmap: [{ ...item, id: new Date().toISOString() }, ...prev.aboutPageContent.roadmap]
+        ...maintenanceConfig.aboutPageContent,
+        roadmap: [{ ...item, id: new Date().toISOString() }, ...maintenance.aboutPageContent.roadmap]
       }
-    }));
+    };
+    updateMaintenanceConfigInDb(newConfig);
   };
 
   const editRoadmapItem = (updatedItem: RoadmapItem) => {
-    handleSetConfig(prev => ({
-      ...prev,
+    const newConfig = {
+      ...maintenanceConfig,
       aboutPageContent: {
-        ...prev.aboutPageContent,
-        roadmap: prev.aboutPageContent.roadmap.map(item => item.id === updatedItem.id ? updatedItem : item)
+        ...maintenanceConfig.aboutPageContent,
+        roadmap: maintenanceConfig.aboutPageContent.roadmap.map(item => item.id === updatedItem.id ? updatedItem : item)
       }
-    }));
+    };
+    updateMaintenanceConfigInDb(newConfig);
   };
 
   const deleteRoadmapItem = (id: string) => {
-    handleSetConfig(prev => ({
-      ...prev,
+    const newConfig = {
+      ...maintenanceConfig,
       aboutPageContent: {
-        ...prev.aboutPageContent,
-        roadmap: prev.aboutPageContent.roadmap.filter(item => item.id !== id)
+        ...maintenanceConfig.aboutPageContent,
+        roadmap: maintenanceConfig.aboutPageContent.roadmap.filter(item => item.id !== id)
       }
-    }));
+    };
+    updateMaintenanceConfigInDb(newConfig);
   };
 
   return (
     <MaintenanceContext.Provider value={{ 
-        isMaintenanceMode: maintenanceConfig.globalMaintenance, setMaintenanceMode, 
-        isDevMode, setDevMode, 
-        maintenanceConfig, setMaintenanceConfig: handleSetConfig,
+        isMaintenanceMode: maintenanceConfig.globalMaintenance, 
+        setMaintenanceMode, 
+        isDevMode, 
+        setDevMode, 
+        maintenanceConfig, 
+        setMaintenanceConfig: handleSetConfig,
         resetMaintenanceConfig,
         addUpdateItem,
         editUpdateItem,
         deleteUpdateItem,
         addRoadmapItem,
         editRoadmapItem,
-        deleteRoadmapItem
+        deleteRoadmapItem,
+        isLoading,
     }}>
       {children}
     </MaintenanceContext.Provider>
@@ -382,11 +386,11 @@ export const useMaintenance = () => {
 };
 
 export const MaintenanceWrapper = ({ children }: { children: ReactNode }) => {
-    const { isMaintenanceMode, maintenanceConfig, isDevMode } = useMaintenance();
+    const { isMaintenanceMode, maintenanceConfig, isDevMode, isLoading } = useMaintenance();
     const router = useRouter();
     const pathname = usePathname();
 
-    const allowedPaths = ['/maintenance'];
+    const allowedPaths = ['/maintenance', '/login'];
     if (isDevMode) {
       allowedPaths.push('/dev', '/settings', '/profile/edit', '/dev/manage-updates', '/dev/manage-about');
     }
@@ -394,6 +398,8 @@ export const MaintenanceWrapper = ({ children }: { children: ReactNode }) => {
     const isIndividuallyMaintained = maintenanceConfig.individualPages.includes(pathname);
 
     useEffect(() => {
+        if (isLoading) return; // Don't perform redirects until the config is loaded
+
         const isPathAllowed = allowedPaths.includes(pathname);
 
         if ((isMaintenanceMode || isIndividuallyMaintained) && !isPathAllowed) {
@@ -402,8 +408,13 @@ export const MaintenanceWrapper = ({ children }: { children: ReactNode }) => {
         if (!isMaintenanceMode && !isIndividuallyMaintained && pathname === '/maintenance') {
             router.replace('/');
         }
-    }, [isMaintenanceMode, isIndividuallyMaintained, pathname, router, allowedPaths]);
+    }, [isMaintenanceMode, isIndividuallyMaintained, pathname, router, allowedPaths, isLoading]);
 
+    if (isLoading) {
+        // You can return a global loader here if you want
+        return null;
+    }
+    
     if ((isMaintenanceMode || isIndividuallyMaintained) && !allowedPaths.includes(pathname)) {
         return null; // Render nothing while redirecting
     }
