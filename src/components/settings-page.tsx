@@ -50,6 +50,7 @@ import {
 } from 'lucide-react';
 import { useMaintenance } from '@/context/MaintenanceContext';
 import { useRouter } from 'next/navigation';
+import { useTheme } from 'next-themes';
 
 const themes = [
   { name: 'Sutradhaar', value: 'sutradhaar' },
@@ -67,8 +68,7 @@ const appearanceModes = [
 export function SettingsPage() {
   const { toast } = useToast();
   const [saveHistory, setSaveHistory] = useState(true);
-  const [currentTheme, setCurrentTheme] = useState('sutradhaar');
-  const [appearance, setAppearance] = useState('system');
+  const { theme, setTheme } = useTheme();
   const [isPasswordDialogOpen, setIsPasswordDialogOpen] = useState(false);
   const [password, setPassword] = useState('');
   const { isDevMode, setDevMode } = useMaintenance();
@@ -185,9 +185,9 @@ export function SettingsPage() {
                 {appearanceModes.map((mode) => (
                   <Button
                     key={mode.value}
-                    variant={appearance === mode.value ? 'default' : 'ghost'}
+                    variant={theme === mode.value ? 'default' : 'ghost'}
                     size="sm"
-                    onClick={() => setAppearance(mode.value)}
+                    onClick={() => setTheme(mode.value)}
                     className="flex-1 flex items-center gap-2"
                   >
                     <mode.icon className="h-4 w-4" />
@@ -196,14 +196,14 @@ export function SettingsPage() {
                 ))}
               </div>
               <SettingRow label="Theme" icon={Palette}>
-                <Select value={currentTheme} onValueChange={setCurrentTheme}>
+                <Select value={theme} onValueChange={setTheme}>
                   <SelectTrigger className="w-[150px]">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    {themes.map((theme) => (
-                      <SelectItem key={theme.value} value={theme.value}>
-                        {theme.name}
+                    {themes.map((themeItem) => (
+                      <SelectItem key={themeItem.value} value={themeItem.value}>
+                        {themeItem.name}
                       </SelectItem>
                     ))}
                   </SelectContent>

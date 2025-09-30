@@ -5,6 +5,7 @@ import { HistoryProvider } from '@/context/HistoryContext';
 import { ProfileProvider } from '@/context/ProfileContext';
 import { MaintenanceProvider, MaintenanceWrapper } from '@/context/MaintenanceContext';
 import { AuthProvider } from '@/context/AuthContext';
+import { ThemeProvider } from '@/components/theme-provider';
 
 
 export const metadata: Metadata = {
@@ -28,18 +29,25 @@ export default function RootLayout({
         />
       </head>
       <body className="font-body antialiased">
-        <AuthProvider>
-            <MaintenanceProvider>
-                <ProfileProvider>
-                  <HistoryProvider>
-                    <MaintenanceWrapper>
-                       {children}
-                    </MaintenanceWrapper>
-                    <Toaster />
-                  </HistoryProvider>
-                </ProfileProvider>
-            </MaintenanceProvider>
-        </AuthProvider>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <AuthProvider>
+              <MaintenanceProvider>
+                  <ProfileProvider>
+                    <HistoryProvider>
+                      <MaintenanceWrapper>
+                         {children}
+                      </MaintenanceWrapper>
+                      <Toaster />
+                    </HistoryProvider>
+                  </ProfileProvider>
+              </MaintenanceProvider>
+          </AuthProvider>
+        </ThemeProvider>
       </body>
     </html>
   );
