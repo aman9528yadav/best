@@ -16,6 +16,7 @@ type NotificationContextType = {
   unreadCount: number;
   addNotification: (notification: Notification) => void;
   markAllAsRead: () => void;
+  removeNotification: (id: string) => void;
 };
 
 const NotificationContext = createContext<NotificationContextType | undefined>(undefined);
@@ -56,9 +57,14 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
         setNotifications(prev => prev.map(n => ({ ...n, read: true })));
     }, 1000); // Delay to allow user to see the badge before it disappears
   };
+  
+  const removeNotification = (id: string) => {
+    setNotifications(prev => prev.filter(n => n.id !== id));
+  };
+
 
   return (
-    <NotificationContext.Provider value={{ notifications, unreadCount, addNotification, markAllAsRead }}>
+    <NotificationContext.Provider value={{ notifications, unreadCount, addNotification, markAllAsRead, removeNotification }}>
       {children}
     </NotificationContext.Provider>
   );

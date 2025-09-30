@@ -1,7 +1,7 @@
 
 "use client";
 
-import { Menu, Search, Bell, CircleUser, Home } from 'lucide-react';
+import { Menu, Search, Bell, CircleUser, Home, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Sidebar } from './sidebar';
@@ -40,7 +40,7 @@ export function Header() {
   const { user } = useAuth();
   const router = useRouter();
   const [showLoginDialog, setShowLoginDialog] = useState(false);
-  const { notifications, markAllAsRead, unreadCount } = useNotifications();
+  const { notifications, markAllAsRead, unreadCount, removeNotification } = useNotifications();
 
   const handleLogoClick = () => {
     const newClickCount = clickCount + 1;
@@ -111,12 +111,22 @@ export function Header() {
                     <DropdownMenuSeparator />
                     {notifications.length > 0 ? (
                         notifications.slice(0, 5).map(notification => (
-                            <DropdownMenuItem key={notification.id} className="flex flex-col items-start gap-1">
-                                <p className="font-medium">{notification.title}</p>
-                                <p className="text-xs text-muted-foreground">{notification.body}</p>
-                                <p className="text-xs text-muted-foreground/80 self-end">
-                                    {formatDistanceToNow(new Date(notification.timestamp), { addSuffix: true })}
-                                </p>
+                            <DropdownMenuItem key={notification.id} onSelect={(e) => e.preventDefault()} className="flex items-start gap-2 relative pr-8">
+                                <div className='flex-1'>
+                                    <p className="font-medium">{notification.title}</p>
+                                    <p className="text-xs text-muted-foreground">{notification.body}</p>
+                                    <p className="text-xs text-muted-foreground/80 text-right mt-1">
+                                        {formatDistanceToNow(new Date(notification.timestamp), { addSuffix: true })}
+                                    </p>
+                                </div>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="absolute top-1 right-1 h-6 w-6"
+                                  onClick={() => removeNotification(notification.id)}
+                                >
+                                  <X className="h-4 w-4" />
+                                </Button>
                             </DropdownMenuItem>
                         ))
                     ) : (
