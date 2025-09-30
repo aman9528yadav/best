@@ -51,46 +51,44 @@ export function MaintenancePage() {
 
   useEffect(() => {
     if (!isClient) return;
+    
+    const hasTimeLeft = timeLeft.days > 0 || timeLeft.hours > 0 || timeLeft.minutes > 0 || timeLeft.seconds > 0;
 
-    if (
-      timeLeft.days <= 0 &&
-      timeLeft.hours <= 0 &&
-      timeLeft.minutes <= 0 &&
-      timeLeft.seconds <= 0
-    ) {
-      window.location.reload();
+    if (!hasTimeLeft) {
+      // If there was no time left to begin with, don't do anything.
       return;
     }
 
     const timer = setTimeout(() => {
-      setTimeLeft(prevTime => {
-        let { days, hours, minutes, seconds } = prevTime;
+      let { days, hours, minutes, seconds } = timeLeft;
 
-        if (seconds > 0) {
-          seconds--;
+      if (seconds > 0) {
+        seconds--;
+      } else {
+        seconds = 59;
+        if (minutes > 0) {
+          minutes--;
         } else {
-          seconds = 59;
-          if (minutes > 0) {
-            minutes--;
+          minutes = 59;
+          if (hours > 0) {
+            hours--;
           } else {
-            minutes = 59;
-            if (hours > 0) {
-              hours--;
-            } else {
-              hours = 23;
-              if (days > 0) {
-                days--;
-              }
+            hours = 23;
+            if (days > 0) {
+              days--;
             }
           }
         }
+      }
+      
+      const newTimeLeft = { days, hours, minutes, seconds };
+      setTimeLeft(newTimeLeft);
+      
+      const newTotalSeconds = newTimeLeft.days * 86400 + newTimeLeft.hours * 3600 + newTimeLeft.minutes * 60 + newTimeLeft.seconds;
+      if (newTotalSeconds <= 0) {
+          window.location.reload();
+      }
 
-        if(days <= 0 && hours <= 0 && minutes <= 0 && seconds <= 0){
-             return { days: 0, hours: 0, minutes: 0, seconds: 0 };
-        }
-
-        return { days, hours, minutes, seconds };
-      });
     }, 1000);
 
     return () => clearTimeout(timer);
