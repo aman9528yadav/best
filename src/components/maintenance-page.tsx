@@ -51,6 +51,17 @@ export function MaintenancePage() {
 
   useEffect(() => {
     if (!isClient) return;
+
+    if (
+      timeLeft.days <= 0 &&
+      timeLeft.hours <= 0 &&
+      timeLeft.minutes <= 0 &&
+      timeLeft.seconds <= 0
+    ) {
+      window.location.reload();
+      return;
+    }
+
     const timer = setTimeout(() => {
       setTimeLeft(prevTime => {
         let { days, hours, minutes, seconds } = prevTime;
