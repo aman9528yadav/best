@@ -146,13 +146,48 @@ const RoadmapForm = ({
 export default function ManageAboutPage() {
   const router = useRouter();
   const { toast } = useToast();
-  const { maintenanceConfig, setMaintenanceConfig, addRoadmapItem, editRoadmapItem, deleteRoadmapItem, clearAllRoadmapItems } = useMaintenance();
+  const { maintenanceConfig, setMaintenanceConfig } = useMaintenance();
   const { stats, ownerInfo, appInfo, roadmap } = maintenanceConfig.aboutPageContent;
   
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<RoadmapItem | null>(null);
 
   const founderImage = PlaceHolderImages.find(p => p.id === ownerInfo.photoId);
+
+  const addRoadmapItem = (item: Omit<RoadmapItem, 'id'>) => {
+    const newItem = { ...item, id: `${Date.now()}-${Math.random().toString(36).substring(2, 9)}` };
+    setMaintenanceConfig(prev => ({
+        ...prev,
+        aboutPageContent: {...prev.aboutPageContent, roadmap: [newItem, ...prev.aboutPageContent.roadmap]},
+    }));
+  };
+
+  const editRoadmapItem = (itemToEdit: RoadmapItem) => {
+    setMaintenanceConfig(prev => ({
+        ...prev,
+        aboutPageContent: {...prev.aboutPageContent, roadmap: prev.aboutPageContent.roadmap.map(i => (i.id === itemToEdit.id ? itemToEdit : i))},
+    }));
+  };
+
+  const deleteRoadmapItem = (id: string) => {
+    setMaintenanceConfig(prev => ({
+      ...prev,
+      aboutPageContent: {
+        ...prev.aboutPageContent,
+        roadmap: prev.aboutPageContent.roadmap.filter(i => i.id !== id)
+      }
+    }));
+  };
+  
+  const clearAllRoadmapItems = () => {
+    setMaintenanceConfig(prev => ({
+      ...prev,
+      aboutPageContent: {
+        ...prev.aboutPageContent,
+        roadmap: []
+      }
+    }));
+  }
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>, section: string, field: string) => {
       setMaintenanceConfig(prev => ({
@@ -169,6 +204,7 @@ export default function ManageAboutPage() {
   }
 
   const handleSaveAll = () => {
+    // The state is already saved on change, this is just for user feedback.
     toast({ title: 'About Page Content Saved!' });
   }
 

@@ -75,14 +75,6 @@ type MaintenanceContextType = {
   maintenanceConfig: MaintenanceConfig;
   setMaintenanceConfig: React.Dispatch<React.SetStateAction<MaintenanceConfig>>;
   isLoading: boolean;
-  addUpdateItem: (item: Omit<UpdateItem, 'id'>) => void;
-  editUpdateItem: (item: UpdateItem) => void;
-  deleteUpdateItem: (id: string) => void;
-  clearAllUpdateItems: () => void;
-  addRoadmapItem: (item: Omit<RoadmapItem, 'id'>) => void;
-  editRoadmapItem: (item: RoadmapItem) => void;
-  deleteRoadmapItem: (id: string) => void;
-  clearAllRoadmapItems: () => void;
 };
 
 const MaintenanceContext = createContext<MaintenanceContextType | undefined>(undefined);
@@ -219,78 +211,13 @@ export const MaintenanceProvider = ({ children }: { children: ReactNode }) => {
     setMaintenanceConfig(prev => ({...prev, isDevMode: isDev }));
   };
 
-  const addUpdateItem = (item: Omit<UpdateItem, 'id'>) => {
-    const newItem = { ...item, id: `${Date.now()}-${Math.random().toString(36).substring(2, 9)}` };
-    setMaintenanceConfig(prev => ({...prev, updateItems: [newItem, ...prev.updateItems]}));
-  };
-
-  const editUpdateItem = (itemToEdit: UpdateItem) => {
-    setMaintenanceConfig(prev => ({...prev, updateItems: prev.updateItems.map(item => (item.id === itemToEdit.id ? itemToEdit : item))}));
-  };
-
-  const deleteUpdateItem = (id: string) => {
-    const newConfig = {...maintenanceConfig, updateItems: maintenanceConfig.updateItems.filter(i => i.id !== id)};
-    setMaintenanceConfig(newConfig);
-  };
-  
-  const clearAllUpdateItems = () => {
-    const newConfig = {...maintenanceConfig, updateItems: []};
-    setMaintenanceConfig(newConfig);
-  }
-
-  const addRoadmapItem = (item: Omit<RoadmapItem, 'id'>) => {
-    const newItem = { ...item, id: `${Date.now()}-${Math.random().toString(36).substring(2, 9)}` };
-    setMaintenanceConfig(prev => ({
-        ...prev,
-        aboutPageContent: {...prev.aboutPageContent, roadmap: [newItem, ...prev.aboutPageContent.roadmap]},
-    }));
-  };
-
-  const editRoadmapItem = (itemToEdit: RoadmapItem) => {
-    setMaintenanceConfig(prev => ({
-        ...prev,
-        aboutPageContent: {...prev.aboutPageContent, roadmap: prev.aboutPageContent.roadmap.map(i => (i.id === itemToEdit.id ? itemToEdit : i))},
-    }));
-  };
-
-  const deleteRoadmapItem = (id: string) => {
-    const newConfig = {
-      ...maintenanceConfig,
-      aboutPageContent: {
-        ...maintenanceConfig.aboutPageContent,
-        roadmap: maintenanceConfig.aboutPageContent.roadmap.filter(i => i.id !== id)
-      }
-    };
-    setMaintenanceConfig(newConfig);
-  };
-  
-  const clearAllRoadmapItems = () => {
-    const newConfig = {
-      ...maintenanceConfig,
-      aboutPageContent: {
-        ...maintenanceConfig.aboutPageContent,
-        roadmap: []
-      }
-    };
-    setMaintenanceConfig(newConfig);
-  }
-
-
   return (
     <MaintenanceContext.Provider value={{ 
         isDevMode: maintenanceConfig.isDevMode, 
         setDevMode, 
         maintenanceConfig, 
         setMaintenanceConfig,
-        isLoading,
-        addUpdateItem,
-        editUpdateItem,
-        deleteUpdateItem,
-        clearAllUpdateItems,
-        addRoadmapItem,
-        editRoadmapItem,
-        deleteRoadmapItem,
-        clearAllRoadmapItems,
+        isLoading
     }}>
       {children}
     </MaintenanceContext.Provider>

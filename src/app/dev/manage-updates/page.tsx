@@ -146,9 +146,26 @@ const UpdateForm = ({
 
 export default function ManageUpdatesPage() {
   const router = useRouter();
-  const { maintenanceConfig, addUpdateItem, editUpdateItem, deleteUpdateItem, clearAllUpdateItems } = useMaintenance();
+  const { maintenanceConfig, setMaintenanceConfig } = useMaintenance();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<UpdateItem | null>(null);
+
+  const addUpdateItem = (item: Omit<UpdateItem, 'id'>) => {
+    const newItem = { ...item, id: `${Date.now()}-${Math.random().toString(36).substring(2, 9)}` };
+    setMaintenanceConfig(prev => ({...prev, updateItems: [newItem, ...prev.updateItems]}));
+  };
+
+  const editUpdateItem = (itemToEdit: UpdateItem) => {
+    setMaintenanceConfig(prev => ({...prev, updateItems: prev.updateItems.map(item => (item.id === itemToEdit.id ? itemToEdit : item))}));
+  };
+
+  const deleteUpdateItem = (id: string) => {
+    setMaintenanceConfig(prev => ({...prev, updateItems: prev.updateItems.filter(i => i.id !== id)}));
+  };
+  
+  const clearAllUpdateItems = () => {
+    setMaintenanceConfig(prev => ({...prev, updateItems: []}));
+  }
 
   const handleAddNew = () => {
     setEditingItem(null);
