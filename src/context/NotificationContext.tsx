@@ -52,6 +52,8 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
 
   const addNotification = (notification: Notification) => {
     setNotifications(prev => [notification, ...prev].slice(0, 20)); // Keep last 20
+    const audio = new Audio('/sounds/notification.mp3');
+    audio.play().catch(e => console.error("Failed to play notification sound.", e));
   };
 
   const markAllAsRead = () => {
