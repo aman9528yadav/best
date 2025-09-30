@@ -156,27 +156,27 @@ const defaultMaintenanceConfig: MaintenanceConfig = {
 
 export const MaintenanceProvider = ({ children }: { children: ReactNode }) => {
   const [isLoading, setIsLoading] = useState(true);
-  const [maintenanceConfig, setMaintenanceConfig] = useState<MaintenanceConfig>(defaultMaintenanceConfig);
+  const [maintenanceConfig, setMaintenanceConfigState] = useState<MaintenanceConfig>(defaultMaintenanceConfig);
   const configRef = ref(rtdb, 'config');
   const isInitialLoad = useRef(true);
+
+  // Function to save the entire config to DB
+  const updateConfigInDb = (config: MaintenanceConfig) => {
+    set(configRef, config).catch(error => {
+      console.error("Error updating maintenance config:", error);
+    });
+  };
 
   useEffect(() => {
     const unsubscribe = onValue(configRef, 
       (snapshot) => {
         if (snapshot.exists()) {
             const dbConfig = snapshot.val();
-            // Deep merge to avoid losing nested defaults
             const mergedConfig = {
                 ...defaultMaintenanceConfig,
                 ...dbConfig,
-                dashboardBanner: {
-                    ...defaultMaintenanceConfig.dashboardBanner,
-                    ...(dbConfig.dashboardBanner || {})
-                },
-                maintenanceCountdown: {
-                    ...defaultMaintenanceConfig.maintenanceCountdown,
-                    ...(dbConfig.maintenanceCountdown || {})
-                },
+                dashboardBanner: { ...defaultMaintenanceConfig.dashboardBanner, ...(dbConfig.dashboardBanner || {}) },
+                maintenanceCountdown: { ...defaultMaintenanceConfig.maintenanceCountdown, ...(dbConfig.maintenanceCountdown || {}) },
                 aboutPageContent: {
                     ...defaultMaintenanceConfig.aboutPageContent,
                     ...(dbConfig.aboutPageContent || {}),
@@ -184,17 +184,17 @@ export const MaintenanceProvider = ({ children }: { children: ReactNode }) => {
                 },
                 updateItems: dbConfig.updateItems || defaultMaintenanceConfig.updateItems,
             };
-            setMaintenanceConfig(mergedConfig);
+            setMaintenanceConfigState(mergedConfig);
         } else {
-            set(configRef, defaultMaintenanceConfig).catch(err => console.error("Error creating default config in DB", err));
-            setMaintenanceConfig(defaultMaintenanceConfig);
+            updateConfigInDb(defaultMaintenanceConfig);
+            setMaintenanceConfigState(defaultMaintenanceConfig);
         }
         setIsLoading(false);
         isInitialLoad.current = false;
       }, 
       (error) => {
           console.error("Error fetching maintenance config:", error);
-          setMaintenanceConfig(defaultMaintenanceConfig);
+          setMaintenanceConfigState(defaultMaintenanceConfig);
           setIsLoading(false);
           isInitialLoad.current = false;
       });
@@ -202,13 +202,11 @@ export const MaintenanceProvider = ({ children }: { children: ReactNode }) => {
     return () => unsubscribe();
   }, []);
   
-  useEffect(() => {
-    if (!isLoading && !isInitialLoad.current) {
-        set(configRef, maintenanceConfig).catch(error => {
-            console.error("Error updating maintenance config:", error);
-        });
-    }
-  }, [maintenanceConfig, isLoading]);
+  const setMaintenanceConfig = (value: React.SetStateAction<MaintenanceConfig>) => {
+    const newConfig = typeof value === 'function' ? value(maintenanceConfig) : value;
+    setMaintenanceConfigState(newConfig);
+    updateConfigInDb(newConfig);
+  };
   
   const setDevMode = (isDev: boolean) => {
     setMaintenanceConfig(prev => ({...prev, isDevMode: isDev}));
@@ -322,4 +320,3 @@ export const MaintenanceWrapper = ({ children }: { children: ReactNode }) => {
     
     return <>{children}</>;
 };
-
