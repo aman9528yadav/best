@@ -22,77 +22,13 @@ import {
 } from "@/components/ui/alert-dialog"
 import { Input } from "@/components/ui/input"
 
-const CountdownBox = ({ value, label }: { value: string; label: string }) => (
-  <div className="bg-accent/70 rounded-lg p-3 w-20 flex flex-col items-center">
-    <span className="text-3xl font-bold text-primary">{value}</span>
-    <span className="text-xs text-muted-foreground">{label}</span>
-  </div>
-);
-
 export function MaintenancePage() {
   const router = useRouter();
-  const { setDevMode, maintenanceConfig } = useMaintenance();
+  const { setDevMode } = useMaintenance();
   const [clickCount, setClickCount] = useState(0);
   const { toast } = useToast();
   const [isPasswordDialogOpen, setIsPasswordDialogOpen] = useState(false);
   const [password, setPassword] = useState('');
-
-  const [timeLeft, setTimeLeft] = useState(maintenanceConfig.countdown);
-  const [isClient, setIsClient] = useState(false);
-
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
-
-  useEffect(() => {
-    setTimeLeft(maintenanceConfig.countdown);
-  }, [maintenanceConfig.countdown]);
-
-
-  useEffect(() => {
-    if (!isClient) return;
-    
-    const hasTimeLeft = timeLeft.days > 0 || timeLeft.hours > 0 || timeLeft.minutes > 0 || timeLeft.seconds > 0;
-
-    if (!hasTimeLeft) {
-      // If there was no time left to begin with, don't do anything.
-      return;
-    }
-
-    const timer = setTimeout(() => {
-      let { days, hours, minutes, seconds } = timeLeft;
-
-      if (seconds > 0) {
-        seconds--;
-      } else {
-        seconds = 59;
-        if (minutes > 0) {
-          minutes--;
-        } else {
-          minutes = 59;
-          if (hours > 0) {
-            hours--;
-          } else {
-            hours = 23;
-            if (days > 0) {
-              days--;
-            }
-          }
-        }
-      }
-      
-      const newTimeLeft = { days, hours, minutes, seconds };
-      setTimeLeft(newTimeLeft);
-      
-      const newTotalSeconds = newTimeLeft.days * 86400 + newTimeLeft.hours * 3600 + newTimeLeft.minutes * 60 + newTimeLeft.seconds;
-      if (newTotalSeconds <= 0) {
-          window.location.reload();
-      }
-
-    }, 1000);
-
-    return () => clearTimeout(timer);
-  }, [timeLeft, isClient]);
 
   const handleIconClick = () => {
     const newClickCount = clickCount + 1;
@@ -148,22 +84,11 @@ export function MaintenancePage() {
 
           <div className="space-y-2">
             <h1 className="text-4xl font-bold">We&apos;ll Be Back Soon!</h1>
-            <Badge variant="outline" className="text-primary bg-primary/10 border-primary/50">
-              <Shield className="mr-2 h-4 w-4" />
-              {maintenanceConfig.type} Update
-            </Badge>
             <p className="text-muted-foreground">
-              {maintenanceConfig.details}
+              The app is currently undergoing scheduled maintenance.
             </p>
           </div>
-
-          <div className="flex justify-center gap-3">
-            <CountdownBox value={String(timeLeft.days).padStart(2, '0')} label="DAYS" />
-            <CountdownBox value={String(timeLeft.hours).padStart(2, '0')} label="HOURS" />
-            <CountdownBox value={String(timeLeft.minutes).padStart(2, '0')} label="MINUTES" />
-            <CountdownBox value={String(timeLeft.seconds).padStart(2, '0')} label="SECONDS" />
-          </div>
-
+          
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-left">
             <Card className="bg-accent/50 border-none">
               <CardContent className="p-4 flex items-start gap-4">
