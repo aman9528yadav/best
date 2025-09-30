@@ -5,6 +5,9 @@ import React, { useState, useEffect, useMemo } from 'react';
 import {
   Dialog,
   DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Search, History, BookText, Settings, ArrowRightLeft } from 'lucide-react';
@@ -116,6 +119,10 @@ export function SearchDialog({ open, onOpenChange }: { open: boolean, onOpenChan
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md w-full p-0 gap-0">
+        <DialogHeader className="sr-only">
+          <DialogTitle>Search</DialogTitle>
+          <DialogDescription>Search for notes, history, and settings throughout the application.</DialogDescription>
+        </DialogHeader>
         <div className="flex items-center gap-2 p-4 border-b">
           <Search className="h-5 w-5 text-muted-foreground" />
           <Input
