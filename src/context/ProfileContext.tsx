@@ -15,6 +15,16 @@ export type UserStats = {
   streak: number;
 };
 
+export type NoteItem = {
+    id: string;
+    title: string;
+    content: string;
+    createdAt: string;
+    updatedAt: string;
+    isFavorite: boolean;
+    isTrashed: boolean;
+};
+
 export type UserProfile = {
   name: string;
   email: string;
@@ -29,6 +39,7 @@ export type UserProfile = {
     instagram: string;
   };
   stats: UserStats;
+  notes: NoteItem[];
 };
 
 type ProfileContextType = {
@@ -37,6 +48,11 @@ type ProfileContextType = {
   updateStatsForNewConversion: () => void;
   checkAndUpdateStreak: () => void;
   isLoading: boolean;
+  addNote: (note: Omit<NoteItem, 'id' | 'createdAt' | 'updatedAt'>) => NoteItem;
+  updateNote: (note: NoteItem) => void;
+  deleteNote: (id: string, permanently?: boolean) => void;
+  toggleFavoriteNote: (id: string) => void;
+  getNoteById: (id: string) => NoteItem | undefined;
 };
 
 const ProfileContext = createContext<ProfileContextType | undefined>(undefined);
@@ -64,6 +80,7 @@ const getInitialProfile = (): UserProfile => {
       instagram: "",
     },
     stats: defaultStats,
+    notes: [],
   };
 };
 
@@ -80,7 +97,8 @@ const guestProfileDefault: UserProfile = {
         github: "",
         instagram: "",
     },
-    stats: defaultStats
+    stats: defaultStats,
+    notes: []
 }
 
 export const ProfileProvider = ({ children }: { children: ReactNode }) => {
@@ -99,7 +117,8 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
           if (savedProfile) {
             const parsedProfile = JSON.parse(savedProfile);
             const stats = { ...defaultStats, ...(parsedProfile.stats || {}) };
-            setProfileState({ ...guestProfileDefault, ...parsedProfile, stats });
+            const notes = parsedProfile.notes || [];
+            setProfileState({ ...guestProfileDefault, ...parsedProfile, stats, notes });
           } else {
             setProfileState(guestProfileDefault);
           }
@@ -122,6 +141,7 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
           const today = startOfDay(new Date()).toISOString().split('T')[0];
           
           const stats = { ...defaultStats, ...(fetchedData.stats || {}) };
+          const notes = fetchedData.notes || [];
 
           if (stats.lastConversionDate !== today) {
             stats.todayConversions = 0;
@@ -133,6 +153,7 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
             name: fetchedData.name || user.displayName || "New User",
             email: user.email || fetchedData.email || "",
             stats,
+            notes,
           };
           setProfileState(fullProfile);
 
@@ -143,6 +164,7 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
             email: user.email || '',
             name: user.displayName || 'New User',
             stats: defaultStats,
+            notes: [],
           };
           await setDoc(docRef, newProfile);
           setProfileState(newProfile);
@@ -177,6 +199,45 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
         return updatedProfile;
     });
   };
+
+  const addNote = (note: Omit<NoteItem, 'id' | 'createdAt' | 'updatedAt'>): NoteItem => {
+    const newNote: NoteItem = {
+      ...note,
+      id: new Date().getTime().toString(),
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+    setProfile(p => ({ ...p, notes: [newNote, ...p.notes] }));
+    return newNote;
+  };
+  
+  const updateNote = (noteToUpdate: NoteItem) => {
+    const updatedNote = { ...noteToUpdate, updatedAt: new Date().toISOString() };
+    setProfile(p => ({ ...p, notes: p.notes.map(n => n.id === updatedNote.id ? updatedNote : n) }));
+  };
+
+  const deleteNote = (id: string, permanently: boolean = false) => {
+    setProfile(p => {
+        if(permanently) {
+            return { ...p, notes: p.notes.filter(n => n.id !== id) };
+        }
+        return {
+            ...p,
+            notes: p.notes.map(n => n.id === id ? {...n, isTrashed: true, updatedAt: new Date().toISOString()} : n)
+        };
+    });
+  };
+
+  const toggleFavoriteNote = (id: string) => {
+    setProfile(p => ({
+        ...p,
+        notes: p.notes.map(n => n.id === id ? {...n, isFavorite: !n.isFavorite} : n)
+    }));
+  };
+  
+  const getNoteById = (id: string): NoteItem | undefined => {
+      return profile.notes.find(n => n.id === id);
+  }
 
   const checkAndUpdateStreak = () => {
     const today = startOfDay(new Date());
@@ -226,7 +287,18 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <ProfileContext.Provider value={{ profile, setProfile, updateStatsForNewConversion, checkAndUpdateStreak, isLoading }}>
+    <ProfileContext.Provider value={{ 
+        profile, 
+        setProfile, 
+        updateStatsForNewConversion, 
+        checkAndUpdateStreak, 
+        isLoading,
+        addNote,
+        updateNote,
+        deleteNote,
+        toggleFavoriteNote,
+        getNoteById,
+    }}>
       {children}
     </ProfileContext.Provider>
   );
