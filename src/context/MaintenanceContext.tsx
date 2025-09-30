@@ -6,7 +6,7 @@ import React, { createContext, useContext, useState, ReactNode, useEffect } from
 import { usePathname, useRouter } from 'next/navigation';
 import { Wrench, Rocket, User, Languages, Bug, Icon as LucideIcon, GitBranch, Sparkles } from 'lucide-react';
 import { get, ref, onValue, set } from 'firebase/database';
-import { db } from '@/lib/firebase';
+import { rtdb } from '@/lib/firebase';
 
 export type UpdateItem = {
     id: string;
@@ -224,7 +224,7 @@ export const MaintenanceProvider = ({ children }: { children: ReactNode }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [isDevMode, setDevModeState] = useState<boolean>(false);
   const [maintenanceConfig, setMaintenanceConfigState] = useState<MaintenanceConfig>(defaultMaintenanceConfig);
-  const configRef = ref(db, 'config');
+  const configRef = ref(rtdb, 'config');
 
   useEffect(() => {
     try {
