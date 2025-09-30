@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useEffect } from 'react';
@@ -47,7 +48,7 @@ export function AdPlaceholder({ className }: { className?: string }) {
   if (!ad) {
     return (
       <Card
-        className={`flex items-center justify-center h-24 bg-muted/50 ${className}`}
+        className={`flex items-center justify-center h-32 bg-muted/50 ${className}`}
       >
         <p className="text-muted-foreground">Ad Placeholder</p>
       </Card>
