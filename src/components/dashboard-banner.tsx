@@ -22,6 +22,11 @@ export function DashboardBanner() {
   
   const [timeLeft, setTimeLeft] = useState(countdown);
   const [isVisible, setIsVisible] = useState(show);
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   useEffect(() => {
     setIsVisible(show);
@@ -32,7 +37,7 @@ export function DashboardBanner() {
   }, [countdown]);
 
   useEffect(() => {
-    if (!isVisible) return;
+    if (!isVisible || !isClient) return;
     const timer = setTimeout(() => {
       setTimeLeft(prevTime => {
         let { days, hours, minutes, seconds } = prevTime;
@@ -51,14 +56,14 @@ export function DashboardBanner() {
           }
         }
         
-        if (days === 0 && hours === 0 && minutes === 0 && seconds === 0) {
-            return prevTime;
+        if (days <= 0 && hours <= 0 && minutes <= 0 && seconds <= 0) {
+            return { days: 0, hours: 0, minutes: 0, seconds: 0 };
         }
         return { days, hours, minutes, seconds };
       });
     }, 1000);
     return () => clearTimeout(timer);
-  }, [timeLeft, isVisible]);
+  }, [timeLeft, isVisible, isClient]);
 
   const handleDismiss = () => {
     setIsVisible(false);

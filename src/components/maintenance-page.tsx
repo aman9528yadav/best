@@ -38,6 +38,11 @@ export function MaintenancePage() {
   const [password, setPassword] = useState('');
 
   const [timeLeft, setTimeLeft] = useState(maintenanceConfig.countdown);
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   useEffect(() => {
     setTimeLeft(maintenanceConfig.countdown);
@@ -45,6 +50,7 @@ export function MaintenancePage() {
 
 
   useEffect(() => {
+    if (!isClient) return;
     const timer = setTimeout(() => {
       setTimeLeft(prevTime => {
         let { days, hours, minutes, seconds } = prevTime;
@@ -68,8 +74,8 @@ export function MaintenancePage() {
           }
         }
 
-        if(days === 0 && hours === 0 && minutes === 0 && seconds === 0){
-             return prevTime;
+        if(days <= 0 && hours <= 0 && minutes <= 0 && seconds <= 0){
+             return { days: 0, hours: 0, minutes: 0, seconds: 0 };
         }
 
         return { days, hours, minutes, seconds };
@@ -77,7 +83,7 @@ export function MaintenancePage() {
     }, 1000);
 
     return () => clearTimeout(timer);
-  }, [timeLeft]);
+  }, [timeLeft, isClient]);
 
   const handleIconClick = () => {
     const newClickCount = clickCount + 1;
