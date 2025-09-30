@@ -22,7 +22,7 @@ const GoogleIcon = (props: React.SVGProps<SVGSVGElement>) => (
 );
 
 
-export function LoginPage({ onLoginSuccess }: { onLoginSuccess: () => void }) {
+export function LoginPage() {
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [confirmPasswordVisible, setConfirmPasswordVisible] = useState(false);
   
@@ -57,7 +57,7 @@ export function LoginPage({ onLoginSuccess }: { onLoginSuccess: () => void }) {
         toast({ title: "Passwords Do Not Match", description: "Please ensure your passwords match.", variant: "destructive" });
         return;
     }
-    await signUpWithEmail(signupEmail, signupPassword);
+    await signUpWithEmail(signupEmail, signupPassword, signupFullName);
   }
 
 

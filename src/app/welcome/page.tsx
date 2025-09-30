@@ -7,10 +7,12 @@ import { motion } from 'framer-motion';
 import { Header } from '@/components/header';
 import { HandshakeIcon } from '@/components/ui/icons';
 import { useAuth } from '@/context/AuthContext';
+import { useProfile } from '@/context/ProfileContext';
 
 export default function WelcomePage() {
   const router = useRouter();
   const { user } = useAuth();
+  const { profile } = useProfile();
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -19,6 +21,8 @@ export default function WelcomePage() {
 
     return () => clearTimeout(timer);
   }, [router]);
+  
+  const displayName = user?.displayName || profile.name || 'Guest';
 
   return (
     <div className="flex flex-col items-center w-full min-h-screen bg-gradient-to-br from-pink-100 via-purple-100 to-blue-100 text-foreground">
@@ -41,7 +45,7 @@ export default function WelcomePage() {
                 transition={{ duration: 0.5, delay: 0.2 }}
                 className="space-y-2"
             >
-                <h1 className="text-3xl font-bold">Welcome, {user?.displayName || 'Guest'}!</h1>
+                <h1 className="text-3xl font-bold">Welcome, {displayName}!</h1>
                 <p className="text-muted-foreground">
                     You are now logged in. Redirecting to your dashboard...
                 </p>

@@ -11,6 +11,7 @@ import {
     signOut,
     signInWithEmailAndPassword,
     createUserWithEmailAndPassword,
+    updateProfile,
     AuthCredential
 } from 'firebase/auth';
 import { app } from '@/lib/firebase';
@@ -24,7 +25,7 @@ interface AuthContextType {
   loading: boolean;
   signInWithGoogle: () => Promise<void>;
   signInWithEmail: (email: string, pass: string) => Promise<void>;
-  signUpWithEmail: (email: string, pass: string) => Promise<void>;
+  signUpWithEmail: (email: string, pass: string, fullName: string) => Promise<void>;
   logout: () => Promise<void>;
 }
 
@@ -74,9 +75,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   }
   
-  const signUpWithEmail = async (email: string, pass: string) => {
+  const signUpWithEmail = async (email: string, pass: string, fullName: string) => {
     try {
-        await createUserWithEmailAndPassword(auth, email, pass);
+        const userCredential = await createUserWithEmailAndPassword(auth, email, pass);
+        if(userCredential.user) {
+            await updateProfile(userCredential.user, { displayName: fullName });
+        }
+        // Manually update the user state to reflect the new display name immediately
+        setUser({ ...userCredential.user, displayName: fullName });
+        toast({
+            title: "Congratulations!",
+            description: "Your account has been created successfully.",
+        });
         router.push('/welcome');
     } catch (error: any) {
         console.error("Error signing up with email", error);
@@ -92,6 +102,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const logout = async () => {
     try {
       await signOut(auth);
+      toast({
+        title: "Logged Out",
+        description: "You have been successfully logged out.",
+      });
       router.push('/login');
     } catch (error: any) {
       console.error("Error signing out", error);
