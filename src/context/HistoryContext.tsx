@@ -3,6 +3,7 @@
 
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import { subDays } from 'date-fns';
+import { useProfile } from './ProfileContext';
 
 export type ConversionHistoryItem = {
   id: string;
@@ -112,6 +113,7 @@ const getInitialFavorites = (): FavoriteItem[] => {
 
 export const HistoryProvider = ({ children }: { children: ReactNode }) => {
   const [isLoaded, setIsLoaded] = useState(false);
+  const { updateStatsForNewConversion } = useProfile();
   
   const [history, setHistory] = useState<HistoryItem[]>([]);
   const [favorites, setFavorites] = useState<FavoriteItem[]>([]);
@@ -153,6 +155,7 @@ export const HistoryProvider = ({ children }: { children: ReactNode }) => {
       type: 'conversion',
     };
     setHistory(prev => [newItem, ...prev]);
+    updateStatsForNewConversion();
   };
 
   const addCalculatorToHistory = (item: Omit<CalculatorHistoryItem, 'id' | 'timestamp' | 'type'>) => {

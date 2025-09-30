@@ -36,16 +36,16 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <AuthProvider>
-              <MaintenanceProvider>
-                  <ProfileProvider>
-                    <HistoryProvider>
-                      <MaintenanceWrapper>
-                         {children}
-                      </MaintenanceWrapper>
-                      <Toaster />
-                    </HistoryProvider>
-                  </ProfileProvider>
-              </MaintenanceProvider>
+            <MaintenanceProvider>
+              <ProfileProvider>
+                <HistoryProvider>
+                  <MaintenanceWrapper>
+                    {children}
+                  </MaintenanceWrapper>
+                  <Toaster />
+                </HistoryProvider>
+              </ProfileProvider>
+            </MaintenanceProvider>
           </AuthProvider>
         </ThemeProvider>
       </body>

@@ -46,11 +46,10 @@ import Link from 'next/link';
 import { AdPlaceholder } from '@/components/ad-placeholder';
 import { Header } from '@/components/header';
 import { WeeklySummaryChart } from '@/components/weekly-summary-chart';
-import { useHistory } from '@/context/HistoryContext';
-import { isToday, differenceInCalendarDays, startOfDay } from 'date-fns';
 import { DashboardSkeleton } from '@/components/dashboard-skeleton';
 import { useMaintenance } from '@/context/MaintenanceContext';
 import { DashboardBanner } from '@/components/dashboard-banner';
+import { useProfile } from '@/context/ProfileContext';
 
 const quickAccessItems = [
   {
@@ -112,8 +111,8 @@ const discoverItems = [
 ];
 
 export default function DashboardPage() {
-  const { history } = useHistory();
   const { maintenanceConfig } = useMaintenance();
+  const { profile } = useProfile();
   const { appInfo, ownerInfo, updateItems } = maintenanceConfig;
   const [isLoading, setIsLoading] = useState(true);
   const [showMore, setShowMore] = useState(false);
@@ -126,41 +125,7 @@ export default function DashboardPage() {
     return () => clearTimeout(timer);
   }, []);
 
-  const conversionHistory = useMemo(() => history.filter(item => item.type === 'conversion'), [history]);
-
-  const allTimeConversions = useMemo(() => conversionHistory.length, [conversionHistory]);
-
-  const todayConversions = useMemo(() => {
-    return conversionHistory.filter(item => isToday(new Date(item.timestamp))).length;
-  }, [conversionHistory]);
-
-  const streak = useMemo(() => {
-    if (conversionHistory.length === 0) return 0;
-
-    const sortedDates = [...new Set(conversionHistory.map(item => startOfDay(new Date(item.timestamp)).getTime()))].sort((a, b) => b - a);
-    
-    if (sortedDates.length === 0) return 0;
-    
-    let currentStreak = 0;
-    const today = startOfDay(new Date());
-
-    const mostRecentDate = new Date(sortedDates[0]);
-
-    if(isToday(mostRecentDate) || differenceInCalendarDays(today, mostRecentDate) === 1) {
-        currentStreak = 1;
-        for (let i = 0; i < sortedDates.length - 1; i++) {
-            const date1 = new Date(sortedDates[i]);
-            const date2 = new Date(sortedDates[i+1]);
-            if (differenceInCalendarDays(date1, date2) === 1) {
-                currentStreak++;
-            } else {
-                break;
-            }
-        }
-    }
-    
-    return currentStreak;
-  }, [conversionHistory]);
+  const { allTimeConversions, todayConversions, streak } = profile.stats;
 
   const visibleQuickAccessItems = showMore ? quickAccessItems : quickAccessItems.slice(0, 6);
   const whatsNewItems = updateItems.slice(0, 2);
