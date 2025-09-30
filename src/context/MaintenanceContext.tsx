@@ -229,7 +229,6 @@ export const MaintenanceProvider = ({ children }: { children: ReactNode }) => {
   const [maintenanceConfig, setMaintenanceConfig] = useState<MaintenanceConfig>(defaultMaintenanceConfig);
 
   useEffect(() => {
-    // Dev mode is local to the browser, so it's fine to keep it in localStorage.
     try {
       const savedDevMode = localStorage.getItem('unitwise_dev_mode');
       if (savedDevMode) {
@@ -239,14 +238,12 @@ export const MaintenanceProvider = ({ children }: { children: ReactNode }) => {
       console.error("Failed to load dev mode from localStorage", error);
     }
     
-    // Set up Firestore listener for the maintenance config
     const configDocRef = doc(db, 'config', 'maintenance');
 
     const initializeAndListen = async () => {
       try {
         const docSnap = await getDoc(configDocRef);
         if (!docSnap.exists()) {
-          // If doc doesn't exist, create it with the default config
           await setDoc(configDocRef, defaultMaintenanceConfig);
         }
       } catch (error) {
@@ -255,7 +252,6 @@ export const MaintenanceProvider = ({ children }: { children: ReactNode }) => {
       
       const unsubscribe = onSnapshot(configDocRef, (docSnap) => {
           if (docSnap.exists()) {
-              // Merge with default config to prevent missing fields if a new field is added to the default
               const firestoreConfig = { ...defaultMaintenanceConfig, ...docSnap.data() };
               setMaintenanceConfig(firestoreConfig);
           } else {
@@ -264,7 +260,6 @@ export const MaintenanceProvider = ({ children }: { children: ReactNode }) => {
           setIsLoaded(true);
       }, (error) => {
           console.error("Error fetching maintenance config:", error);
-          // Fallback to default if there's an error
           setMaintenanceConfig(defaultMaintenanceConfig);
           setIsLoaded(true);
       });
@@ -280,18 +275,24 @@ export const MaintenanceProvider = ({ children }: { children: ReactNode }) => {
       });
     };
   }, []);
-
-  const updateMaintenanceConfig = (newConfig: MaintenanceConfig) => {
+  
+  const updateMaintenanceConfigInDb = (newConfig: Partial<MaintenanceConfig>) => {
     const configDocRef = doc(db, 'config', 'maintenance');
-    setDoc(configDocRef, newConfig, { merge: true }).catch(error => {
+    return setDoc(configDocRef, newConfig, { merge: true }).catch(error => {
       console.error("Error updating maintenance config:", error);
+    });
+  };
+
+  const handleSetConfig = (setter: React.SetStateAction<MaintenanceConfig>) => {
+    setMaintenanceConfig(prevConfig => {
+      const newConfig = typeof setter === 'function' ? setter(prevConfig) : setter;
+      updateMaintenanceConfigInDb(newConfig);
+      return newConfig;
     });
   };
   
   const setMaintenanceMode = (isMaintenance: boolean) => {
-    const newConfig = { ...maintenanceConfig, globalMaintenance: isMaintenance };
-    setMaintenanceConfig(newConfig);
-    updateMaintenanceConfig(newConfig);
+    handleSetConfig(prev => ({ ...prev, globalMaintenance: isMaintenance }));
   };
   
   const setDevMode = (isDev: boolean) => {
@@ -302,23 +303,10 @@ export const MaintenanceProvider = ({ children }: { children: ReactNode }) => {
         console.error("Failed to save dev mode to localStorage", error);
       }
   };
-  
-  const handleSetConfig = (newConfig: React.SetStateAction<MaintenanceConfig>) => {
-    if(typeof newConfig === 'function'){
-      setMaintenanceConfig(prevConfig => {
-        const updatedConfig = newConfig(prevConfig);
-        updateMaintenanceConfig(updatedConfig);
-        return updatedConfig;
-      })
-    } else {
-      setMaintenanceConfig(newConfig);
-      updateMaintenanceConfig(newConfig);
-    }
-  }
 
   const resetMaintenanceConfig = () => {
     setMaintenanceConfig(defaultMaintenanceConfig);
-    updateMaintenanceConfig(defaultMaintenanceConfig);
+    updateMaintenanceConfigInDb(defaultMaintenanceConfig);
   }
 
   const addUpdateItem = (item: Omit<UpdateItem, 'id'>) => {
@@ -427,5 +415,7 @@ export const MaintenanceWrapper = ({ children }: { children: ReactNode }) => {
     
     return <>{children}</>;
 };
+
+    
 
     
