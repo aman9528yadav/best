@@ -2,7 +2,7 @@
 
 "use client";
 
-import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
+import React, { createContext, useContext, useState, ReactNode, useEffect, useRef } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { ref, onValue, set } from 'firebase/database';
 import { rtdb } from '@/lib/firebase';
@@ -147,7 +147,7 @@ const defaultMaintenanceConfig: MaintenanceConfig = {
                 version: 'Beta 1.1',
                 date: '12 Aug, 2024',
                 title: 'First Beta Release',
-                description: 'Our journey begins! You may face some bugs🐞, but we\'\'\'re improving every day. Thanks for testing 🙏.',
+                description: "Our journey begins! You may face some bugs🐞, but we're improving every day. Thanks for testing 🙏.",
                 details: ['Unit converter added', 'Notes app added'],
                 icon: 'GitBranch',
                 status: 'completed',
@@ -164,7 +164,8 @@ const defaultMaintenanceConfig: MaintenanceConfig = {
 
 export const MaintenanceProvider = ({ children }: { children: ReactNode }) => {
   const [isLoading, setIsLoading] = useState(true);
-  const [maintenanceConfig, setMaintenanceConfigState] = useState<MaintenanceConfig>(defaultMaintenanceConfig);
+  const [maintenanceConfig, setMaintenanceConfig] = useState<MaintenanceConfig>(defaultMaintenanceConfig);
+  const isInitialLoad = useRef(true);
   const configRef = ref(rtdb, 'config');
 
   useEffect(() => {
@@ -187,35 +188,33 @@ export const MaintenanceProvider = ({ children }: { children: ReactNode }) => {
                 },
                 updateItems: dbConfig.updateItems || defaultMaintenanceConfig.updateItems,
             };
-            setMaintenanceConfigState(mergedConfig);
+            setMaintenanceConfig(mergedConfig);
         } else {
             set(configRef, defaultMaintenanceConfig).catch(err => console.error("Error creating default config in DB", err));
-            setMaintenanceConfigState(defaultMaintenanceConfig);
+            setMaintenanceConfig(defaultMaintenanceConfig);
         }
         setIsLoading(false);
+        isInitialLoad.current = false;
       }, 
       (error) => {
           console.error("Error fetching maintenance config:", error);
-          setMaintenanceConfigState(defaultMaintenanceConfig);
+          setMaintenanceConfig(defaultMaintenanceConfig);
           setIsLoading(false);
+          isInitialLoad.current = false;
       });
 
     return () => unsubscribe();
   }, []);
   
-  const updateMaintenanceConfigInDb = async (newConfig: MaintenanceConfig) => {
-    try {
-      await set(configRef, newConfig);
-    } catch (error) {
-      console.error("Error updating maintenance config:", error);
+  // This useEffect reliably syncs any state change to the database
+  useEffect(() => {
+    // We skip the very first load to prevent writing default data over the DB data
+    if (!isLoading && !isInitialLoad.current) {
+      set(configRef, maintenanceConfig).catch(error => {
+          console.error("Error updating maintenance config:", error);
+      });
     }
-  };
-
-  const setMaintenanceConfig = (setter: React.SetStateAction<MaintenanceConfig>) => {
-    const newConfig = typeof setter === 'function' ? setter(maintenanceConfig) : setter;
-    setMaintenanceConfigState(newConfig);
-    updateMaintenanceConfigInDb(newConfig);
-  };
+  }, [maintenanceConfig, isLoading]);
   
   const setDevMode = (isDev: boolean) => {
     setMaintenanceConfig(prev => ({...prev, isDevMode: isDev}));

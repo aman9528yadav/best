@@ -208,7 +208,7 @@ export default function ManageUpdatesPage() {
             return (
               <Card key={item.id}>
                 <CardContent className="p-3 flex justify-between items-center">
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-3 flex-1">
                     <ItemIcon className="h-4 w-4 text-muted-foreground" />
                     <div className="flex-1">
                       <p className="font-medium">{item.title}</p>
