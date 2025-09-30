@@ -71,7 +71,7 @@ const quickAccessItems = [
     requiresAuth: false,
   },
   { icon: Calculator, label: 'Calculator', href: '/calculator', requiresAuth: false },
-  { icon: BookText, label: 'Notes', href: '#', requiresAuth: true },
+  { icon: BookText, label: 'Notes', href: '/notes', requiresAuth: true },
   { icon: History, label: 'History', href: '/history', requiresAuth: true },
   { icon: Newspaper, label: 'News', href: 'https://aman9528.wixstudio.com/my-site-3', requiresAuth: false },
   { icon: Languages, label: 'Translator', href: '#', requiresAuth: true },
