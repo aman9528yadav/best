@@ -20,6 +20,17 @@ import {
 import { Trash2, Filter, Link as LinkIcon, RotateCw } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { useHistory, HistoryItem, FavoriteItem, ConversionHistoryItem, CalculatorHistoryItem } from '@/context/HistoryContext';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
 
 
 export function HistoryPage() {
@@ -32,7 +43,7 @@ export function HistoryPage() {
     setIsClient(true);
   }, []);
 
-  const clearHistory = () => {
+  const clearAction = () => {
     if (activeTab === 'conversions') {
       clearAllHistory('conversion');
     } else if (activeTab === 'calculator') {
@@ -141,10 +152,26 @@ export function HistoryPage() {
   return (
     <div className="w-full space-y-4">
       <div className="flex justify-end">
-        <Button variant="outline" onClick={clearHistory}>
-          <Trash2 className="mr-2 h-4 w-4" />
-          Clear All
-        </Button>
+        <AlertDialog>
+          <AlertDialogTrigger asChild>
+            <Button variant="outline">
+              <Trash2 className="mr-2 h-4 w-4" />
+              Clear All
+            </Button>
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+              <AlertDialogDescription>
+                This action cannot be undone. This will permanently delete all {activeTab} from your history.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction onClick={clearAction}>Continue</AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">

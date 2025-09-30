@@ -1,7 +1,7 @@
 
 "use client";
 
-import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
+import React, { createContext, useContext, useState, ReactNode, useEffect, useRef } from 'react';
 import { subDays } from 'date-fns';
 import { useProfile } from './ProfileContext';
 import { useAuth } from './AuthContext';
@@ -45,24 +45,24 @@ type HistoryContextType = {
   addFavorite: (item: Omit<FavoriteItem, 'id' | 'type'>) => void;
   deleteHistoryItem: (id: string) => void;
   deleteFavorite: (id: string) => void;
-  clearAllHistory: (type: 'conversion' | 'calculator') => void;
+  clearAllHistory: (type: 'conversion' | 'calculator' | 'all') => void;
   clearAllFavorites: () => void;
 };
 
 const HistoryContext = createContext<HistoryContextType | undefined>(undefined);
 
 const getInitialHistory = (): HistoryItem[] => {
-    const today = new Date();
-    return [
-        { id: '1', type: 'conversion', fromValue: '112', fromUnit: 'Meters', toValue: '0.112', toUnit: 'Kilometers', category: 'Length', timestamp: subDays(today, 0).toISOString() },
-        { id: '2', type: 'calculator', expression: '12 * 5 + 3', result: '63', timestamp: subDays(today, 1).toISOString() },
-    ];
+    try {
+        const localHistory = localStorage.getItem('unitwise_history');
+        return localHistory ? JSON.parse(localHistory) : [];
+    } catch(e) { return []; }
 };
 
 const getInitialFavorites = (): FavoriteItem[] => {
-    return [
-        { id: 'fav1', type: 'favorite', fromUnit: 'Meters', toUnit: 'Kilometers', category: 'Length' },
-    ];
+    try {
+        const localFavorites = localStorage.getItem('unitwise_favorites');
+        return localFavorites ? JSON.parse(localFavorites) : [];
+    } catch(e) { return []; }
 };
 
 export const HistoryProvider = ({ children }: { children: ReactNode }) => {
@@ -71,54 +71,63 @@ export const HistoryProvider = ({ children }: { children: ReactNode }) => {
 
   const [history, setHistory] = useState<HistoryItem[]>([]);
   const [favorites, setFavorites] = useState<FavoriteItem[]>([]);
-  const [isLoaded, setIsLoaded] = useState(false);
+  const dataLoaded = useRef(false);
 
   useEffect(() => {
-    if (!authLoading) {
-        if(user) {
-            // Logged-in user: sync with RTDB
-            const dbRef = ref(rtdb, `users/${user.uid}`);
-            const unsubscribe = onValue(dbRef, (snapshot) => {
-                if (snapshot.exists()) {
-                    const data = snapshot.val();
-                    setHistory(data.history ? Object.values(data.history) : []);
-                    setFavorites(data.favorites ? Object.values(data.favorites) : []);
-                } else {
-                    // No data in DB, use local or initial
-                    const localHistory = localStorage.getItem('unitwise_history');
-                    const localFavorites = localStorage.getItem('unitwise_favorites');
-                    const initialHistory = localHistory ? JSON.parse(localHistory) : getInitialHistory();
-                    const initialFavorites = localFavorites ? JSON.parse(localFavorites) : getInitialFavorites();
-                    setHistory(initialHistory);
-                    setFavorites(initialFavorites);
-                    // Push local/initial data to DB
-                    set(dbRef, { history: initialHistory.reduce((acc, item) => ({...acc, [item.id]: item}), {}), favorites: initialFavorites.reduce((acc, item) => ({...acc, [item.id]: item}), {}) });
-                }
-                setIsLoaded(true);
-            });
-            return () => unsubscribe();
-        } else {
-            // Guest user: use localStorage
-            const localHistory = localStorage.getItem('unitwise_history');
-            const localFavorites = localStorage.getItem('unitwise_favorites');
-            setHistory(localHistory ? JSON.parse(localHistory) : getInitialHistory());
-            setFavorites(localFavorites ? JSON.parse(localFavorites) : getInitialFavorites());
-            setIsLoaded(true);
-        }
+    if (authLoading) return;
+    dataLoaded.current = false;
+
+    const loadGuestData = () => {
+        setHistory(getInitialHistory());
+        setFavorites(getInitialFavorites());
+        dataLoaded.current = true;
+    }
+    
+    if (user) {
+        const dbRef = ref(rtdb, `users/${user.uid}`);
+        const unsubscribe = onValue(dbRef, (snapshot) => {
+            if (snapshot.exists()) {
+                const data = snapshot.val();
+                const historyData = data.history ? Object.values(data.history).sort((a: any, b: any) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()) : [];
+                setHistory(historyData as HistoryItem[]);
+                setFavorites(data.favorites ? Object.values(data.favorites) : []);
+            } else {
+                // If no data in DB, use local data and push it to DB
+                const localHistory = getInitialHistory();
+                const localFavorites = getInitialFavorites();
+                setHistory(localHistory);
+                setFavorites(localFavorites);
+                const historyAsObject = localHistory.reduce((acc, item) => ({...acc, [item.id]: item}), {});
+                const favoritesAsObject = localFavorites.reduce((acc, item) => ({...acc, [item.id]: item}), {});
+                set(dbRef, { history: historyAsObject, favorites: favoritesAsObject });
+            }
+            dataLoaded.current = true;
+        });
+        return () => unsubscribe();
+    } else {
+        loadGuestData();
     }
   }, [user, authLoading]);
 
   useEffect(() => {
-    if(isLoaded && !user) {
-        localStorage.setItem('unitwise_history', JSON.stringify(history));
+    if(dataLoaded.current && !user) {
+        try {
+            localStorage.setItem('unitwise_history', JSON.stringify(history));
+        } catch (e) {
+            console.error("Failed to save history to localStorage", e);
+        }
     }
-  }, [history, isLoaded, user]);
+  }, [history, user]);
 
   useEffect(() => {
-     if(isLoaded && !user) {
-        localStorage.setItem('unitwise_favorites', JSON.stringify(favorites));
+     if(dataLoaded.current && !user) {
+        try {
+            localStorage.setItem('unitwise_favorites', JSON.stringify(favorites));
+        } catch (e) {
+            console.error("Failed to save favorites to localStorage", e);
+        }
     }
-  }, [favorites, isLoaded, user]);
+  }, [favorites, user]);
 
   const addConversionToHistory = (item: Omit<ConversionHistoryItem, 'id' | 'timestamp' | 'type'>) => {
     const newItem: ConversionHistoryItem = { ...item, id: new Date().getTime().toString(), timestamp: new Date().toISOString(), type: 'conversion' };
@@ -159,7 +168,15 @@ export const HistoryProvider = ({ children }: { children: ReactNode }) => {
     }
   };
   
-  const clearAllHistory = (type: 'conversion' | 'calculator') => {
+  const clearAllHistory = (type: 'conversion' | 'calculator' | 'all') => {
+    if (type === 'all') {
+      setHistory([]);
+      if (user) {
+        remove(ref(rtdb, `users/${user.uid}/history`));
+      }
+      return;
+    }
+
     const itemsToKeep = history.filter(item => item.type !== type);
     const itemsToRemove = history.filter(item => item.type === type);
     setHistory(itemsToKeep);

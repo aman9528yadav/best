@@ -20,6 +20,7 @@ import {
 import { app } from '@/lib/firebase';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
+import { useProfile } from './ProfileContext';
 
 const auth = getAuth(app);
 
@@ -40,7 +41,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState(true);
   const router = useRouter();
   const { toast } = useToast();
-
+  
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setUser(user);
@@ -84,9 +85,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         const userCredential = await createUserWithEmailAndPassword(auth, email, pass);
         if(userCredential.user) {
             await updateProfile(userCredential.user, { displayName: fullName });
+            // Manually trigger a state update for the user to reflect the new display name immediately
+            setUser(auth.currentUser); 
         }
-        // Manually update the user state to reflect the new display name immediately
-        setUser({ ...userCredential.user, displayName: fullName });
         toast({
             title: "Congratulations!",
             description: "Your account has been created successfully.",
@@ -147,7 +148,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   return (
     <AuthContext.Provider value={{ user, loading, signInWithGoogle, signInWithEmail, signUpWithEmail, logout, changePassword }}>
-      {!loading && children}
+      {children}
     </AuthContext.Provider>
   );
 };

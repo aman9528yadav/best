@@ -29,6 +29,18 @@ import Link from 'next/link';
 import { ref, set } from 'firebase/database';
 import { rtdb } from '@/lib/firebase';
 import { useNotifications } from '@/context/NotificationContext';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
+import { useHistory } from '@/context/HistoryContext';
 
 
 export function DevPanel() {
@@ -42,6 +54,7 @@ export function DevPanel() {
   const { globalMaintenance, dashboardBanner, maintenanceCountdown, maintenanceMessage } = maintenanceConfig;
   const [broadcastMessage, setBroadcastMessage] = useState('');
   const { clearAllNotifications } = useNotifications();
+  const { clearAllHistory } = useHistory();
 
 
   const handleGlobalMaintenanceChange = (checked: boolean) => {
@@ -54,6 +67,8 @@ export function DevPanel() {
   const handleClearLocalStorage = () => {
     try {
         localStorage.clear();
+        clearAllHistory('all');
+        clearAllNotifications();
         toast({
             title: "Local Storage Cleared",
             description: "All application data stored in your browser has been cleared.",
@@ -325,10 +340,26 @@ export function DevPanel() {
                   </AccordionTrigger>
                 </CardHeader>
                 <AccordionContent className="px-4 pb-4">
-                    <Button variant="destructive" className="w-full gap-2" onClick={handleClearLocalStorage}>
-                        <Trash className="h-4 w-4"/>
-                        Clear All Local Storage
-                    </Button>
+                   <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button variant="destructive" className="w-full gap-2">
+                            <Trash className="h-4 w-4"/>
+                            Clear All Local Storage
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            This will clear all local storage, including history, profile, and settings for guest users. This action cannot be undone.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogAction onClick={handleClearLocalStorage}>Continue</AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
                 </AccordionContent>
               </Card>
             </AccordionItem>

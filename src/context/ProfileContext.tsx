@@ -1,7 +1,7 @@
 
 "use client";
 
-import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
+import React, { createContext, useContext, useState, ReactNode, useEffect, useRef } from 'react';
 import { doc, getDoc, setDoc, onSnapshot } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useAuth } from './AuthContext';
@@ -70,10 +70,10 @@ const getInitialProfile = (): UserProfile => {
 const guestProfileDefault: UserProfile = {
     name: "Guest User",
     email: "",
-    phone: "",
-    address: "",
-    birthday: "",
-    skills: [],
+    phone: "91-XXXXXXXXXX",
+    address: "New Delhi, India",
+    birthday: "January 1, 2000",
+    skills: ["Learning", "Exploring"],
     socialLinks: {
         linkedin: "",
         twitter: "",
@@ -87,21 +87,19 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
   const [profile, setProfileState] = useState<UserProfile>(getInitialProfile());
   const [isLoading, setIsLoading] = useState(true);
   const { user, loading: authLoading } = useAuth();
+  const dataLoaded = useRef(false);
 
   useEffect(() => {
-    // This effect runs when auth state is resolved.
-    if (!authLoading) {
-      if (user) {
-        // User is logged in, do nothing here. The other useEffect will handle Firestore.
-      } else {
-        // User is a guest. Load from localStorage.
+    if (authLoading) return;
+    dataLoaded.current = false;
+    
+    const loadGuestData = () => {
         try {
           const savedProfile = localStorage.getItem('unitwise_profile');
           if (savedProfile) {
             const parsedProfile = JSON.parse(savedProfile);
-            // Ensure stats object is not missing and has all properties
             const stats = { ...defaultStats, ...(parsedProfile.stats || {}) };
-            setProfileState({ ...parsedProfile, stats });
+            setProfileState({ ...guestProfileDefault, ...parsedProfile, stats });
           } else {
             setProfileState(guestProfileDefault);
           }
@@ -110,13 +108,10 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
           setProfileState(guestProfileDefault);
         } finally {
             setIsLoading(false);
+            dataLoaded.current = true;
         }
-      }
-    }
-  }, [authLoading, user]);
-
-  useEffect(() => {
-    // This effect handles Firestore subscription for logged-in users.
+    };
+    
     if (user) {
       setIsLoading(true);
       const docRef = doc(db, 'users', user.uid);
@@ -135,7 +130,8 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
           const fullProfile = {
             ...getInitialProfile(),
             ...fetchedData,
-            name: fetchedData.name || user.displayName || "New User", // Prioritize fetched name, then auth name
+            name: fetchedData.name || user.displayName || "New User",
+            email: user.email || fetchedData.email || "",
             stats,
           };
           setProfileState(fullProfile);
@@ -143,32 +139,31 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
         } else {
           // Create a new profile for a new user if it doesn't exist
           const newProfile: UserProfile = {
-            ...getInitialProfile(),
+            ...guestProfileDefault, // Start with defaults
             email: user.email || '',
-            name: user.displayName || 'New User', // Use the displayName from AuthContext
+            name: user.displayName || 'New User',
+            stats: defaultStats,
           };
           await setDoc(docRef, newProfile);
           setProfileState(newProfile);
         }
         setIsLoading(false);
+        dataLoaded.current = true;
       }, (error) => {
         console.error("Error listening to profile changes:", error);
-        setIsLoading(false);
+        loadGuestData(); // Fallback to guest data on error
       });
 
       return () => unsubscribe();
+    } else {
+        loadGuestData();
     }
-  }, [user]);
+  }, [user, authLoading]);
 
-
-  const setProfile = async (newProfileData: UserProfile | ((prevState: UserProfile) => UserProfile)) => {
-    const newProfile = typeof newProfileData === 'function' ? newProfileData(profile) : newProfileData;
-    
-    // Use a functional update for the state to avoid race conditions
+  const setProfile = (newProfileData: UserProfile | ((prevState: UserProfile) => UserProfile)) => {
     setProfileState(currentProfile => {
         const updatedProfile = typeof newProfileData === 'function' ? newProfileData(currentProfile) : newProfileData;
         
-        // Now save to persistence layer
         if (user) {
             const docRef = doc(db, 'users', user.uid);
             setDoc(docRef, updatedProfile, { merge: true });
@@ -187,7 +182,6 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
     const today = startOfDay(new Date());
     const lastOpen = profile.stats.lastAppOpenDate ? startOfDay(new Date(profile.stats.lastAppOpenDate)) : null;
 
-    // Only run this logic once per day
     if (lastOpen && isToday(lastOpen)) {
       return;
     }
@@ -195,17 +189,14 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
     setProfile(prevProfile => {
         const newStats = { ...prevProfile.stats };
         
-        // Update streak
         if (lastOpen && isYesterday(lastOpen)) {
             newStats.streak = (newStats.streak || 0) + 1;
         } else if (!lastOpen || !isToday(lastOpen)) {
-            // Reset streak if last open was not yesterday or today
             newStats.streak = 1;
         }
 
         newStats.lastAppOpenDate = today.toISOString();
         
-        // Reset today's conversions if it's a new day
         const lastConversion = prevProfile.stats.lastConversionDate ? startOfDay(new Date(prevProfile.stats.lastConversionDate)) : null;
         if (!lastConversion || !isToday(lastConversion)) {
             newStats.todayConversions = 0;
@@ -214,7 +205,6 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
         return { ...prevProfile, stats: newStats };
     });
   };
-
 
   const updateStatsForNewConversion = () => {
     setProfile(prevProfile => {
@@ -234,7 +224,6 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
         return { ...prevProfile, stats: newStats };
     });
   };
-
 
   return (
     <ProfileContext.Provider value={{ profile, setProfile, updateStatsForNewConversion, checkAndUpdateStreak, isLoading }}>
