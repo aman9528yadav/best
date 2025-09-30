@@ -161,33 +161,35 @@ export function Sidebar() {
                         </Button>
                     </Link>
                     ))}
-                    {user ? (
-                         <Button
-                            variant="ghost"
-                            className="w-full justify-start gap-3 h-12 text-base font-medium"
-                            onClick={() => { logout(); setIsOpen(false); }}
-                            >
-                            <LogOut className="h-5 w-5 text-primary" />
-                            Logout
-                        </Button>
-                    ) : (
-                         <Link href="/login">
-                            <Button
-                            variant="ghost"
-                            className="w-full justify-start gap-3 h-12 text-base font-medium"
-                            onClick={() => setIsOpen(false)}
-                            >
-                            <LogIn className="h-5 w-5 text-primary" />
-                            Login
-                            </Button>
-                        </Link>
-                    )}
                 </div>
               </nav>
             </div>
           </ScrollArea>
-          <div className="p-6 border-t text-center text-sm text-muted-foreground">
-             <p>Made by Aman Yadav</p>
+          <div className="p-6 border-t space-y-4">
+             {user ? (
+                <Button
+                    variant="ghost"
+                    className="w-full justify-start gap-3 h-12 text-base font-medium"
+                    onClick={() => { logout(); setIsOpen(false); }}
+                    >
+                    <LogOut className="h-5 w-5 text-primary" />
+                    Logout
+                </Button>
+            ) : (
+                    <Link href="/login">
+                    <Button
+                    variant="ghost"
+                    className="w-full justify-start gap-3 h-12 text-base font-medium"
+                    onClick={() => setIsOpen(false)}
+                    >
+                    <LogIn className="h-5 w-5 text-primary" />
+                    Login
+                    </Button>
+                </Link>
+            )}
+             <div className="text-center text-sm text-muted-foreground">
+                <p>Made by Aman Yadav</p>
+             </div>
           </div>
       </SheetContent>
     </Sheet>
