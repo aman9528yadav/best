@@ -6,8 +6,6 @@ import { usePathname, useRouter } from 'next/navigation';
 import { Wrench, Rocket, User, Languages, Bug, Icon as LucideIcon, GitBranch, Sparkles } from 'lucide-react';
 import { doc, getDoc, setDoc, onSnapshot } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import { useAuth } from './AuthContext';
-
 
 export type UpdateItem = {
     id: string;
@@ -80,7 +78,6 @@ export type MaintenanceConfig = {
 
 type MaintenanceContextType = {
   isMaintenanceMode: boolean;
-  setMaintenanceMode: (isMaintenance: boolean) => void;
   isDevMode: boolean;
   setDevMode: (isDev: boolean) => void;
   maintenanceConfig: MaintenanceConfig;
@@ -245,9 +242,8 @@ export const MaintenanceProvider = ({ children }: { children: ReactNode }) => {
             setMaintenanceConfigState(docSnap.data() as MaintenanceConfig);
         } else {
             // Document doesn't exist, so create it with default values
-            setDoc(configDocRef, defaultMaintenanceConfig).then(() => {
-                 setMaintenanceConfigState(defaultMaintenanceConfig);
-            });
+            setDoc(configDocRef, defaultMaintenanceConfig).catch(err => console.error("Error creating default config", err));
+            setMaintenanceConfigState(defaultMaintenanceConfig);
         }
         setIsLoading(false);
       }, 
@@ -268,21 +264,14 @@ export const MaintenanceProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const handleSetConfig = (setter: React.SetStateAction<MaintenanceConfig>) => {
-    // We get the latest state from the state itself to avoid race conditions
-    setMaintenanceConfigState(prevState => {
-        const newConfig = typeof setter === 'function' ? setter(prevState) : setter;
-        // Then we update the database, but the local state is already optimistically updated
-        // For a strict "read-from-db" flow, we'd only update on the snapshot listener.
-        // But for a better UX in the dev panel, we update locally and remotely.
-        // The key is that all other clients ONLY update from the listener.
-        updateMaintenanceConfigInDb(newConfig);
-        return newConfig;
-    });
-  };
-  
-  const setMaintenanceMode = (isMaintenance: boolean) => {
-    updateMaintenanceConfigInDb({ ...maintenanceConfig, globalMaintenance: isMaintenance });
+  const setMaintenanceConfig = (setter: React.SetStateAction<MaintenanceConfig>) => {
+     getDoc(configDocRef).then(docSnap => {
+         const currentConfig = docSnap.exists() ? docSnap.data() as MaintenanceConfig : defaultMaintenanceConfig;
+         const newConfig = typeof setter === 'function' ? setter(currentConfig) : setter;
+         updateMaintenanceConfigInDb(newConfig);
+     }).catch(error => {
+        console.error("Error getting document before setting:", error);
+     });
   };
   
   const setDevMode = (isDev: boolean) => {
@@ -299,70 +288,63 @@ export const MaintenanceProvider = ({ children }: { children: ReactNode }) => {
   }
 
   const addUpdateItem = (item: Omit<UpdateItem, 'id'>) => {
-    const newConfig = {
-      ...maintenanceConfig,
-      updateItems: [{ ...item, id: new Date().toISOString() }, ...maintenanceConfig.updateItems ]
-    };
-    updateMaintenanceConfigInDb(newConfig);
+    setMaintenanceConfig(prev => ({
+        ...prev,
+        updateItems: [{ ...item, id: new Date().toISOString() }, ...prev.updateItems]
+    }));
   };
 
   const editUpdateItem = (updatedItem: UpdateItem) => {
-     const newConfig = {
-        ...maintenanceConfig,
-        updateItems: maintenanceConfig.updateItems.map(item => item.id === updatedItem.id ? updatedItem : item)
-     };
-     updateMaintenanceConfigInDb(newConfig);
+     setMaintenanceConfig(prev => ({
+        ...prev,
+        updateItems: prev.updateItems.map(item => item.id === updatedItem.id ? updatedItem : item)
+     }));
   };
 
   const deleteUpdateItem = (id: string) => {
-     const newConfig = {
-        ...maintenanceConfig,
-        updateItems: maintenanceConfig.updateItems.filter(item => item.id !== id)
-     };
-     updateMaintenanceConfigInDb(newConfig);
+     setMaintenanceConfig(prev => ({
+        ...prev,
+        updateItems: prev.updateItems.filter(item => item.id !== id)
+     }));
   };
 
   const addRoadmapItem = (item: Omit<RoadmapItem, 'id'>) => {
-    const newConfig = {
-      ...maintenanceConfig,
+    setMaintenanceConfig(prev => ({
+      ...prev,
       aboutPageContent: {
-        ...maintenanceConfig.aboutPageContent,
-        roadmap: [{ ...item, id: new Date().toISOString() }, ...maintenance.aboutPageContent.roadmap]
+        ...prev.aboutPageContent,
+        roadmap: [{ ...item, id: new Date().toISOString() }, ...prev.aboutPageContent.roadmap]
       }
-    };
-    updateMaintenanceConfigInDb(newConfig);
+    }));
   };
 
   const editRoadmapItem = (updatedItem: RoadmapItem) => {
-    const newConfig = {
-      ...maintenanceConfig,
+    setMaintenanceConfig(prev => ({
+      ...prev,
       aboutPageContent: {
-        ...maintenanceConfig.aboutPageContent,
-        roadmap: maintenanceConfig.aboutPageContent.roadmap.map(item => item.id === updatedItem.id ? updatedItem : item)
+        ...prev.aboutPageContent,
+        roadmap: prev.aboutPageContent.roadmap.map(item => item.id === updatedItem.id ? updatedItem : item)
       }
-    };
-    updateMaintenanceConfigInDb(newConfig);
+    }));
   };
 
   const deleteRoadmapItem = (id: string) => {
-    const newConfig = {
-      ...maintenanceConfig,
+    setMaintenanceConfig(prev => ({
+      ...prev,
       aboutPageContent: {
-        ...maintenanceConfig.aboutPageContent,
-        roadmap: maintenanceConfig.aboutPageContent.roadmap.filter(item => item.id !== id)
+        ...prev.aboutPageContent,
+        roadmap: prev.aboutPageContent.roadmap.filter(item => item.id !== id)
       }
-    };
-    updateMaintenanceConfigInDb(newConfig);
+    }));
   };
 
   return (
     <MaintenanceContext.Provider value={{ 
         isMaintenanceMode: maintenanceConfig.globalMaintenance, 
-        setMaintenanceMode, 
         isDevMode, 
         setDevMode, 
         maintenanceConfig, 
-        setMaintenanceConfig: handleSetConfig,
+        setMaintenanceConfig,
         resetMaintenanceConfig,
         addUpdateItem,
         editUpdateItem,
@@ -386,36 +368,41 @@ export const useMaintenance = () => {
 };
 
 export const MaintenanceWrapper = ({ children }: { children: ReactNode }) => {
-    const { isMaintenanceMode, maintenanceConfig, isDevMode, isLoading } = useMaintenance();
+    const { maintenanceConfig, isDevMode, isLoading } = useMaintenance();
     const router = useRouter();
     const pathname = usePathname();
+
+    const { globalMaintenance, individualPages } = maintenanceConfig;
 
     const allowedPaths = ['/maintenance', '/login'];
     if (isDevMode) {
       allowedPaths.push('/dev', '/settings', '/profile/edit', '/dev/manage-updates', '/dev/manage-about');
     }
     
-    const isIndividuallyMaintained = maintenanceConfig.individualPages.includes(pathname);
+    const isIndividuallyMaintained = individualPages.includes(pathname);
 
     useEffect(() => {
         if (isLoading) return; // Don't perform redirects until the config is loaded
 
-        const isPathAllowed = allowedPaths.includes(pathname);
+        const isPathAllowed = allowedPaths.some(p => pathname.startsWith(p));
+        const isInMaintenance = globalMaintenance || isIndividuallyMaintained;
 
-        if ((isMaintenanceMode || isIndividuallyMaintained) && !isPathAllowed) {
+        if (isInMaintenance && !isPathAllowed) {
             router.replace('/maintenance');
         }
-        if (!isMaintenanceMode && !isIndividuallyMaintained && pathname === '/maintenance') {
-            router.replace('/');
-        }
-    }, [isMaintenanceMode, isIndividuallyMaintained, pathname, router, allowedPaths, isLoading]);
+        // This case is implicitly handled by Next.js routing, but we can be explicit
+        // if (!isInMaintenance && pathname === '/maintenance') {
+        //     router.replace('/');
+        // }
+    }, [globalMaintenance, isIndividuallyMaintained, pathname, router, allowedPaths, isLoading, isDevMode]);
 
     if (isLoading) {
         // You can return a global loader here if you want
         return null;
     }
     
-    if ((isMaintenanceMode || isIndividuallyMaintained) && !allowedPaths.includes(pathname)) {
+    const isPathAllowed = allowedPaths.some(p => pathname.startsWith(p));
+    if ((globalMaintenance || isIndividuallyMaintained) && !isPathAllowed) {
         return null; // Render nothing while redirecting
     }
     
