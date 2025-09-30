@@ -38,15 +38,15 @@ export function DevPanel() {
   const router = useRouter();
   const { toast } = useToast();
   const {
-    setMaintenanceMode,
     maintenanceConfig,
     setMaintenanceConfig,
     resetMaintenanceConfig,
   } = useMaintenance();
 
   const handleSave = () => {
-    setMaintenanceMode(maintenanceConfig.globalMaintenance);
-    // setMaintenanceConfig is already updating state on change, but we could explicitly save to a backend here.
+    // The setMaintenanceConfig now handles saving to the DB.
+    // We just need to make sure the latest state is what we intend to save.
+    // Since the state is updated on change, we can just show a toast.
     toast({
       title: 'Settings Saved',
       description: 'Your maintenance mode settings have been updated.',
@@ -55,7 +55,6 @@ export function DevPanel() {
   
   const handleClear = () => {
     resetMaintenanceConfig();
-    setMaintenanceMode(false);
     toast({
       title: 'Settings Cleared',
       description: 'Maintenance settings have been reset to default.',

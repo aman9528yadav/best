@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
@@ -77,7 +78,6 @@ export type MaintenanceConfig = {
 
 
 type MaintenanceContextType = {
-  isMaintenanceMode: boolean;
   isDevMode: boolean;
   setDevMode: (isDev: boolean) => void;
   maintenanceConfig: MaintenanceConfig;
@@ -265,13 +265,11 @@ export const MaintenanceProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const setMaintenanceConfig = (setter: React.SetStateAction<MaintenanceConfig>) => {
-     getDoc(configDocRef).then(docSnap => {
-         const currentConfig = docSnap.exists() ? docSnap.data() as MaintenanceConfig : defaultMaintenanceConfig;
-         const newConfig = typeof setter === 'function' ? setter(currentConfig) : setter;
-         updateMaintenanceConfigInDb(newConfig);
-     }).catch(error => {
-        console.error("Error getting document before setting:", error);
-     });
+    // This function will be called with the new state value or a function to update the state.
+    // We get the current state, compute the new state, and then write it to Firestore.
+    // The `onSnapshot` listener will then update the local state for all clients.
+    const newConfig = typeof setter === 'function' ? setter(maintenanceConfig) : setter;
+    updateMaintenanceConfigInDb(newConfig);
   };
   
   const setDevMode = (isDev: boolean) => {
@@ -340,7 +338,6 @@ export const MaintenanceProvider = ({ children }: { children: ReactNode }) => {
 
   return (
     <MaintenanceContext.Provider value={{ 
-        isMaintenanceMode: maintenanceConfig.globalMaintenance, 
         isDevMode, 
         setDevMode, 
         maintenanceConfig, 
