@@ -71,7 +71,7 @@ export function SettingsPage() {
   const { theme, setTheme } = useTheme();
   const [isPasswordDialogOpen, setIsPasswordDialogOpen] = useState(false);
   const [password, setPassword] = useState('');
-  const { isDevMode, setDevMode } = useMaintenance();
+  const { isDevMode, setMaintenanceConfig } = useMaintenance();
   const router = useRouter();
 
 
@@ -97,13 +97,13 @@ export function SettingsPage() {
     if (checked && !isDevMode) {
       setIsPasswordDialogOpen(true);
     } else {
-      setDevMode(checked);
+      setMaintenanceConfig(p => ({...p, isDevMode: checked}));
     }
   };
 
   const handlePasswordSubmit = () => {
     if (password === 'aman') {
-      setDevMode(true);
+      setMaintenanceConfig(p => ({...p, isDevMode: true}));
       toast({ title: 'Developer Mode Enabled' });
       router.push('/dev');
     } else {
