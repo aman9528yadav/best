@@ -28,6 +28,8 @@ import { Textarea } from './ui/textarea';
 import Link from 'next/link';
 import { ref, set } from 'firebase/database';
 import { rtdb } from '@/lib/firebase';
+import { useNotifications } from '@/context/NotificationContext';
+
 
 export function DevPanel() {
   const router = useRouter();
@@ -39,6 +41,7 @@ export function DevPanel() {
   } = useMaintenance();
   const { globalMaintenance, dashboardBanner, maintenanceCountdown, maintenanceMessage } = maintenanceConfig;
   const [broadcastMessage, setBroadcastMessage] = useState('');
+  const { clearAllNotifications } = useNotifications();
 
 
   const handleGlobalMaintenanceChange = (checked: boolean) => {

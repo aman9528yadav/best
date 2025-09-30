@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
@@ -17,6 +18,7 @@ type NotificationContextType = {
   addNotification: (notification: Notification) => void;
   markAllAsRead: () => void;
   removeNotification: (id: string) => void;
+  clearAllNotifications: () => void;
 };
 
 const NotificationContext = createContext<NotificationContextType | undefined>(undefined);
@@ -61,10 +63,14 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
   const removeNotification = (id: string) => {
     setNotifications(prev => prev.filter(n => n.id !== id));
   };
+  
+  const clearAllNotifications = () => {
+    setNotifications([]);
+  }
 
 
   return (
-    <NotificationContext.Provider value={{ notifications, unreadCount, addNotification, markAllAsRead, removeNotification }}>
+    <NotificationContext.Provider value={{ notifications, unreadCount, addNotification, markAllAsRead, removeNotification, clearAllNotifications }}>
       {children}
     </NotificationContext.Provider>
   );
