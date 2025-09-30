@@ -168,9 +168,11 @@ export const MaintenanceProvider = ({ children }: { children: ReactNode }) => {
   };
   
   const setMaintenanceConfig = (value: React.SetStateAction<MaintenanceConfig>) => {
-      const newConfig = typeof value === 'function' ? value(maintenanceConfig) : value;
-      setMaintenanceConfigState(newConfig);
-      updateConfigInDb(newConfig);
+      setMaintenanceConfigState(prevConfig => {
+          const newConfig = typeof value === 'function' ? value(prevConfig) : value;
+          updateConfigInDb(newConfig);
+          return newConfig;
+      });
   }
 
   useEffect(() => {
