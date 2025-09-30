@@ -22,7 +22,7 @@ export function UsageTrendChart({ type = 'bar', period = 'weekly' }: { type: 'ba
 
   const data = useMemo(() => {
     const conversions = history.filter(item => item.type === 'conversion');
-    const calculations = history.filter(item => item.type === 'calculator');
+    const calculations = history.filter(item => item.type === 'calculator' || item.type === 'date_calculation');
     const today = new Date();
 
     if (period === 'weekly') {
@@ -35,9 +35,12 @@ export function UsageTrendChart({ type = 'bar', period = 'weekly' }: { type: 'ba
     }
     
     if (period === 'monthly') {
-        const weeks = eachWeekOfInterval({ start: subDays(today, 28), end: today }, { weekStartsOn: 1 });
-        return weeks.map(weekStart => {
-            const weekEnd = endOfWeek(weekStart, { weekStartsOn: 1 });
+        const weeksInMonth = eachWeekOfInterval({
+          start: startOfMonth(today),
+          end: endOfMonth(today)
+        });
+        return weeksInMonth.map(weekStart => {
+            const weekEnd = endOfWeek(weekStart);
             return {
                 name: `Week ${getWeek(weekStart)}`,
                 conversions: conversions.filter(item => isWithinInterval(new Date(item.timestamp), { start: weekStart, end: weekEnd })).length,
@@ -47,13 +50,16 @@ export function UsageTrendChart({ type = 'bar', period = 'weekly' }: { type: 'ba
     }
 
     if (period === 'yearly') {
-        const months = eachMonthOfInterval({ start: subDays(today, 365), end: today });
-        return months.map(monthStart => {
+        const monthsInYear = eachMonthOfInterval({
+          start: startOfYear(today),
+          end: endOfYear(today)
+        });
+        return monthsInYear.map(monthStart => {
             const monthEnd = endOfMonth(monthStart);
             return {
                 name: format(monthStart, 'MMM'),
-                conversions: conversions.filter(item => isWithinInterval(new Date(item.timestamp), { start: monthStart, end: monthEnd })).length,
-                calculations: calculations.filter(item => isWithinInterval(new Date(item.timestamp), { start: monthStart, end: monthEnd })).length,
+                conversions: conversions.filter(item => getMonth(new Date(item.timestamp)) === getMonth(monthStart) && getYear(new Date(item.timestamp)) === getYear(monthStart)).length,
+                calculations: calculations.filter(item => getMonth(new Date(item.timestamp)) === getMonth(monthStart) && getYear(new Date(item.timestamp)) === getYear(monthStart)).length,
             };
         });
     }
@@ -111,7 +117,7 @@ export function UsageTrendChart({ type = 'bar', period = 'weekly' }: { type: 'ba
       <ChartComponent data={data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
         <CartesianGrid strokeDasharray="3 3" vertical={false} />
         <XAxis dataKey="name" axisLine={false} tickLine={false} dy={10} className="text-xs" />
-        <YAxis axisLine={false} tickLine={false} dx={-10} className="text-xs" />
+        <YAxis axisLine={false} tickLine={false} dx={-10} className="text-xs" allowDecimals={false} />
         <Tooltip
             contentStyle={{
                 backgroundColor: 'hsl(var(--background))',
