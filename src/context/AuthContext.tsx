@@ -87,7 +87,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             title: "Congratulations!",
             description: "Your account has been created successfully.",
         });
-        router.push('/welcome');
+        router.push('/profile/edit');
     } catch (error: any) {
         console.error("Error signing up with email", error);
         toast({

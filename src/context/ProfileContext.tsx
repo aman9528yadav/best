@@ -48,17 +48,17 @@ const defaultStats: UserStats = {
 
 const getInitialProfile = (): UserProfile => {
   return {
-    name: "Aman Yadav",
-    email: "amanyadavyadav9458@gmail.com",
-    phone: "+91 7037652730",
-    address: "Manirampur bewar",
-    birthday: "December 5th, 2025",
-    skills: ["React", "developed"],
+    name: "",
+    email: "",
+    phone: "",
+    address: "",
+    birthday: "",
+    skills: [],
     socialLinks: {
-      linkedin: "#",
-      twitter: "#",
-      github: "#",
-      instagram: "#",
+      linkedin: "",
+      twitter: "",
+      github: "",
+      instagram: "",
     },
     stats: defaultStats,
   };
@@ -77,7 +77,23 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
         if (savedProfile) {
           setProfileState(JSON.parse(savedProfile));
         } else {
-          setProfileState(getInitialProfile());
+          // For guests, use a richer default profile
+          const guestProfile = {
+            name: "Aman Yadav",
+            email: "amanyadavyadav9458@gmail.com",
+            phone: "+91 7037652730",
+            address: "Manirampur bewar",
+            birthday: "December 5th, 2025",
+            skills: ["React", "developed"],
+            socialLinks: {
+              linkedin: "#",
+              twitter: "#",
+              github: "#",
+              instagram: "#",
+            },
+            stats: defaultStats,
+          };
+          setProfileState(guestProfile);
         }
       } catch (error) {
         console.error("Failed to load profile from localStorage", error);
