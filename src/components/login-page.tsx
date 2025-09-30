@@ -30,7 +30,6 @@ export function LoginPage() {
   const [loginPassword, setLoginPassword] = useState('');
   
   const [signupFullName, setSignupFullName] = useState('');
-  const [signupUsername, setSignupUsername] = useState('');
   const [signupEmail, setSignupEmail] = useState('');
   const [signupPassword, setSignupPassword] = useState('');
   const [signupConfirmPassword, setSignupConfirmPassword] = useState('');
@@ -151,10 +150,6 @@ export function LoginPage() {
                         <Input id="full-name" type="text" placeholder="Aman Yadav" className="bg-white/70" value={signupFullName} onChange={(e) => setSignupFullName(e.target.value)} />
                     </div>
                      <div className="space-y-2">
-                        <Label htmlFor="username">Username</Label>
-                        <Input id="username" type="text" placeholder="e.g. aman_y" className="bg-white/70" value={signupUsername} onChange={(e) => setSignupUsername(e.target.value)} />
-                    </div>
-                     <div className="space-y-2">
                         <Label htmlFor="signup-email">Email</Label>
                         <Input id="signup-email" type="email" placeholder="you@domain.com" className="bg-white/70" value={signupEmail} onChange={(e) => setSignupEmail(e.target.value)} />
                     </div>
@@ -162,7 +157,7 @@ export function LoginPage() {
                         <Label htmlFor="signup-password">Password</Label>
                         <div className="relative">
                             <Input id="signup-password" type={passwordVisible ? 'text' : 'password'} placeholder="Create a strong password" className="bg-white/70" value={signupPassword} onChange={(e) => setSignupPassword(e.target.value)} />
-                            <Button type="button" variant="ghost" size="icon" className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 text-muted-foreground" onClick={() => setPasswordVisible(!passwordVisible)}>
+                            <Button type="button" variant="ghost" size="icon" className="absolute right-1 top-1.2 -translate-y-1.2 h-7 w-7 text-muted-foreground" onClick={() => setPasswordVisible(!passwordVisible)}>
                                 {passwordVisible ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                             </Button>
                         </div>
@@ -171,7 +166,7 @@ export function LoginPage() {
                         <Label htmlFor="confirm-password">Confirm Password</Label>
                         <div className="relative">
                             <Input id="confirm-password" type={confirmPasswordVisible ? 'text' : 'password'} placeholder="Re-enter your password" className="bg-white/70" value={signupConfirmPassword} onChange={(e) => setSignupConfirmPassword(e.target.value)} />
-                            <Button type="button" variant="ghost" size="icon" className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 text-muted-foreground" onClick={() => setConfirmPasswordVisible(!confirmPasswordVisible)}>
+                            <Button type="button" variant="ghost" size="icon" className="absolute right-1 top-1.2 -translate-y-1.2 h-7 w-7 text-muted-foreground" onClick={() => setConfirmPasswordVisible(!confirmPasswordVisible)}>
                                 {confirmPasswordVisible ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                             </Button>
                         </div>
@@ -205,3 +200,5 @@ export function LoginPage() {
     </div>
   );
 }
+
+    
