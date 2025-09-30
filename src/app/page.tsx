@@ -61,7 +61,7 @@ const quickAccessItems = [
   { icon: Calculator, label: 'Calculator', href: '/calculator' },
   { icon: BookText, label: 'Notes', href: '#' },
   { icon: History, label: 'History', href: '/history' },
-  { icon: Newspaper, label: 'News', href: '#' },
+  { icon: Newspaper, label: 'News', href: 'https://aman9528.wixstudio.com/my-site-3' },
   { icon: Languages, label: 'Translator', href: '#' },
   { icon: Calendar, label: 'Date Calc', href: '/date-calculator' },
   { icon: Timer, label: 'Timer', href: '/timer' },
@@ -386,5 +386,7 @@ export default function DashboardPage() {
     </div>
   );
 }
+
+    
 
     
