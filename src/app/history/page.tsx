@@ -4,7 +4,7 @@
 import React, { useState, useEffect } from 'react';
 import { Header } from '@/components/header';
 import { HistoryPage } from '@/components/history-page';
-import { AdPlaceholder } from '@/components/ad-placeholder';
+import { AdMobBanner } from '@/components/admob-banner';
 import { HistoryPageSkeleton } from '@/components/history-page-skeleton';
 import { useAuth } from '@/context/AuthContext';
 import { useRouter } from 'next/navigation';
@@ -18,19 +18,17 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { useHistory } from '@/context/HistoryContext';
 
 export default function History() {
   const { user, loading: authLoading } = useAuth();
+  const { isLoading: historyLoading } = useHistory();
   const router = useRouter();
   const [showLoginDialog, setShowLoginDialog] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    if (!authLoading) {
-      setIsLoading(false);
-      if (!user) {
-        setShowLoginDialog(true);
-      }
+    if (!authLoading && !user) {
+      setShowLoginDialog(true);
     }
   }, [user, authLoading]);
 
@@ -42,7 +40,9 @@ export default function History() {
     router.push('/');
   }
   
-  if (isLoading || authLoading) {
+  const isLoading = authLoading || historyLoading;
+  
+  if (isLoading) {
      return (
       <div className="flex flex-col items-center w-full min-h-screen bg-background text-foreground">
         <div className="w-full max-w-[412px] flex flex-col flex-1">
@@ -50,9 +50,9 @@ export default function History() {
             <Header />
           </div>
           <main className="flex-1 overflow-y-auto p-4 pt-0 space-y-4">
-            <AdPlaceholder className="mb-4 w-full" />
+            <AdMobBanner className="mb-4 w-full" />
             <HistoryPageSkeleton />
-            <AdPlaceholder className="mt-4 w-full" />
+            <AdMobBanner className="mt-4 w-full" />
           </main>
         </div>
       </div>
@@ -86,9 +86,9 @@ export default function History() {
           <Header />
         </div>
         <main className="flex-1 overflow-y-auto p-4 pt-0 space-y-4">
-          <AdPlaceholder className="mb-4 w-full" />
+          <AdMobBanner className="mb-4 w-full" />
           <HistoryPage />
-          <AdPlaceholder className="mt-4 w-full" />
+          <AdMobBanner className="mt-4 w-full" />
         </main>
       </div>
     </div>

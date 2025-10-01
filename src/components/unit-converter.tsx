@@ -29,7 +29,7 @@ import {
 import { CATEGORIES, convert, Unit } from '@/lib/units';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
-import { AdPlaceholder } from './ad-placeholder';
+import { AdMobBanner } from '@/components/admob-banner';
 import { useHistory, ConversionHistoryItem, FavoriteItem } from '@/context/HistoryContext';
 import Link from 'next/link';
 import { ConversionComparisonDialog } from './conversion-comparison-dialog';
@@ -350,7 +350,7 @@ export function UnitConverter() {
         </Card>
       )}
 
-      <AdPlaceholder className="mt-4 w-full" />
+      <AdMobBanner className="mt-4 w-full" />
 
       {fromUnitDetails && (
         <ConversionComparisonDialog

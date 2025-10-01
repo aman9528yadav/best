@@ -43,7 +43,7 @@ import {
   Icon as LucideIcon,
 } from 'lucide-react';
 import Link from 'next/link';
-import { AdPlaceholder } from '@/components/ad-placeholder';
+import { AdMobBanner } from '@/components/admob-banner';
 import { Header } from '@/components/header';
 import { WeeklySummaryChart } from '@/components/weekly-summary-chart';
 import { DashboardSkeleton } from '@/components/dashboard-skeleton';
@@ -110,16 +110,6 @@ export default function DashboardPage() {
 
   const [showMore, setShowMore] = useState(false);
   const [showLoginDialog, setShowLoginDialog] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    // Simulate loading
-    const timer = setTimeout(() => {
-        setIsLoading(false);
-    }, 500);
-
-    return () => clearTimeout(timer);
-  }, []);
 
   useEffect(() => {
     if (!isProfileLoading) {
@@ -134,7 +124,7 @@ export default function DashboardPage() {
     }
   };
 
-  const isPageLoading = isMaintenanceLoading || isProfileLoading || isLoading;
+  const isPageLoading = isMaintenanceLoading || isProfileLoading;
 
   if (isPageLoading) {
     return (
@@ -211,7 +201,7 @@ export default function DashboardPage() {
             </CardContent>
           </Card>
           
-          <AdPlaceholder className="w-full" />
+          <AdMobBanner className="w-full" />
 
           <section>
             <div className="flex justify-between items-center mb-2">
@@ -275,7 +265,7 @@ export default function DashboardPage() {
             </div>
           </section>
           
-          <AdPlaceholder className="w-full" />
+          <AdMobBanner className="w-full" />
 
           <section>
             <div className="flex justify-between items-center mb-2">
