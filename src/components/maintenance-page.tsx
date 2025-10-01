@@ -5,7 +5,7 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { ArrowLeft, Wrench, Shield, Hourglass, Zap } from 'lucide-react';
+import { ArrowLeft, Wrench, Shield, Hourglass, Zap, PartyPopper } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useMaintenance } from '@/context/MaintenanceContext';
@@ -101,6 +101,8 @@ export function MaintenancePage() {
     setIsPasswordDialogOpen(false);
   };
 
+  const isTimerFinished = timeLeft.days <= 0 && timeLeft.hours <= 0 && timeLeft.minutes <= 0 && timeLeft.seconds <= 0;
+
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-background text-foreground p-4">
@@ -122,18 +124,25 @@ export function MaintenancePage() {
           </div>
 
           <div className="space-y-2">
-            <h1 className="text-4xl font-bold">We'll Be Back Soon!</h1>
+            <h1 className="text-4xl font-bold">{isTimerFinished ? "We're Back!" : "We'll Be Back Soon!"}</h1>
             <p className="text-muted-foreground">
-              The app is currently undergoing scheduled maintenance. We expect to be back online in:
+             {isTimerFinished ? "The maintenance is complete. The app is now back online." : "The app is currently undergoing scheduled maintenance. We expect to be back online in:"}
             </p>
           </div>
 
-           <div className="flex justify-center gap-3">
-              <CountdownBox value={String(timeLeft.days).padStart(2, '0')} label="DAYS" />
-              <CountdownBox value={String(timeLeft.hours).padStart(2, '0')} label="HOURS" />
-              <CountdownBox value={String(timeLeft.minutes).padStart(2, '0')} label="MINUTES" />
-              <CountdownBox value={String(timeLeft.seconds).padStart(2, '0')} label="SECONDS" />
-          </div>
+          {isTimerFinished ? (
+             <div className="flex justify-center gap-3 p-4 bg-accent rounded-lg text-primary font-semibold">
+                <PartyPopper className="h-6 w-6" />
+                <span>We're back online! Thanks for your patience.</span>
+            </div>
+          ) : (
+             <div className="flex justify-center gap-3">
+                <CountdownBox value={String(timeLeft.days).padStart(2, '0')} label="DAYS" />
+                <CountdownBox value={String(timeLeft.hours).padStart(2, '0')} label="HOURS" />
+                <CountdownBox value={String(timeLeft.minutes).padStart(2, '0')} label="MINUTES" />
+                <CountdownBox value={String(timeLeft.seconds).padStart(2, '0')} label="SECONDS" />
+            </div>
+          )}
 
           <Card>
             <CardContent className="p-4 text-left">
@@ -211,5 +220,3 @@ export function MaintenancePage() {
     </div>
   );
 }
-
-    

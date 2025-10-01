@@ -5,7 +5,7 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Rocket, Info } from 'lucide-react';
+import { Rocket, Info, PartyPopper } from 'lucide-react';
 import { useMaintenance } from '@/context/MaintenanceContext';
 import Link from 'next/link';
 
@@ -81,6 +81,9 @@ export function DashboardBanner() {
   if (!isVisible || !maintenanceConfig.dashboardBanner) {
     return null;
   }
+  
+  const isTimerFinished = timeLeft.days <= 0 && timeLeft.hours <= 0 && timeLeft.minutes <= 0 && timeLeft.seconds <= 0;
+
 
   return (
     <Card className="bg-gradient-to-br from-primary/10 to-accent/20 border-primary/20">
@@ -93,16 +96,23 @@ export function DashboardBanner() {
                 <div>
                     <h3 className="font-bold">Next Update Incoming!</h3>
                      <p className="text-xs text-muted-foreground">
-                        We're launching new features soon. Check out what's new!
+                        {isTimerFinished ? "The latest update is live!" : "We're launching new features soon. Check out what's new!"}
                     </p>
                 </div>
                 
-                <div className="flex gap-2">
-                    <CountdownBox value={String(timeLeft.days).padStart(2, '0')} label="DAYS" />
-                    <CountdownBox value={String(timeLeft.hours).padStart(2, '0')} label="HOURS" />
-                    <CountdownBox value={String(timeLeft.minutes).padStart(2, '0')} label="MINS" />
-                    <CountdownBox value={String(timeLeft.seconds).padStart(2, '0')} label="SECS" />
-                </div>
+                {isTimerFinished ? (
+                    <div className="flex items-center justify-center gap-2 p-4 bg-accent/70 rounded-md text-primary font-semibold">
+                       <PartyPopper className="h-5 w-5" />
+                       <span>The new update is live!</span>
+                    </div>
+                ) : (
+                    <div className="flex gap-2">
+                        <CountdownBox value={String(timeLeft.days).padStart(2, '0')} label="DAYS" />
+                        <CountdownBox value={String(timeLeft.hours).padStart(2, '0')} label="HOURS" />
+                        <CountdownBox value={String(timeLeft.minutes).padStart(2, '0')} label="MINS" />
+                        <CountdownBox value={String(timeLeft.seconds).padStart(2, '0')} label="SECS" />
+                    </div>
+                )}
                 
                 <div className="flex justify-between items-center">
                     <Badge variant="outline" className="text-primary bg-primary/10 border-primary/50 text-xs shrink-0">
