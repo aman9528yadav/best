@@ -32,8 +32,8 @@ const iconMap: { [key: string]: Icon } = {
 
 export function WhatsNewPage() {
   const { maintenanceConfig } = useMaintenance();
-  const { show: showBanner, countdown, category, upcomingFeatureDetails } = maintenanceConfig.dashboardBanner;
-  const [timeLeft, setTimeLeft] = useState(countdown);
+  const { show: showBanner, countdown, category, upcomingFeatureDetails } = maintenanceConfig.dashboardBanner || {};
+  const [timeLeft, setTimeLeft] = useState(countdown || { days: 0, hours: 0, minutes: 0, seconds: 0 });
   const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
@@ -41,7 +41,9 @@ export function WhatsNewPage() {
   }, []);
 
   useEffect(() => {
-    setTimeLeft(countdown);
+    if (countdown) {
+      setTimeLeft(countdown);
+    }
   }, [countdown]);
 
 
@@ -49,6 +51,7 @@ export function WhatsNewPage() {
     if (!isClient) return;
     const timer = setTimeout(() => {
       setTimeLeft(prevTime => {
+        if (!prevTime) return { days: 0, hours: 0, minutes: 0, seconds: 0 };
         let { days, hours, minutes, seconds } = prevTime;
         if (seconds > 0) seconds--;
         else {
@@ -72,10 +75,11 @@ export function WhatsNewPage() {
     return () => clearTimeout(timer);
   }, [timeLeft, isClient]);
 
+  const updateItems = maintenanceConfig.updateItems || [];
 
   return (
     <div className="w-full space-y-6 pb-12">
-        {showBanner && (
+        {showBanner && timeLeft && (
           <>
             <Card>
                 <CardContent className="p-4 text-center space-y-4">
@@ -103,8 +107,9 @@ export function WhatsNewPage() {
         )}
 
         <div className="space-y-4">
-            {maintenanceConfig.updateItems.map((item, index) => {
+            {updateItems.map((item, index) => {
                 const ItemIcon = iconMap[item.icon] || Bug;
+                const tags = item.tags || [];
                 return (
                 <Card key={index}>
                     <CardContent className="p-4">
@@ -119,7 +124,7 @@ export function WhatsNewPage() {
                             </div>
                         </div>
                         <div className="flex justify-start gap-2 mt-4">
-                            {item.tags.map(tag => (
+                            {tags.map(tag => (
                                 <Badge key={tag} variant={tag.startsWith('Beta') ? 'secondary' : 'outline'} className={tag.startsWith('New') ? 'text-blue-500 border-blue-500/50 bg-blue-500/10' : 'text-purple-500 border-purple-500/50 bg-purple-500/10'}>{tag}</Badge>
                             ))}
                         </div>
