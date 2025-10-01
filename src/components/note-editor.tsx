@@ -72,12 +72,13 @@ export function NoteEditor({ note, onSave, onDelete, onDeletePermanently, onRest
     onSave(title, content);
   }
 
-  // Set initial content for the editor
+  // Set initial content for the editor but only when the note ID changes
   useEffect(() => {
     if (editorRef.current && note?.content !== editorRef.current.innerHTML) {
       editorRef.current.innerHTML = note.content;
+      setContent(note.content);
     }
-  }, [note?.content]);
+  }, [note?.id, note?.content]);
 
 
   return (
@@ -152,15 +153,14 @@ export function NoteEditor({ note, onSave, onDelete, onDeletePermanently, onRest
       <main className="flex-1 p-4 overflow-y-auto">
         <div
           ref={editorRef}
-          contentEditable={!isTrashed}
           onInput={handleContentChange}
           className={cn(
-            'w-full h-full outline-none text-base',
+            'note-content w-full h-full outline-none text-base',
             isTrashed ? 'cursor-not-allowed' : ''
           )}
           suppressContentEditableWarning={true}
+          contentEditable={!isTrashed}
         >
-          {/* We now manage content via ref to avoid re-renders, so initial content can be set here or via useEffect */}
         </div>
         {isTrashed && content === '' && (
           <div className="text-muted-foreground">This note is in the trash and is empty.</div>
@@ -181,7 +181,3 @@ export function NoteEditor({ note, onSave, onDelete, onDeletePermanently, onRest
     </div>
   );
 }
-
-    
-
-    
