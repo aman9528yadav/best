@@ -57,6 +57,7 @@ type HistoryContextType = {
   deleteFavorite: (id: string) => void;
   clearAllHistory: (type: 'conversion' | 'calculator' | 'date_calculation' | 'all') => void;
   clearAllFavorites: () => void;
+  isLoading: boolean;
 };
 
 const HistoryContext = createContext<HistoryContextType | undefined>(undefined);
@@ -76,9 +77,9 @@ const getInitialFavorites = (): FavoriteItem[] => {
 };
 
 export const HistoryProvider = ({ children }: { children: ReactNode }) => {
-  const { updateStatsForNewActivity } = useProfile();
+  const { updateStats } = useProfile();
   const { user, loading: authLoading } = useAuth();
-
+  const [isLoading, setIsLoading] = useState(true);
   const [history, setHistory] = useState<HistoryItem[]>([]);
   const [favorites, setFavorites] = useState<FavoriteItem[]>([]);
   const dataLoaded = useRef(false);
@@ -86,11 +87,13 @@ export const HistoryProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     if (authLoading) return;
     dataLoaded.current = false;
+    setIsLoading(true);
 
     const loadGuestData = () => {
         setHistory(getInitialHistory());
         setFavorites(getInitialFavorites());
         dataLoaded.current = true;
+        setIsLoading(false);
     }
     
     if (user) {
@@ -112,6 +115,7 @@ export const HistoryProvider = ({ children }: { children: ReactNode }) => {
                 set(dbRef, { history: historyAsObject, favorites: favoritesAsObject });
             }
             dataLoaded.current = true;
+            setIsLoading(false);
         });
         return () => unsubscribe();
     } else {
@@ -145,7 +149,7 @@ export const HistoryProvider = ({ children }: { children: ReactNode }) => {
     if (user) {
         set(ref(rtdb, `users/${user.uid}/history/${newItem.id}`), newItem);
     }
-    updateStatsForNewActivity();
+    updateStats('conversion');
   };
 
   const addCalculatorToHistory = (item: Omit<CalculatorHistoryItem, 'id' | 'timestamp' | 'type'>) => {
@@ -154,7 +158,7 @@ export const HistoryProvider = ({ children }: { children: ReactNode }) => {
      if (user) {
         set(ref(rtdb, `users/${user.uid}/history/${newItem.id}`), newItem);
     }
-    updateStatsForNewActivity();
+    updateStats('calculator');
   };
 
   const addDateCalculationToHistory = (item: Omit<DateCalculationHistoryItem, 'id' | 'timestamp' | 'type'>) => {
@@ -163,7 +167,7 @@ export const HistoryProvider = ({ children }: { children: ReactNode }) => {
     if (user) {
         set(ref(rtdb, `users/${user.uid}/history/${newItem.id}`), newItem);
     }
-    updateStatsForNewActivity();
+    updateStats('date_calculation');
   };
 
   const addFavorite = (item: Omit<FavoriteItem, 'id' | 'type'>) => {
@@ -223,7 +227,8 @@ export const HistoryProvider = ({ children }: { children: ReactNode }) => {
         deleteHistoryItem,
         deleteFavorite,
         clearAllHistory,
-        clearAllFavorites
+        clearAllFavorites,
+        isLoading
     }}>
       {children}
     </HistoryContext.Provider>

@@ -8,6 +8,13 @@ import { db } from '@/lib/firebase';
 import { useAuth } from './AuthContext';
 import { isToday, differenceInCalendarDays, startOfDay, isYesterday } from 'date-fns';
 
+export type ActivityType = 'conversion' | 'calculator' | 'date_calculation' | 'note';
+
+export type ActivityLogItem = {
+    timestamp: string;
+    type: ActivityType;
+};
+
 export type UserStats = {
   allTimeActivities: number;
   todayActivities: number;
@@ -42,12 +49,13 @@ export type UserProfile = {
   };
   stats: UserStats;
   notes: NoteItem[];
+  activityLog: ActivityLogItem[];
 };
 
 type ProfileContextType = {
   profile: UserProfile;
   setProfile: (profile: UserProfile | ((prevState: UserProfile) => UserProfile)) => void;
-  updateStatsForNewActivity: () => void;
+  updateStats: (type: ActivityType) => void;
   checkAndUpdateStreak: () => void;
   isLoading: boolean;
   addNote: (note: Omit<NoteItem, 'id' | 'createdAt' | 'updatedAt'>) => NoteItem;
@@ -86,6 +94,7 @@ const getInitialProfile = (): UserProfile => {
     },
     stats: defaultStats,
     notes: [],
+    activityLog: [],
   };
 };
 
@@ -103,7 +112,8 @@ const guestProfileDefault: UserProfile = {
         instagram: "",
     },
     stats: defaultStats,
-    notes: []
+    notes: [],
+    activityLog: [],
 }
 
 export const ProfileProvider = ({ children }: { children: ReactNode }) => {
@@ -128,7 +138,8 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
             // Ensure stats and notes have default values if missing
             const stats = { ...defaultStats, ...(parsedProfile.stats || {}) };
             const notes = parsedProfile.notes || [];
-            setProfileState({ ...guestProfileDefault, ...parsedProfile, stats, notes });
+            const activityLog = parsedProfile.activityLog || [];
+            setProfileState({ ...guestProfileDefault, ...parsedProfile, stats, notes, activityLog });
           } else {
             setProfileState(guestProfileDefault);
           }
@@ -148,14 +159,11 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
       const unsubscribe = onSnapshot(docRef, async (snapshot) => {
         if (snapshot.exists()) {
           const fetchedData = snapshot.data() as Partial<UserProfile>;
-          const today = startOfDay(new Date()).toISOString().split('T')[0];
           
           const stats = { ...defaultStats, ...(fetchedData.stats || {}) };
           const notes = fetchedData.notes || [];
+          const activityLog = fetchedData.activityLog || [];
 
-          if (stats.lastActivityDate !== today) {
-            stats.todayActivities = 0;
-          }
 
           const fullProfile = {
             ...getInitialProfile(),
@@ -164,6 +172,7 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
             email: user.email || fetchedData.email || "",
             stats,
             notes,
+            activityLog,
           };
           setProfileState(fullProfile);
 
@@ -174,6 +183,7 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
             name: user.displayName || 'New User',
             stats: defaultStats,
             notes: [],
+            activityLog: [],
           };
           await setDoc(docRef, newProfile);
           setProfileState(newProfile);
@@ -219,6 +229,7 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
       updatedAt: new Date().toISOString(),
     };
     setProfile(p => ({ ...p, notes: [newNote, ...p.notes] }));
+    updateStats('note');
     return newNote;
   };
   
@@ -272,11 +283,11 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
         const newStats = { ...prevProfile.stats };
         
         if (lastOpen && isYesterday(lastOpen)) {
-            newStats.streak += 1;
-            newStats.daysActive += 1;
+            newStats.streak = (newStats.streak || 0) + 1;
+            newStats.daysActive = (newStats.daysActive || 0) + 1;
         } else if (!lastOpen || !isToday(lastOpen)) { // First time open or missed a day
             newStats.streak = 1;
-            newStats.daysActive += 1;
+            newStats.daysActive = (newStats.daysActive || 0) + 1;
         }
 
         newStats.lastAppOpenDate = today.toISOString();
@@ -285,22 +296,33 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
     });
   };
 
-  const updateStatsForNewActivity = () => {
+  const updateStats = (type: ActivityType) => {
     setProfile(prevProfile => {
-        const newStats = {...prevProfile.stats};
-        const todayISO = new Date().toISOString();
+      const todayISO = new Date().toISOString();
+      const newStats = { ...prevProfile.stats };
+      const newActivityLog = [...prevProfile.activityLog, { timestamp: todayISO, type }];
 
-        newStats.allTimeActivities = (newStats.allTimeActivities || 0) + 1;
-        
-        const lastActivityDate = newStats.lastActivityDate;
-        if (lastActivityDate && isToday(new Date(lastActivityDate))) {
-             newStats.todayActivities = (newStats.todayActivities || 0) + 1;
-        } else {
-             newStats.todayActivities = 1;
-        }
-        newStats.lastActivityDate = todayISO;
+      // 1. Increment All-Time Activities
+      newStats.allTimeActivities = (newStats.allTimeActivities || 0) + 1;
 
-        return { ...prevProfile, stats: newStats };
+      // 2. Handle Today's Activities
+      const lastActivityDate = newStats.lastActivityDate;
+      if (lastActivityDate && isToday(new Date(lastActivityDate))) {
+        // It's the same day, just increment today's count
+        newStats.todayActivities = (newStats.todayActivities || 0) + 1;
+      } else {
+        // It's a new day, reset today's count to 1
+        newStats.todayActivities = 1;
+      }
+      
+      // 3. Update Last Activity Date
+      newStats.lastActivityDate = todayISO;
+
+      return {
+        ...prevProfile,
+        stats: newStats,
+        activityLog: newActivityLog,
+      };
     });
   };
 
@@ -308,7 +330,7 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
     <ProfileContext.Provider value={{ 
         profile, 
         setProfile, 
-        updateStatsForNewActivity, 
+        updateStats, 
         checkAndUpdateStreak, 
         isLoading,
         addNote,
@@ -331,4 +353,3 @@ export const useProfile = () => {
   }
   return context;
 };
-
