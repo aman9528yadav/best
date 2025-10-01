@@ -1,13 +1,10 @@
 
 "use client";
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import {
-  Undo,
-  Redo,
   Save,
   Trash2,
   Star,
@@ -20,12 +17,13 @@ import {
   ListOrdered,
   ArrowLeft,
   Undo2,
+  Undo,
+  Redo,
 } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuTrigger,
   DropdownMenuSeparator
 } from '@/components/ui/dropdown-menu';
 import {
@@ -37,10 +35,10 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { useRouter } from 'next/navigation';
 import type { NoteItem } from '@/context/ProfileContext';
+import { cn } from '@/lib/utils';
 
 interface NoteEditorProps {
   note?: NoteItem;
@@ -51,102 +49,36 @@ interface NoteEditorProps {
   onFavoriteToggle?: () => void;
 }
 
-type HistoryStack = {
-  content: string;
-  cursor: number;
-};
-
 export function NoteEditor({ note, onSave, onDelete, onDeletePermanently, onRestore, onFavoriteToggle }: NoteEditorProps) {
   const router = useRouter();
   const [title, setTitle] = useState(note?.title || '');
   const [content, setContent] = useState(note?.content || '');
-  const [history, setHistory] = useState<HistoryStack[]>([{ content: note?.content || '', cursor: 0 }]);
-  const [historyIndex, setHistoryIndex] = useState(0);
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const editorRef = useRef<HTMLDivElement>(null);
   
   const isFavorite = note?.isFavorite || false;
   const isTrashed = note?.isTrashed || false;
 
-  useEffect(() => {
-    const timeout = setTimeout(() => {
-        const newHistoryEntry = { content: content, cursor: textareaRef.current?.selectionStart || 0 };
-        const newHistory = [...history.slice(0, historyIndex + 1), newHistoryEntry];
-        setHistory(newHistory);
-        setHistoryIndex(newHistory.length - 1);
-    }, 500);
-    return () => clearTimeout(timeout);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [content]);
-
-  const handleUndo = () => {
-    if (historyIndex > 0) {
-      setHistoryIndex(prev => prev - 1);
-      const prevState = history[historyIndex - 1];
-      setContent(prevState.content);
-       if (textareaRef.current) {
-         setTimeout(() => textareaRef.current!.selectionStart = textareaRef.current!.selectionEnd = prevState.cursor, 0);
-      }
-    }
+  const handleContentChange = (e: React.FormEvent<HTMLDivElement>) => {
+    setContent(e.currentTarget.innerHTML);
   };
 
-  const handleRedo = () => {
-    if (historyIndex < history.length - 1) {
-      setHistoryIndex(prev => prev + 1);
-      const nextState = history[historyIndex + 1];
-      setContent(nextState.content);
-       if (textareaRef.current) {
-        setTimeout(() => textareaRef.current!.selectionStart = textareaRef.current!.selectionEnd = nextState.cursor, 0);
-      }
-    }
-  };
-
-  const applyFormatting = (format: 'bold' | 'italic' | 'underline' | 'strike') => {
-    const textarea = textareaRef.current;
-    if (!textarea) return;
-
-    const start = textarea.selectionStart;
-    const end = textarea.selectionEnd;
-    const selectedText = content.substring(start, end);
-    
-    const symbolMap = {
-      bold: '**',
-      italic: '*',
-      underline: '__',
-      strike: '~~'
-    };
-
-    const symbol = symbolMap[format];
-    
-    const newContent = 
-      content.substring(0, start) +
-      symbol +
-      selectedText +
-      symbol +
-      content.substring(end);
-
-    setContent(newContent);
-    
-    setTimeout(() => {
-      textarea.focus();
-      const newCursorPos = end + symbol.length * 2;
-      textarea.setSelectionRange(newCursorPos, newCursorPos);
-    }, 0);
+  const execCommand = (command: string, value?: string) => {
+    document.execCommand(command, false, value);
+    editorRef.current?.focus();
   };
   
-  const applyList = (type: 'unordered' | 'ordered') => {
-    const textarea = textareaRef.current;
-    if (!textarea) return;
-    const start = textarea.selectionStart;
-    const lines = content.substring(0, start).split('\n');
-    const currentLineIndex = lines.length - 1;
-    const currentLine = lines[currentLineIndex];
+  const handleSave = () => {
+    // Sanitize content before saving if needed
+    onSave(title, content);
+  }
 
-    const symbol = type === 'unordered' ? '- ' : '1. ';
-    
-    lines[currentLineIndex] = symbol + currentLine;
-    const newText = lines.join('\n');
-    setContent(newText);
-  };
+  // Set initial content for the editor
+  useEffect(() => {
+    if (editorRef.current && note?.content) {
+      editorRef.current.innerHTML = note.content;
+    }
+  }, [note?.content]);
+
 
   return (
     <div className="flex flex-col h-screen bg-background">
@@ -164,9 +96,9 @@ export function NoteEditor({ note, onSave, onDelete, onDeletePermanently, onRest
         <div className="flex items-center gap-1">
           {!isTrashed && (
             <>
-              <Button variant="ghost" size="icon" onClick={handleUndo} disabled={historyIndex === 0}><Undo className="h-5 w-5" /></Button>
-              <Button variant="ghost" size="icon" onClick={handleRedo} disabled={historyIndex === history.length - 1}><Redo className="h-5 w-5" /></Button>
-              <Button variant="ghost" size="icon" onClick={() => onSave(title, content)}><Save className="h-5 w-5" /></Button>
+              <Button variant="ghost" size="icon" onClick={() => execCommand('undo')}><Undo className="h-5 w-5" /></Button>
+              <Button variant="ghost" size="icon" onClick={() => execCommand('redo')}><Redo className="h-5 w-5" /></Button>
+              <Button variant="ghost" size="icon" onClick={handleSave}><Save className="h-5 w-5" /></Button>
             </>
           )}
           {note && (onDelete || onDeletePermanently) && (
@@ -218,27 +150,34 @@ export function NoteEditor({ note, onSave, onDelete, onDeletePermanently, onRest
         </div>
       </header>
       <main className="flex-1 p-4 overflow-y-auto">
-        <Textarea
-          ref={textareaRef}
-          value={content}
-          onChange={(e) => setContent(e.target.value)}
-          placeholder={isTrashed ? "This note is in the trash." : "Start writing your note..."}
-          className="w-full h-full resize-none border-none focus-visible:ring-0 text-base p-0"
-          readOnly={isTrashed}
+        <div
+          ref={editorRef}
+          contentEditable={!isTrashed}
+          onInput={handleContentChange}
+          className={cn(
+            'w-full h-full outline-none text-base',
+            isTrashed ? 'cursor-not-allowed' : ''
+          )}
+          dangerouslySetInnerHTML={{ __html: content }}
         />
+        {isTrashed && content === '' && (
+          <div className="text-muted-foreground">This note is in the trash and is empty.</div>
+        )}
       </main>
       {!isTrashed && (
         <footer className="p-2 flex justify-center">
             <div className="bg-card border shadow-sm rounded-full flex items-center gap-1 p-1">
-                <Button variant="ghost" size="icon" onClick={() => applyFormatting('bold')}><Bold className="h-5 w-5"/></Button>
-                <Button variant="ghost" size="icon" onClick={() => applyFormatting('italic')}><Italic className="h-5 w-5"/></Button>
-                <Button variant="ghost" size="icon" onClick={() => applyFormatting('underline')}><Underline className="h-5 w-5"/></Button>
-                <Button variant="ghost" size="icon" onClick={() => applyFormatting('strike')}><Strikethrough className="h-5 w-5"/></Button>
-                <Button variant="ghost" size="icon" onClick={() => applyList('unordered')}><List className="h-5 w-5"/></Button>
-                <Button variant="ghost" size="icon" onClick={() => applyList('ordered')}><ListOrdered className="h-5 w-5"/></Button>
+                <Button variant="ghost" size="icon" onClick={() => execCommand('bold')}><Bold className="h-5 w-5"/></Button>
+                <Button variant="ghost" size="icon" onClick={() => execCommand('italic')}><Italic className="h-5 w-5"/></Button>
+                <Button variant="ghost" size="icon" onClick={() => execCommand('underline')}><Underline className="h-5 w-5"/></Button>
+                <Button variant="ghost" size="icon" onClick={() => execCommand('strikeThrough')}><Strikethrough className="h-5 w-5"/></Button>
+                <Button variant="ghost" size="icon" onClick={() => execCommand('insertUnorderedList')}><List className="h-5 w-5"/></Button>
+                <Button variant="ghost" size="icon" onClick={() => execCommand('insertOrderedList')}><ListOrdered className="h-5 w-5"/></Button>
             </div>
         </footer>
       )}
     </div>
   );
 }
+
+    
