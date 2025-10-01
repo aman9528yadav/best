@@ -38,12 +38,14 @@ export function DashboardBanner() {
   }, [maintenanceConfig.dashboardBanner]);
 
   useEffect(() => {
-    if (!isVisible || !isClient || (timeLeft.days <= 0 && timeLeft.hours <= 0 && timeLeft.minutes <= 0 && timeLeft.seconds <= 0)) {
+    if (!isVisible || !isClient) return;
+    
+    if (timeLeft.days <= 0 && timeLeft.hours <= 0 && timeLeft.minutes <= 0 && timeLeft.seconds <= 0) {
         return;
     }
+
     const timer = setTimeout(() => {
-      setTimeLeft(prevTime => {
-        let { days, hours, minutes, seconds } = prevTime;
+      let { days, hours, minutes, seconds } = timeLeft;
 
         if (seconds > 0) {
             seconds--;
@@ -61,14 +63,17 @@ export function DashboardBanner() {
             days--;
         }
         
+        const newTimeLeft = { days, hours, minutes, seconds };
+
         if (days <= 0 && hours <= 0 && minutes <= 0 && seconds <= 0) {
-            return { days: 0, hours: 0, minutes: 0, seconds: 0 };
+             setMaintenanceConfig(prev => ({ ...prev, dashboardBanner: { ...prev.dashboardBanner, countdown: { days: 0, hours: 0, minutes: 0, seconds: 0 } } }));
+        } else {
+             setMaintenanceConfig(prev => ({ ...prev, dashboardBanner: { ...prev.dashboardBanner, countdown: newTimeLeft } }));
         }
-        return { days, hours, minutes, seconds };
-      });
     }, 1000);
+
     return () => clearTimeout(timer);
-  }, [timeLeft, isVisible, isClient]);
+  }, [timeLeft, isVisible, isClient, setMaintenanceConfig]);
 
   const handleDismiss = () => {
     setIsVisible(false);

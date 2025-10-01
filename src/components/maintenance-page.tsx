@@ -31,7 +31,7 @@ const CountdownBox = ({ value, label }: { value: string; label: string }) => (
 
 export function MaintenancePage() {
   const router = useRouter();
-  const { maintenanceConfig, setDevMode } = useMaintenance();
+  const { maintenanceConfig, setMaintenanceConfig, setDevMode } = useMaintenance();
   const { maintenanceCountdown, maintenanceMessage } = maintenanceConfig;
   const { toast } = useToast();
   
@@ -50,8 +50,7 @@ export function MaintenancePage() {
     }
 
     const timer = setTimeout(() => {
-      setTimeLeft(prevTime => {
-        let { days, hours, minutes, seconds } = prevTime;
+        let { days, hours, minutes, seconds } = timeLeft;
 
         if (seconds > 0) {
             seconds--;
@@ -69,14 +68,16 @@ export function MaintenancePage() {
             days--;
         }
 
+        const newTimeLeft = { days, hours, minutes, seconds };
+
         if(days <= 0 && hours <= 0 && minutes <= 0 && seconds <= 0){
-             return { days: 0, hours: 0, minutes: 0, seconds: 0 };
+             setMaintenanceConfig(prev => ({ ...prev, maintenanceCountdown: { days: 0, hours: 0, minutes: 0, seconds: 0 } }));
+        } else {
+             setMaintenanceConfig(prev => ({ ...prev, maintenanceCountdown: newTimeLeft }));
         }
-        return { days, hours, minutes, seconds };
-      });
     }, 1000);
     return () => clearTimeout(timer);
-  }, [timeLeft]);
+  }, [timeLeft, setMaintenanceConfig]);
 
   const handleIconClick = () => {
     const newClickCount = clickCount + 1;
@@ -176,13 +177,6 @@ export function MaintenancePage() {
           </div>
 
           <div className="text-sm text-muted-foreground">
-            <p>
-              Or, go to the{' '}
-              <Link href="/" className="text-primary hover:underline">
-                homepage
-              </Link>
-              .
-            </p>
             <p>
               Need immediate assistance? Contact Aman at:{' '}
               <a
