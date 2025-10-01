@@ -61,6 +61,7 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const markAllAsRead = () => {
+    if (unreadCount === 0) return;
     setTimeout(() => {
         setNotifications(prev => prev.map(n => ({ ...n, read: true })));
     }, 1000); // Delay to allow user to see the badge before it disappears
@@ -89,3 +90,4 @@ export const useNotifications = () => {
   }
   return context;
 };
+
