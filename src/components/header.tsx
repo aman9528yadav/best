@@ -76,6 +76,11 @@ export function Header() {
     }
   };
 
+  const handleNotificationOpen = (open: boolean) => {
+    if (open) {
+      markAllAsRead();
+    }
+  };
 
   return (
     <>
@@ -97,9 +102,9 @@ export function Header() {
               <Search className="h-5 w-5" />
             </Button>
             
-            <DropdownMenu>
+            <DropdownMenu onOpenChange={handleNotificationOpen}>
                 <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon" aria-label="Notifications" className="relative" onClick={markAllAsRead}>
+                    <Button variant="ghost" size="icon" aria-label="Notifications" className="relative">
                         <Bell className="h-5 w-5" />
                         {unreadCount > 0 && (
                             <Badge variant="destructive" className="absolute -top-1 -right-1 h-4 w-4 justify-center rounded-full p-0 text-xs">
