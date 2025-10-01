@@ -18,7 +18,8 @@ import {
   Strikethrough,
   List,
   ListOrdered,
-  ArrowLeft
+  ArrowLeft,
+  Undo2,
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -44,7 +45,7 @@ import type { NoteItem } from '@/context/ProfileContext';
 interface NoteEditorProps {
   note?: NoteItem;
   onSave: (title: string, content: string) => void;
-  onDelete?: (permanently?: boolean) => void;
+  onDelete?: () => void;
   onDeletePermanently?: () => void;
   onRestore?: () => void;
   onFavoriteToggle?: () => void;
@@ -184,7 +185,7 @@ export function NoteEditor({ note, onSave, onDelete, onDeletePermanently, onRest
                       <Star className={`h-4 w-4 ${isFavorite ? 'text-yellow-500 fill-yellow-400' : ''}`} />
                       {isFavorite ? 'Unfavorite' : 'Favorite'}
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => onDelete && onDelete(false)} className="gap-2 text-destructive">
+                    <DropdownMenuItem onClick={() => onDelete && onDelete()} className="gap-2 text-destructive">
                       <Trash2 className="h-4 w-4" /> Move to Trash
                     </DropdownMenuItem>
                   </>
