@@ -102,27 +102,6 @@ const iconMap: { [key: string]: LucideIcon } = {
   Bug,
 };
 
-const discoverItems = [
-  {
-    icon: PenSquare,
-    title: 'Custom Units',
-    description:
-      'A premium feature for power users. Add your own units to existing categories or create entirely new categories for specialized conversions.',
-  },
-  {
-    icon: Paintbrush,
-    title: 'Theme Editor',
-    description:
-      "Make the app truly yours. As a Premium Member, you can use the Theme Editor to change the app's colors to match your style.",
-  },
-  {
-    icon: FileText,
-    title: 'Rich Text Editing',
-    description:
-      'Create detailed notes with titles, categories, and rich text formatting like bold, italics, lists, and different colors. You can even attach images.',
-  },
-];
-
 export default function DashboardPage() {
   const { maintenanceConfig, isLoading: isMaintenanceLoading } = useMaintenance();
   const { profile, isLoading: isProfileLoading, checkAndUpdateStreak } = useProfile();
@@ -322,35 +301,6 @@ export default function DashboardPage() {
                   </CardContent>
                 </Card>
               )})}
-            </div>
-          </section>
-
-          <section>
-            <div className="flex justify-between items-center mb-2">
-              <h2 className="font-semibold">Discover Sutradhaar</h2>
-              <Button variant="link" size="sm" className="text-primary pr-0">
-                See all
-              </Button>
-            </div>
-            <div className="space-y-3">
-              {discoverItems.map((item) => (
-                <Card key={item.title}>
-                  <CardContent className="p-3 flex items-start gap-3">
-                     <div className="p-2.5 bg-accent rounded-lg">
-                       <item.icon className="h-5 w-5 text-primary" />
-                    </div>
-                    <div>
-                      <div className="font-medium">{item.title}</div>
-                      <p className="text-sm text-muted-foreground">
-                        {item.description}
-                      </p>
-                    </div>
-                    <Button variant="ghost" size="icon" className='ml-auto'>
-                      <ArrowUpRight className="h-4 w-4" />
-                    </Button>
-                  </CardContent>
-                </Card>
-              ))}
             </div>
           </section>
 
