@@ -109,6 +109,13 @@ export function NoteEditor({ note, onSave, onDelete, onDeletePermanently, onRest
     const symbol = format === 'bold' ? '**' : format === 'italic' ? '*' : format === 'underline' ? '__' : '~~';
     const newText = `${content.substring(0, start)}${symbol}${selectedText}${symbol}${content.substring(end)}`;
     setContent(newText);
+    
+    // After updating content, focus the textarea and place the cursor correctly
+    setTimeout(() => {
+        textarea.focus();
+        textarea.selectionStart = start + symbol.length;
+        textarea.selectionEnd = end + symbol.length;
+    }, 0);
   };
   
   const applyList = (type: 'unordered' | 'ordered') => {
