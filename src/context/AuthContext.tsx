@@ -74,13 +74,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
         const userCredential = await signInWithEmailAndPassword(auth, email, pass);
         if (!userCredential.user.emailVerified) {
-            toast({
-                title: "Email Not Verified",
-                description: "Please verify your email before logging in.",
-                variant: "destructive"
-            });
-            await signOut(auth); // Log out user if email is not verified
-            return null;
+            router.push(`/verify-email?email=${email}`);
+            return userCredential.user;
         }
         router.push('/auth-action?action=login');
         return userCredential.user;

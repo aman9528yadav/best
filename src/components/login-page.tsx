@@ -13,6 +13,7 @@ import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { ResendVerification } from './resend-verification';
 import { useRouter } from 'next/navigation';
+import { getAuth, sendEmailVerification } from 'firebase/auth';
 
 const GoogleIcon = (props: React.SVGProps<SVGSVGElement>) => (
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="24px" height="24px" {...props}>
@@ -52,7 +53,6 @@ export function LoginPage() {
     }
     const user = await signInWithEmail(loginEmail, loginPassword);
     if (user === null) {
-      // User is not verified, or login failed
       setShowResend(true);
     }
   }
@@ -76,17 +76,14 @@ export function LoginPage() {
   }
   
   const handleResendFromLogin = async () => {
-    // This is a simplified approach. A real app might need a dedicated flow
-    // if the user isn't 'partially' logged in.
     try {
-        await signInWithEmailAndPassword(getAuth(), loginEmail, loginPassword);
-        const currentUser = getAuth().currentUser;
+        const auth = getAuth();
+        const currentUser = auth.currentUser;
         if(currentUser && !currentUser.emailVerified) {
             await sendEmailVerification(currentUser);
             toast({ title: "Verification Sent", description: "A new verification email has been sent."});
         }
     } catch (error) {
-        // Find a way to resend without re-authenticating if possible, or guide the user.
         router.push(`/verify-email?email=${loginEmail}`);
     }
   };
