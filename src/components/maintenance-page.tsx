@@ -115,15 +115,6 @@ export function MaintenancePage() {
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-background text-foreground p-4">
       <div className="w-full max-w-md mx-auto">
-        <Button
-          variant="ghost"
-          onClick={() => router.back()}
-          className="absolute top-8 left-8 text-primary"
-        >
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          Go Back
-        </Button>
-
         <div className="text-center space-y-6">
           <div className="flex justify-center">
             <div className="bg-accent/70 p-4 rounded-full" onClick={handleIconClick}>
