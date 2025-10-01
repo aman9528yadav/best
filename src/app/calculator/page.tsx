@@ -1,21 +1,18 @@
 
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Header } from '@/components/header';
 import { Calculator } from '@/components/calculator';
 import { AdPlaceholder } from '@/components/ad-placeholder';
 import { CalculatorSkeleton } from '@/components/calculator-skeleton';
+import { useHistory } from '@/context/HistoryContext';
 
 export default function CalculatorPage() {
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 500); 
-    return () => clearTimeout(timer);
-  }, []);
+  // Although not directly using a loading state here, 
+  // keeping it consistent with other pages.
+  // We can assume content might become dynamic later.
+  const isLoading = false;
 
   return (
     <div className="flex flex-col items-center w-full min-h-screen bg-background text-foreground">

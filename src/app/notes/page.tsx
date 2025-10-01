@@ -17,20 +17,13 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { useProfile } from '@/context/ProfileContext';
 
 export default function Notes() {
-  const [isLoading, setIsLoading] = useState(true);
   const { user, loading: authLoading } = useAuth();
+  const { isLoading: profileLoading } = useProfile();
   const router = useRouter();
   const [showLoginDialog, setShowLoginDialog] = useState(false);
-
-  useEffect(() => {
-    // Simulate initial loading time
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 500);
-    return () => clearTimeout(timer);
-  }, []);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -46,7 +39,7 @@ export default function Notes() {
     router.push('/');
   }
 
-  const isPageLoading = isLoading || authLoading;
+  const isPageLoading = authLoading || profileLoading;
 
   return (
     <div className="flex flex-col items-center w-full min-h-screen bg-background text-foreground">

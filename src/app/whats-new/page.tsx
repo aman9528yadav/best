@@ -1,23 +1,16 @@
 
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { WhatsNewPage } from '@/components/whats-new-page';
 import { WhatsNewPageSkeleton } from '@/components/whats-new-page-skeleton';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
+import { useMaintenance } from '@/context/MaintenanceContext';
 
 export default function WhatsNew() {
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    // Simulate loading time
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 500);
-    return () => clearTimeout(timer);
-  }, []);
+  const { isLoading } = useMaintenance();
 
   return (
     <div className="flex flex-col items-center w-full min-h-screen bg-background text-foreground">
@@ -41,5 +34,3 @@ export default function WhatsNew() {
     </div>
   );
 }
-
-    

@@ -1,8 +1,9 @@
+
 // Import the functions you need from the SDKs you need
 import { initializeApp, getApps, getApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 import { getDatabase } from "firebase/database";
-import { getFirestore, enableIndexedDbPersistence } from "firebase/firestore";
+import { getFirestore, enableIndexedDbPersistence, CACHE_SIZE_UNLIMITED } from "firebase/firestore";
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
@@ -24,14 +25,20 @@ const rtdb = getDatabase(app); // Realtime Database instance
 
 // Enable offline persistence for Firestore.
 // This should be done only once, so we check if the app is initialized.
-if (typeof window !== 'undefined' && !getApps().length) {
-  enableIndexedDbPersistence(db).catch((err) => {
-    if (err.code === 'failed-precondition') {
-      console.warn('Firestore persistence failed: Multiple tabs open, persistence can only be enabled in one tab at a time.');
-    } else if (err.code === 'unimplemented') {
-      console.warn('Firestore persistence failed: The current browser does not support all of the features required to enable persistence.');
-    }
-  });
+if (typeof window !== 'undefined') {
+  try {
+    enableIndexedDbPersistence(db, {
+      cacheSizeBytes: CACHE_SIZE_UNLIMITED
+    }).catch((err) => {
+      if (err.code === 'failed-precondition') {
+        console.warn('Firestore persistence failed: Multiple tabs open, persistence can only be enabled in one tab at a time.');
+      } else if (err.code === 'unimplemented') {
+        console.warn('Firestore persistence failed: The current browser does not support all of the features required to enable persistence.');
+      }
+    });
+  } catch (error) {
+    console.error("Error enabling Firestore offline persistence:", error);
+  }
 }
 
 

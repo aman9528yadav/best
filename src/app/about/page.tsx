@@ -7,17 +7,11 @@ import { AboutPageSkeleton } from '@/components/about-page-skeleton';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { useMaintenance } from '@/context/MaintenanceContext';
 
 export default function About() {
-  const [isLoading, setIsLoading] = useState(true);
+  const { isLoading } = useMaintenance();
   const router = useRouter();
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 500);
-    return () => clearTimeout(timer);
-  }, []);
 
   return (
     <div className="flex flex-col items-center w-full min-h-screen bg-background text-foreground">

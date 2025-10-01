@@ -17,20 +17,13 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { useMaintenance } from '@/context/MaintenanceContext';
 
 export default function Settings() {
-  const [isLoading, setIsLoading] = useState(true);
   const { user, loading: authLoading } = useAuth();
+  const { isLoading: maintenanceLoading } = useMaintenance();
   const router = useRouter();
   const [showLoginDialog, setShowLoginDialog] = useState(false);
-
-  useEffect(() => {
-    // Simulate loading time
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 500);
-    return () => clearTimeout(timer);
-  }, []);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -46,7 +39,7 @@ export default function Settings() {
     router.push('/');
   }
 
-  const isPageLoading = isLoading || authLoading;
+  const isPageLoading = authLoading || maintenanceLoading;
 
   if (isPageLoading) {
     return (

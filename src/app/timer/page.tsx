@@ -1,21 +1,14 @@
 
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Header } from '@/components/header';
 import { AdPlaceholder } from '@/components/ad-placeholder';
 import { Timer } from '@/components/timer';
 import { TimerSkeleton } from '@/components/timer-skeleton';
 
 export default function TimerPage() {
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 500); 
-    return () => clearTimeout(timer);
-  }, []);
+  const isLoading = false;
 
   return (
     <div className="flex flex-col items-center w-full min-h-screen bg-background text-foreground">

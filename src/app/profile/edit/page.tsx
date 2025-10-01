@@ -1,24 +1,17 @@
 
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Header } from '@/components/header';
 import { EditProfilePage } from '@/components/edit-profile-page';
 import { ProfilePageSkeleton } from '@/components/profile-page-skeleton';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
+import { useProfile } from '@/context/ProfileContext';
 
 export default function EditProfile() {
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    // Simulate loading time
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 500);
-    return () => clearTimeout(timer);
-  }, []);
+  const { isLoading } = useProfile();
 
   return (
     <div className="flex flex-col items-center w-full min-h-screen bg-background text-foreground">

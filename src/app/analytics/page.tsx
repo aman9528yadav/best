@@ -1,23 +1,17 @@
 
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { AnalyticsPage } from '@/components/analytics-page';
 import { AnalyticsPageSkeleton } from '@/components/analytics-page-skeleton';
+import { useProfile } from '@/context/ProfileContext';
 
 export default function Analytics() {
-  const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 500);
-    return () => clearTimeout(timer);
-  }, []);
+  const { isLoading } = useProfile();
 
   return (
     <div className="flex flex-col items-center w-full min-h-screen bg-background text-foreground">

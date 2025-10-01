@@ -20,18 +20,9 @@ import {
 } from "@/components/ui/alert-dialog";
 
 export default function History() {
-  const [isLoading, setIsLoading] = useState(true);
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
   const [showLoginDialog, setShowLoginDialog] = useState(false);
-
-  useEffect(() => {
-    // Simulate initial loading time
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 500);
-    return () => clearTimeout(timer);
-  }, []);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -46,10 +37,8 @@ export default function History() {
   const handleCancel = () => {
     router.push('/');
   }
-
-  const isPageLoading = isLoading || authLoading;
   
-  if (isPageLoading) {
+  if (authLoading) {
      return (
       <div className="flex flex-col items-center w-full min-h-screen bg-background text-foreground">
         <div className="w-full max-w-[412px] flex flex-col flex-1">

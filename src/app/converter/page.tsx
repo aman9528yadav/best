@@ -1,22 +1,14 @@
 
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Header } from '@/components/header';
 import { UnitConverter } from '@/components/unit-converter';
 import { AdPlaceholder } from '@/components/ad-placeholder';
 import { UnitConverterSkeleton } from '@/components/unit-converter-skeleton';
 
 export default function ConverterPage() {
-    const [isLoading, setIsLoading] = useState(true);
-
-    useEffect(() => {
-      // Simulate loading time
-      const timer = setTimeout(() => {
-        setIsLoading(false);
-      }, 500); 
-      return () => clearTimeout(timer);
-    }, []);
+    const isLoading = false;
 
   return (
     <div className="flex flex-col items-center w-full min-h-screen bg-background text-foreground">
