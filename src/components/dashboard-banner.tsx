@@ -38,23 +38,27 @@ export function DashboardBanner() {
   }, [maintenanceConfig.dashboardBanner]);
 
   useEffect(() => {
-    if (!isVisible || !isClient) return;
+    if (!isVisible || !isClient || (timeLeft.days <= 0 && timeLeft.hours <= 0 && timeLeft.minutes <= 0 && timeLeft.seconds <= 0)) {
+        return;
+    }
     const timer = setTimeout(() => {
       setTimeLeft(prevTime => {
         let { days, hours, minutes, seconds } = prevTime;
 
-        if (seconds > 0) seconds--;
-        else {
-          seconds = 59;
-          if (minutes > 0) minutes--;
-          else {
+        if (seconds > 0) {
+            seconds--;
+        } else if (minutes > 0) {
+            seconds = 59;
+            minutes--;
+        } else if (hours > 0) {
+            seconds = 59;
             minutes = 59;
-            if (hours > 0) hours--;
-            else {
-              hours = 23;
-              if (days > 0) days--;
-            }
-          }
+            hours--;
+        } else if (days > 0) {
+            seconds = 59;
+            minutes = 59;
+            hours = 23;
+            days--;
         }
         
         if (days <= 0 && hours <= 0 && minutes <= 0 && seconds <= 0) {
