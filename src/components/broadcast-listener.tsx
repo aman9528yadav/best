@@ -38,7 +38,8 @@ export function BroadcastListener() {
     return () => {
       off(messageRef, 'value', listener);
     };
-  }, [addNotification, notifications]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [addNotification]);
 
   return null; 
 }

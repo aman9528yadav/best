@@ -53,7 +53,6 @@ export function DevPanel() {
   } = useMaintenance();
   const { globalMaintenance, dashboardBanner, maintenanceCountdown, maintenanceMessage } = maintenanceConfig;
   const [broadcastMessage, setBroadcastMessage] = useState('');
-  const { clearAllNotifications } = useNotifications();
   const { clearAllHistory } = useHistory();
   const [passwordState, setPasswordState] = useState({ currentPassword: '', newPassword: '', confirmNewPassword: '' });
 
@@ -69,7 +68,7 @@ export function DevPanel() {
     try {
         localStorage.clear();
         clearAllHistory('all');
-        clearAllNotifications();
+        // We don't clear notifications here, that's a separate concern for the user.
         toast({
             title: "Local Storage Cleared",
             description: "All application data stored in your browser has been cleared.",
