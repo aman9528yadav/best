@@ -69,13 +69,12 @@ export function NoteEditor({ note, onSave, onDelete, onDeletePermanently, onRest
   };
   
   const handleSave = () => {
-    // Sanitize content before saving if needed
     onSave(title, content);
   }
 
   // Set initial content for the editor
   useEffect(() => {
-    if (editorRef.current && note?.content) {
+    if (editorRef.current && note?.content !== editorRef.current.innerHTML) {
       editorRef.current.innerHTML = note.content;
     }
   }, [note?.content]);
@@ -159,8 +158,10 @@ export function NoteEditor({ note, onSave, onDelete, onDeletePermanently, onRest
             'w-full h-full outline-none text-base',
             isTrashed ? 'cursor-not-allowed' : ''
           )}
-          dangerouslySetInnerHTML={{ __html: content }}
-        />
+          suppressContentEditableWarning={true}
+        >
+          {/* We now manage content via ref to avoid re-renders, so initial content can be set here or via useEffect */}
+        </div>
         {isTrashed && content === '' && (
           <div className="text-muted-foreground">This note is in the trash and is empty.</div>
         )}
@@ -180,5 +181,7 @@ export function NoteEditor({ note, onSave, onDelete, onDeletePermanently, onRest
     </div>
   );
 }
+
+    
 
     
