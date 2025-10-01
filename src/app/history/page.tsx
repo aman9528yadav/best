@@ -23,10 +23,14 @@ export default function History() {
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
   const [showLoginDialog, setShowLoginDialog] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    if (!authLoading && !user) {
-      setShowLoginDialog(true);
+    if (!authLoading) {
+      setIsLoading(false);
+      if (!user) {
+        setShowLoginDialog(true);
+      }
     }
   }, [user, authLoading]);
 
@@ -38,7 +42,7 @@ export default function History() {
     router.push('/');
   }
   
-  if (authLoading) {
+  if (isLoading || authLoading) {
      return (
       <div className="flex flex-col items-center w-full min-h-screen bg-background text-foreground">
         <div className="w-full max-w-[412px] flex flex-col flex-1">
@@ -90,3 +94,5 @@ export default function History() {
     </div>
   );
 }
+
+    

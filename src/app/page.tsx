@@ -110,6 +110,16 @@ export default function DashboardPage() {
 
   const [showMore, setShowMore] = useState(false);
   const [showLoginDialog, setShowLoginDialog] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    // Simulate loading
+    const timer = setTimeout(() => {
+        setIsLoading(false);
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, []);
 
   useEffect(() => {
     if (!isProfileLoading) {
@@ -124,7 +134,7 @@ export default function DashboardPage() {
     }
   };
 
-  const isPageLoading = isMaintenanceLoading || isProfileLoading;
+  const isPageLoading = isMaintenanceLoading || isProfileLoading || isLoading;
 
   if (isPageLoading) {
     return (
@@ -353,4 +363,6 @@ export default function DashboardPage() {
     </div>
   );
 }
+    
+
     
