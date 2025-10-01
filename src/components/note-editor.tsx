@@ -103,18 +103,33 @@ export function NoteEditor({ note, onSave, onDelete, onDeletePermanently, onRest
   const applyFormatting = (format: 'bold' | 'italic' | 'underline' | 'strike') => {
     const textarea = textareaRef.current;
     if (!textarea) return;
+
     const start = textarea.selectionStart;
     const end = textarea.selectionEnd;
     const selectedText = content.substring(start, end);
-    const symbol = format === 'bold' ? '**' : format === 'italic' ? '*' : format === 'underline' ? '__' : '~~';
-    const newText = `${content.substring(0, start)}${symbol}${selectedText}${symbol}${content.substring(end)}`;
-    setContent(newText);
     
-    // After updating content, focus the textarea and place the cursor correctly
+    const symbolMap = {
+      bold: '**',
+      italic: '*',
+      underline: '__',
+      strike: '~~'
+    };
+
+    const symbol = symbolMap[format];
+    
+    const newContent = 
+      content.substring(0, start) +
+      symbol +
+      selectedText +
+      symbol +
+      content.substring(end);
+
+    setContent(newContent);
+    
     setTimeout(() => {
-        textarea.focus();
-        textarea.selectionStart = start + symbol.length;
-        textarea.selectionEnd = end + symbol.length;
+      textarea.focus();
+      const newCursorPos = end + symbol.length * 2;
+      textarea.setSelectionRange(newCursorPos, newCursorPos);
     }, 0);
   };
   
