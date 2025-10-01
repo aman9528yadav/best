@@ -121,6 +121,10 @@ export function AnalyticsPage() {
                 value: allTimeActivities,
                 change: calcPercentageChange(conversionsToday + calculatorOpsToday + dateCalculationsToday, conversionsYesterday + calculatorOpsYesterday + dateCalculationsYesterday)
             },
+            totalConversions: {
+                value: history.filter(h => h.type === 'conversion').length,
+                change: calcPercentageChange(conversionsToday, conversionsYesterday)
+            },
             calculatorOps: {
                 value: history.filter(h => h.type === 'calculator').length,
                 change: calcPercentageChange(calculatorOpsToday, calculatorOpsYesterday)
@@ -151,6 +155,7 @@ export function AnalyticsPage() {
 
     const allStats = [
         { id: 'totalActivities', title: 'Total Activities', value: analyticsData.totalActivities.value, change: analyticsData.totalActivities.change, description: 'vs prev day' },
+        { id: 'totalConversions', title: 'Total Conversions', value: analyticsData.totalConversions.value, change: analyticsData.totalConversions.change, description: 'vs prev day' },
         { id: 'calculatorOps', title: 'Calculator Ops', value: analyticsData.calculatorOps.value, change: analyticsData.calculatorOps.change, description: 'vs prev day' },
         { id: 'dateCalculations', title: 'Date Calculations', value: analyticsData.dateCalculations.value, change: analyticsData.dateCalculations.change, description: 'vs prev day' },
         { id: 'currentStreak', title: 'Current Streak', value: analyticsData.currentStreak.value, description: analyticsData.currentStreak.description },

@@ -1,10 +1,11 @@
 
 "use client"
 
-import { Bar, BarChart, Line, LineChart, Area, AreaChart, ResponsiveContainer, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
-import { useHistory } from '@/context/HistoryContext';
 import { useMemo } from 'react';
+import { Area, AreaChart, Bar, BarChart, CartesianGrid, Legend, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { eachDayOfInterval, format, subDays, isSameDay, eachWeekOfInterval, eachMonthOfInterval, getWeek, getMonth, getYear, startOfWeek, endOfWeek, startOfMonth, endOfMonth, startOfYear, endOfYear, isWithinInterval } from 'date-fns';
+import { ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
+import { useProfile } from '@/context/ProfileContext';
 
 const chartConfig = {
   conversions: {
@@ -15,14 +16,15 @@ const chartConfig = {
     label: 'Calculations',
     color: 'hsl(var(--chart-2))',
   },
-};
+} satisfies ChartConfig;
 
 export function UsageTrendChart({ type = 'bar', period = 'weekly' }: { type: 'bar' | 'line' | 'area', period: 'weekly' | 'monthly' | 'yearly' }) {
-  const { history } = useHistory();
+  const { profile } = useProfile();
+  const { activityLog } = profile;
 
   const data = useMemo(() => {
-    const conversions = history.filter(item => item.type === 'conversion');
-    const calculations = history.filter(item => item.type === 'calculator' || item.type === 'date_calculation');
+    const conversions = activityLog.filter(item => item.type === 'conversion');
+    const calculations = activityLog.filter(item => item.type === 'calculator' || item.type === 'date_calculation');
     const today = new Date();
 
     if (period === 'weekly') {
@@ -55,7 +57,6 @@ export function UsageTrendChart({ type = 'bar', period = 'weekly' }: { type: 'ba
           end: endOfYear(today)
         });
         return monthsInYear.map(monthStart => {
-            const monthEnd = endOfMonth(monthStart);
             return {
                 name: format(monthStart, 'MMM'),
                 conversions: conversions.filter(item => getMonth(new Date(item.timestamp)) === getMonth(monthStart) && getYear(new Date(item.timestamp)) === getYear(monthStart)).length,
@@ -66,68 +67,63 @@ export function UsageTrendChart({ type = 'bar', period = 'weekly' }: { type: 'ba
 
     return [];
 
-  }, [history, period]);
+  }, [activityLog, period]);
 
   const ChartComponent = useMemo(() => {
     switch(type) {
-      case 'line':
-        return LineChart;
-      case 'area':
-        return AreaChart;
-      case 'bar':
-      default:
-        return BarChart;
+      case 'line': return LineChart;
+      case 'area': return AreaChart;
+      case 'bar': default: return BarChart;
     }
   }, [type]);
 
   const ChartSeries = useMemo(() => {
-     const commonProps = {
-        strokeWidth: 2,
-        dot: false,
-      };
-
     switch(type) {
       case 'line':
         return (
           <>
-            <Line type="monotone" dataKey="conversions" stroke={chartConfig.conversions.color} {...commonProps} />
-            <Line type="monotone" dataKey="calculations" stroke={chartConfig.calculations.color} {...commonProps} />
+            <Line dataKey="conversions" type="monotone" stroke="var(--color-conversions)" strokeWidth={2} dot={false} />
+            <Line dataKey="calculations" type="monotone" stroke="var(--color-calculations)" strokeWidth={2} dot={false} />
           </>
         );
       case 'area':
          return (
           <>
-            <Area type="monotone" dataKey="conversions" stackId="1" stroke={chartConfig.conversions.color} fill={chartConfig.conversions.color} fillOpacity={0.4} {...commonProps} />
-            <Area type="monotone" dataKey="calculations" stackId="1" stroke={chartConfig.calculations.color} fill={chartConfig.calculations.color} fillOpacity={0.4} {...commonProps} />
+            <defs>
+                <linearGradient id="fillConversions" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="var(--color-conversions)" stopOpacity={0.8} />
+                    <stop offset="95%" stopColor="var(--color-conversions)" stopOpacity={0.1} />
+                </linearGradient>
+                <linearGradient id="fillCalculations" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="var(--color-calculations)" stopOpacity={0.8} />
+                    <stop offset="95%" stopColor="var(--color-calculations)" stopOpacity={0.1} />
+                </linearGradient>
+            </defs>
+            <Area dataKey="conversions" type="monotone" stroke="var(--color-conversions)" fill="url(#fillConversions)" stackId="a" />
+            <Area dataKey="calculations" type="monotone" stroke="var(--color-calculations)" fill="url(#fillCalculations)" stackId="a" />
           </>
         );
       case 'bar':
       default:
         return (
           <>
-            <Bar dataKey="conversions" fill={chartConfig.conversions.color} radius={4} />
-            <Bar dataKey="calculations" fill={chartConfig.calculations.color} radius={4} />
+            <Bar dataKey="conversions" fill="var(--color-conversions)" radius={4} />
+            <Bar dataKey="calculations" fill="var(--color-calculations)" radius={4} />
           </>
         );
     }
   }, [type]);
 
   return (
-    <ResponsiveContainer width="100%" height="100%">
+    <ChartContainer config={chartConfig} className="w-full h-full">
       <ChartComponent data={data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-        <CartesianGrid strokeDasharray="3 3" vertical={false} />
-        <XAxis dataKey="name" axisLine={false} tickLine={false} dy={10} className="text-xs" />
-        <YAxis axisLine={false} tickLine={false} dx={-10} className="text-xs" allowDecimals={false} />
-        <Tooltip
-            contentStyle={{
-                backgroundColor: 'hsl(var(--background))',
-                borderColor: 'hsl(var(--border))',
-                borderRadius: 'var(--radius)',
-            }}
-        />
-        <Legend wrapperStyle={{fontSize: '0.8rem'}}/>
+        <CartesianGrid vertical={false} />
+        <XAxis dataKey="name" tickLine={false} tickMargin={10} axisLine={false} stroke="hsl(var(--muted-foreground))" tickFormatter={(value) => value.slice(0, 3)} />
+        <YAxis tickLine={false} axisLine={false} stroke="hsl(var(--muted-foreground))" allowDecimals={false} />
+        <ChartTooltip content={<ChartTooltipContent />} />
+        <Legend />
         {ChartSeries}
       </ChartComponent>
-    </ResponsiveContainer>
+    </ChartContainer>
   );
 }

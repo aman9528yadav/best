@@ -268,14 +268,12 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
   }
 
   const checkAndUpdateStreak = () => {
-    // Only run if data has been loaded
     if (!dataLoaded.current) return;
 
     setProfile(prevProfile => {
         const today = startOfDay(new Date());
         const lastOpen = prevProfile.stats.lastAppOpenDate ? startOfDay(new Date(prevProfile.stats.lastAppOpenDate)) : null;
 
-        // If we already updated today, do nothing.
         if (lastOpen && isToday(lastOpen)) {
             return prevProfile;
         }
@@ -284,10 +282,12 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
         
         if (lastOpen && isYesterday(lastOpen)) {
             newStats.streak = (newStats.streak || 0) + 1;
-            newStats.daysActive = (newStats.daysActive || 0) + 1;
-        } else if (!lastOpen || !isToday(lastOpen)) { // First time open or missed a day
+        } else if (!lastOpen || !isToday(lastOpen)) {
             newStats.streak = 1;
-            newStats.daysActive = (newStats.daysActive || 0) + 1;
+        }
+
+        if(!lastOpen || !isToday(lastOpen)) {
+           newStats.daysActive = (newStats.daysActive || 0) + 1;
         }
 
         newStats.lastAppOpenDate = today.toISOString();
@@ -302,20 +302,15 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
       const newStats = { ...prevProfile.stats };
       const newActivityLog = [...prevProfile.activityLog, { timestamp: todayISO, type }];
 
-      // 1. Increment All-Time Activities
       newStats.allTimeActivities = (newStats.allTimeActivities || 0) + 1;
 
-      // 2. Handle Today's Activities
       const lastActivityDate = newStats.lastActivityDate;
       if (lastActivityDate && isToday(new Date(lastActivityDate))) {
-        // It's the same day, just increment today's count
         newStats.todayActivities = (newStats.todayActivities || 0) + 1;
       } else {
-        // It's a new day, reset today's count to 1
         newStats.todayActivities = 1;
       }
       
-      // 3. Update Last Activity Date
       newStats.lastActivityDate = todayISO;
 
       return {
