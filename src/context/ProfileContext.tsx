@@ -109,10 +109,14 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
   const [profile, setProfileState] = useState<UserProfile>(getInitialProfile());
   const [isLoading, setIsLoading] = useState(true);
   const { user, loading: authLoading } = useAuth();
+  
+  // Ref to track if initial data load is complete
   const dataLoaded = useRef(false);
 
+  // Effect to load and sync profile data
   useEffect(() => {
     if (authLoading) return;
+    
     dataLoaded.current = false;
     
     const loadGuestData = () => {
@@ -120,6 +124,7 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
           const savedProfile = localStorage.getItem('unitwise_profile');
           if (savedProfile) {
             const parsedProfile = JSON.parse(savedProfile);
+            // Ensure stats and notes have default values if missing
             const stats = { ...defaultStats, ...(parsedProfile.stats || {}) };
             const notes = parsedProfile.notes || [];
             setProfileState({ ...guestProfileDefault, ...parsedProfile, stats, notes });
@@ -162,9 +167,8 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
           setProfileState(fullProfile);
 
         } else {
-          // Create a new profile for a new user if it doesn't exist
           const newProfile: UserProfile = {
-            ...guestProfileDefault, // Start with defaults
+            ...guestProfileDefault,
             email: user.email || '',
             name: user.displayName || 'New User',
             stats: defaultStats,
@@ -192,7 +196,9 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
         
         if (user) {
             const docRef = doc(db, 'users', user.uid);
-            setDoc(docRef, updatedProfile, { merge: true });
+            setDoc(docRef, updatedProfile, { merge: true }).catch(error => {
+                 console.error("Failed to save profile to Firestore", error);
+            });
         } else {
             try {
               localStorage.setItem('unitwise_profile', JSON.stringify(updatedProfile));
@@ -203,7 +209,7 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
         return updatedProfile;
     });
   };
-
+  
   const addNote = (note: Omit<NoteItem, 'id' | 'createdAt' | 'updatedAt'>): NoteItem => {
     const newNote: NoteItem = {
       ...note,
@@ -250,26 +256,31 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
   }
 
   const checkAndUpdateStreak = () => {
-    const today = startOfDay(new Date());
-    const lastOpen = profile.stats.lastAppOpenDate ? startOfDay(new Date(profile.stats.lastAppOpenDate)) : null;
-
-    if (lastOpen && isToday(lastOpen)) {
-      return;
-    }
+    // Only run if data has been loaded
+    if (!dataLoaded.current) return;
 
     setProfile(prevProfile => {
+        const today = startOfDay(new Date());
+        const lastOpen = prevProfile.stats.lastAppOpenDate ? startOfDay(new Date(prevProfile.stats.lastAppOpenDate)) : null;
+
+        // If we already updated today, do nothing.
+        if (lastOpen && isToday(lastOpen)) {
+            return prevProfile;
+        }
+        
         const newStats = { ...prevProfile.stats };
         
         if (lastOpen && isYesterday(lastOpen)) {
-            newStats.streak = (newStats.streak || 0) + 1;
-            newStats.daysActive = (newStats.daysActive || 0) + 1;
-        } else if (!lastOpen || !isToday(lastOpen)) {
+            newStats.streak += 1;
+            newStats.daysActive += 1;
+        } else if (!lastOpen || !isToday(lastOpen)) { // First time open or missed a day
             newStats.streak = 1;
-            newStats.daysActive = (newStats.daysActive || 0) + 1;
+            newStats.daysActive += 1;
         }
 
         newStats.lastAppOpenDate = today.toISOString();
         
+        // Reset today's conversion count if it's a new day
         const lastConversion = prevProfile.stats.lastConversionDate ? startOfDay(new Date(prevProfile.stats.lastConversionDate)) : null;
         if (!lastConversion || !isToday(lastConversion)) {
             newStats.todayConversions = 0;
@@ -282,12 +293,12 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
   const updateStatsForNewConversion = () => {
     setProfile(prevProfile => {
         const newStats = {...prevProfile.stats};
-        const todayISO = startOfDay(new Date()).toISOString();
+        const todayISO = new Date().toISOString();
 
         newStats.allTimeConversions = (newStats.allTimeConversions || 0) + 1;
         
         const lastConversionDate = newStats.lastConversionDate;
-        if (lastConversionDate && startOfDay(new Date(lastConversionDate)).toISOString().split('T')[0] === todayISO.split('T')[0]) {
+        if (lastConversionDate && isToday(new Date(lastConversionDate))) {
              newStats.todayConversions = (newStats.todayConversions || 0) + 1;
         } else {
              newStats.todayConversions = 1;
