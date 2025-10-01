@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import React, { createContext, useContext, useState, ReactNode, useEffect, useRef } from 'react';
@@ -280,12 +281,6 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
 
         newStats.lastAppOpenDate = today.toISOString();
         
-        // Reset today's conversion count if it's a new day
-        const lastActivity = prevProfile.stats.lastActivityDate ? startOfDay(new Date(prevProfile.stats.lastActivityDate)) : null;
-        if (!lastActivity || !isToday(lastActivity)) {
-            newStats.todayActivities = 0;
-        }
-
         return { ...prevProfile, stats: newStats };
     });
   };
@@ -336,3 +331,4 @@ export const useProfile = () => {
   }
   return context;
 };
+
