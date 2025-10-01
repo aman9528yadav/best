@@ -1,10 +1,10 @@
 
 "use client";
 
-import { useEffect, useRef } from 'react';
+import { useEffect } from 'react';
 import { ref, onValue, off } from 'firebase/database';
 import { rtdb } from '@/lib/firebase';
-import { useNotifications, Notification } from '@/context/NotificationContext';
+import { useNotifications } from '@/context/NotificationContext';
 
 type BroadcastMessage = {
     text: string;
@@ -13,11 +13,6 @@ type BroadcastMessage = {
 
 export function BroadcastListener() {
   const { addNotification, notifications } = useNotifications();
-  const processedTimestamps = useRef(new Set());
-
-  useEffect(() => {
-    notifications.forEach(n => processedTimestamps.current.add(n.timestamp));
-  }, [notifications]);
 
   useEffect(() => {
     const messageRef = ref(rtdb, 'broadcast/message');
@@ -26,8 +21,10 @@ export function BroadcastListener() {
       if (snapshot.exists()) {
         const message = snapshot.val() as BroadcastMessage;
         
-        if (message && message.timestamp && !processedTimestamps.current.has(message.timestamp)) {
-          processedTimestamps.current.add(message.timestamp);
+        // Check if a notification with this exact timestamp already exists.
+        const alreadyExists = notifications.some(n => n.timestamp === message.timestamp);
+
+        if (message && message.timestamp && !alreadyExists) {
           addNotification({
             title: 'Broadcast',
             body: message.text,
@@ -38,10 +35,11 @@ export function BroadcastListener() {
       }
     });
 
+    // Cleanup function to remove the listener when the component unmounts.
     return () => {
       off(messageRef, 'value', listener);
     };
-  }, [addNotification]);
+  }, [addNotification, notifications]); // Rerun when notifications list changes to have the latest list for checking duplicates.
 
   return null; 
 }
