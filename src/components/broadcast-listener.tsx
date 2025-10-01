@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { ref, onValue, off } from 'firebase/database';
 import { rtdb } from '@/lib/firebase';
 import { useNotifications, Notification } from '@/context/NotificationContext';
@@ -12,7 +12,12 @@ type BroadcastMessage = {
 };
 
 export function BroadcastListener() {
-  const { notifications, addNotification } = useNotifications();
+  const { addNotification, notifications } = useNotifications();
+  const processedTimestamps = useRef(new Set());
+
+  useEffect(() => {
+    notifications.forEach(n => processedTimestamps.current.add(n.timestamp));
+  }, [notifications]);
 
   useEffect(() => {
     const messageRef = ref(rtdb, 'broadcast/message');
@@ -21,10 +26,8 @@ export function BroadcastListener() {
       if (snapshot.exists()) {
         const message = snapshot.val() as BroadcastMessage;
         
-        // Check if a notification with this timestamp already exists
-        const notificationExists = notifications.some(n => n.timestamp === message.timestamp);
-
-        if (!notificationExists) {
+        if (message && message.timestamp && !processedTimestamps.current.has(message.timestamp)) {
+          processedTimestamps.current.add(message.timestamp);
           addNotification({
             title: 'Broadcast',
             body: message.text,
@@ -38,7 +41,7 @@ export function BroadcastListener() {
     return () => {
       off(messageRef, 'value', listener);
     };
-  }, [addNotification, notifications]);
+  }, [addNotification]);
 
   return null; 
 }

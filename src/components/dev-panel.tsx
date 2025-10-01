@@ -2,7 +2,7 @@
 
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -26,7 +26,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Input } from './ui/input';
 import { Textarea } from './ui/textarea';
 import Link from 'next/link';
-import { ref, set, remove } from 'firebase/database';
+import { ref, set, remove, onValue, off } from 'firebase/database';
 import { rtdb } from '@/lib/firebase';
 import { useNotifications } from '@/context/NotificationContext';
 import {
@@ -55,6 +55,21 @@ export function DevPanel() {
   const [broadcastMessage, setBroadcastMessage] = useState('');
   const { clearAllHistory } = useHistory();
   const [passwordState, setPasswordState] = useState({ currentPassword: '', newPassword: '', confirmNewPassword: '' });
+
+  useEffect(() => {
+    const messageRef = ref(rtdb, 'broadcast/message');
+    const listener = onValue(messageRef, (snapshot) => {
+        if(snapshot.exists()) {
+            setBroadcastMessage(snapshot.val().text || '');
+        } else {
+            setBroadcastMessage('');
+        }
+    });
+
+    return () => {
+        off(messageRef, 'value', listener);
+    }
+  }, []);
 
 
   const handleGlobalMaintenanceChange = (checked: boolean) => {
@@ -132,7 +147,7 @@ export function DevPanel() {
     })
     .then(() => {
       toast({ title: 'Broadcast Sent!' });
-      setBroadcastMessage('');
+      // Don't clear message, it should reflect the current state
     })
     .catch((error) => {
       toast({ title: 'Broadcast Failed', description: error.message, variant: 'destructive' });
@@ -140,11 +155,11 @@ export function DevPanel() {
   };
 
   const handleClearBroadcast = () => {
-    setBroadcastMessage('');
     const messageRef = ref(rtdb, 'broadcast/message');
     remove(messageRef)
       .then(() => {
         toast({ title: 'Broadcast message cleared from database.' });
+        setBroadcastMessage(''); // Also clear local state
       })
       .catch((error) => {
         toast({
@@ -421,5 +436,6 @@ export function DevPanel() {
     </div>
   );
 }
+
 
 
