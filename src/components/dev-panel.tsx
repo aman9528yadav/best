@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import React, { useState, useEffect } from 'react';
@@ -334,6 +335,12 @@ export function DevPanel() {
                   <Button asChild variant="ghost" className="w-full justify-between">
                     <Link href="/dev/manage-about">
                       Manage "About" Page
+                      <ChevronRight className="h-4 w-4" />
+                    </Link>
+                  </Button>
+                   <Button asChild variant="ghost" className="w-full justify-between">
+                    <Link href="/dev/manage-coming-soon">
+                      Manage "Coming Soon"
                       <ChevronRight className="h-4 w-4" />
                     </Link>
                   </Button>

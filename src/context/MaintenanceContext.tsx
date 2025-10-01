@@ -6,6 +6,8 @@ import React, { createContext, useContext, useState, ReactNode, useEffect, useRe
 import { usePathname, useRouter } from 'next/navigation';
 import { ref, onValue, set } from 'firebase/database';
 import { rtdb } from '@/lib/firebase';
+import type { Icon as LucideIcon } from 'lucide-react';
+
 
 export type UpdateItem = {
     id: string;
@@ -25,6 +27,13 @@ export type RoadmapItem = {
     details: string[];
     icon: 'GitBranch' | 'Sparkles';
     status: 'completed' | 'upcoming';
+};
+
+export type ComingSoonItem = {
+    id: string;
+    icon: 'Sparkles' | 'Wand2' | 'Share2' | 'Bot';
+    title: string;
+    description: string;
 };
 
 type AboutPageContent = {
@@ -67,6 +76,7 @@ export type MaintenanceConfig = {
     maintenanceMessage: string;
     updateItems: UpdateItem[];
     aboutPageContent: AboutPageContent;
+    comingSoonItems: ComingSoonItem[];
 };
 
 
@@ -147,7 +157,21 @@ const defaultMaintenanceConfig: MaintenanceConfig = {
                 status: 'completed',
             },
         ]
-    }
+    },
+    comingSoonItems: [
+        {
+            id: 'coming-soon-1',
+            icon: 'Sparkles',
+            title: 'Shared Notes',
+            description: 'Collaborate with others lets try',
+        },
+        {
+            id: 'coming-soon-2',
+            icon: 'Wand2',
+            title: 'Smart Recipes',
+            description: 'Context-aware steps',
+        },
+    ],
 };
 
 export const MaintenanceProvider = ({ children }: { children: ReactNode }) => {
@@ -188,6 +212,7 @@ export const MaintenanceProvider = ({ children }: { children: ReactNode }) => {
                     ...(dbConfig.aboutPageContent || {}),
                     roadmap: dbConfig.aboutPageContent?.roadmap || defaultMaintenanceConfig.aboutPageContent.roadmap,
                 },
+                comingSoonItems: dbConfig.comingSoonItems || defaultMaintenanceConfig.comingSoonItems,
             };
             setMaintenanceConfigState(mergedConfig);
         } else {

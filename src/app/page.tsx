@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import React, { useMemo, useState, useEffect } from 'react';
@@ -41,6 +42,8 @@ import {
   Bug,
   User,
   Icon as LucideIcon,
+  Share2,
+  Bot,
 } from 'lucide-react';
 import Link from 'next/link';
 import { AdMobBanner } from '@/components/admob-banner';
@@ -62,6 +65,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 
 const quickAccessItems = [
   {
@@ -81,25 +85,16 @@ const quickAccessItems = [
   { icon: Settings, label: 'Settings', href: '/settings', requiresAuth: true },
 ];
 
-const comingSoonItems = [
-  {
-    icon: Sparkles,
-    title: 'Shared Notes',
-    description: 'Collaborate with others lets try',
-  },
-  {
-    icon: Wand2,
-    title: 'Smart Recipes',
-    description: 'Context-aware steps',
-  },
-];
-
 const iconMap: { [key: string]: LucideIcon } = {
   Wrench,
   Rocket,
   User,
   Languages,
   Bug,
+  Sparkles,
+  Wand2,
+  Share2,
+  Bot,
 };
 
 export default function DashboardPage() {
@@ -141,7 +136,7 @@ export default function DashboardPage() {
     )
   }
 
-  const { appInfo, ownerInfo, updateItems } = maintenanceConfig;
+  const { appInfo, ownerInfo, updateItems, comingSoonItems } = maintenanceConfig;
   const { allTimeActivities = 0, todayActivities = 0, streak = 0 } = profile.stats || {};
 
   const visibleQuickAccessItems = showMore ? quickAccessItems : quickAccessItems.slice(0, 6);
@@ -241,28 +236,33 @@ export default function DashboardPage() {
                 Preview
               </Button>
             </div>
-            <div className="grid grid-cols-2 gap-3">
-              {comingSoonItems.map((item) => (
-                <Card key={item.title} className="bg-accent/50">
-                  <CardContent className="p-3">
-                    <div className="flex items-start gap-2">
-                      <item.icon className="h-4 w-4 text-primary mt-1" />
-                      <div>
-                        <div className="font-medium text-sm flex items-center gap-2">
-                          {item.title}{' '}
-                          <Badge variant="secondary" className="text-primary bg-primary/10">
-                            Soon
-                          </Badge>
-                        </div>
-                        <p className="text-xs text-muted-foreground">
-                          {item.description}
-                        </p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+            <ScrollArea className="w-full whitespace-nowrap">
+                <div className="flex w-max space-x-3 pb-4">
+                  {comingSoonItems.map((item) => {
+                    const ItemIcon = iconMap[item.icon] || Sparkles;
+                    return (
+                        <Card key={item.id} className="bg-accent/50 w-60">
+                            <CardContent className="p-3">
+                                <div className="flex items-start gap-2">
+                                <ItemIcon className="h-4 w-4 text-primary mt-1" />
+                                <div>
+                                    <div className="font-medium text-sm flex items-center gap-2">
+                                    {item.title}{' '}
+                                    <Badge variant="secondary" className="text-primary bg-primary/10">
+                                        Soon
+                                    </Badge>
+                                    </div>
+                                    <p className="text-xs text-muted-foreground whitespace-normal">
+                                    {item.description}
+                                    </p>
+                                </div>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    )})}
+                </div>
+                 <ScrollBar orientation="horizontal" />
+            </ScrollArea>
           </section>
           
           <AdMobBanner className="w-full" />
