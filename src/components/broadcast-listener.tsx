@@ -12,7 +12,7 @@ type BroadcastMessage = {
 };
 
 export function BroadcastListener() {
-  const { addNotification, notifications } = useNotifications();
+  const { addNotification, notifications, clearAllNotifications } = useNotifications();
 
   useEffect(() => {
     const messageRef = ref(rtdb, 'broadcast/message');
@@ -32,6 +32,9 @@ export function BroadcastListener() {
             read: false,
           });
         }
+      } else {
+        // If the message is cleared from the database, clear the notifications.
+        clearAllNotifications();
       }
     });
 
@@ -39,7 +42,7 @@ export function BroadcastListener() {
     return () => {
       off(messageRef, 'value', listener);
     };
-  }, [addNotification, notifications]); // Rerun when notifications list changes to have the latest list for checking duplicates.
+  }, [addNotification, notifications, clearAllNotifications]);
 
   return null; 
 }
