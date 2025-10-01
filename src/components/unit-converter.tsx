@@ -211,7 +211,7 @@ export function UnitConverter() {
 
   const conversionHistory = history
     .filter(item => item.type === 'conversion')
-    .slice(0, 5) as ConversionHistoryItem[];
+    .slice(0, 3) as ConversionHistoryItem[];
 
   return (
     <div className="space-y-4 w-full">
@@ -365,5 +365,3 @@ export function UnitConverter() {
     </div>
   );
 }
-
-    
