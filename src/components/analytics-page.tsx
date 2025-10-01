@@ -117,12 +117,12 @@ export function AnalyticsPage() {
         };
 
         return {
-            totalConversions: {
+            totalActivities: {
                 value: allTimeActivities,
-                change: calcPercentageChange(conversionsToday, conversionsYesterday)
+                change: calcPercentageChange(conversionsToday + calculatorOpsToday + dateCalculationsToday, conversionsYesterday + calculatorOpsYesterday + dateCalculationsYesterday)
             },
             calculatorOps: {
-                value: calculatorOps.length,
+                value: history.filter(h => h.type === 'calculator').length,
                 change: calcPercentageChange(calculatorOpsToday, calculatorOpsYesterday)
             },
             dateCalculations: { 
@@ -150,7 +150,7 @@ export function AnalyticsPage() {
     });
 
     const allStats = [
-        { id: 'totalActivities', title: 'Total Activities', value: analyticsData.totalConversions.value, change: analyticsData.totalConversions.change, description: 'vs prev day' },
+        { id: 'totalActivities', title: 'Total Activities', value: analyticsData.totalActivities.value, change: analyticsData.totalActivities.change, description: 'vs prev day' },
         { id: 'calculatorOps', title: 'Calculator Ops', value: analyticsData.calculatorOps.value, change: analyticsData.calculatorOps.change, description: 'vs prev day' },
         { id: 'dateCalculations', title: 'Date Calculations', value: analyticsData.dateCalculations.value, change: analyticsData.dateCalculations.change, description: 'vs prev day' },
         { id: 'currentStreak', title: 'Current Streak', value: analyticsData.currentStreak.value, description: analyticsData.currentStreak.description },
