@@ -137,9 +137,9 @@ export function HistoryPage() {
             </div>
         </div>
         <div className="text-lg font-medium text-accent-foreground mb-3">
-            <span>{item.fromUnit}</span>
-            <span className="mx-2">→</span>
-            <span>{item.toUnit}</span>
+          <span>{item.fromValue} {item.fromUnit}</span>
+          <span className="mx-2">→</span>
+          <span>{item.toValue} {item.toUnit}</span>
         </div>
         <div className="flex justify-end items-center gap-2">
              <Button variant="ghost" size="icon" className="h-7 w-7 text-accent-foreground/80" onClick={() => deleteItem(item.id)}>

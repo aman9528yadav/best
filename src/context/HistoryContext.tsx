@@ -39,7 +39,9 @@ export type DateCalculationHistoryItem = {
 export type FavoriteItem = {
   id: string;
   type: 'favorite';
+  fromValue: string;
   fromUnit: string;
+  toValue: string;
   toUnit: string;
   category: string;
 };

@@ -176,7 +176,13 @@ export function UnitConverter() {
       deleteFavorite(favoriteItem.id);
       toast({ title: 'Removed from favorites.' });
     } else {
-      addFavorite({ fromUnit, toUnit, category });
+      addFavorite({ 
+        fromValue: inputValue,
+        fromUnit, 
+        toValue: result,
+        toUnit, 
+        category 
+      });
       toast({ title: 'Added to favorites!' });
     }
   };
