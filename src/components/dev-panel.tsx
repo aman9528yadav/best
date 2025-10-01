@@ -26,7 +26,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Input } from './ui/input';
 import { Textarea } from './ui/textarea';
 import Link from 'next/link';
-import { ref, set } from 'firebase/database';
+import { ref, set, remove } from 'firebase/database';
 import { rtdb } from '@/lib/firebase';
 import { useNotifications } from '@/context/NotificationContext';
 import {
@@ -137,6 +137,22 @@ export function DevPanel() {
     .catch((error) => {
       toast({ title: 'Broadcast Failed', description: error.message, variant: 'destructive' });
     });
+  };
+
+  const handleClearBroadcast = () => {
+    setBroadcastMessage('');
+    const messageRef = ref(rtdb, 'broadcast/message');
+    remove(messageRef)
+      .then(() => {
+        toast({ title: 'Broadcast message cleared from database.' });
+      })
+      .catch((error) => {
+        toast({
+          title: 'Error Clearing Broadcast',
+          description: error.message,
+          variant: 'destructive',
+        });
+      });
   };
 
 
@@ -311,7 +327,7 @@ export function DevPanel() {
                       rows={4}
                     />
                     <div className="flex gap-2">
-                      <Button variant="outline" className="w-full gap-2" onClick={() => setBroadcastMessage('')}>
+                      <Button variant="outline" className="w-full gap-2" onClick={handleClearBroadcast}>
                           <Trash className="h-4 w-4" />
                           Clear
                       </Button>
@@ -370,3 +386,4 @@ export function DevPanel() {
     </div>
   );
 }
+
