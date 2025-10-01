@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import React, { useState, useEffect } from 'react';
@@ -28,7 +27,6 @@ import { Textarea } from './ui/textarea';
 import Link from 'next/link';
 import { ref, set, remove, onValue, off } from 'firebase/database';
 import { rtdb } from '@/lib/firebase';
-import { useNotifications } from '@/context/NotificationContext';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -147,7 +145,6 @@ export function DevPanel() {
     })
     .then(() => {
       toast({ title: 'Broadcast Sent!' });
-      // Don't clear message, it should reflect the current state
     })
     .catch((error) => {
       toast({ title: 'Broadcast Failed', description: error.message, variant: 'destructive' });
@@ -159,7 +156,7 @@ export function DevPanel() {
     remove(messageRef)
       .then(() => {
         toast({ title: 'Broadcast message cleared from database.' });
-        setBroadcastMessage(''); // Also clear local state
+        setBroadcastMessage('');
       })
       .catch((error) => {
         toast({
@@ -436,6 +433,3 @@ export function DevPanel() {
     </div>
   );
 }
-
-
-

@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { ref, onValue, off } from 'firebase/database';
 import { rtdb } from '@/lib/firebase';
 import { useNotifications } from '@/context/NotificationContext';
@@ -12,24 +12,22 @@ type BroadcastMessage = {
 };
 
 export function BroadcastListener() {
-  const { addNotification, notifications, clearAllNotifications } = useNotifications();
+  const { addNotification, clearAllNotifications } = useNotifications();
+  const isMounted = useRef(true);
 
   useEffect(() => {
     const messageRef = ref(rtdb, 'broadcast/message');
 
     const listener = onValue(messageRef, (snapshot) => {
+      if (!isMounted.current) return;
+
       if (snapshot.exists()) {
         const message = snapshot.val() as BroadcastMessage;
-        
-        // Check if a notification with this exact timestamp already exists.
-        const alreadyExists = notifications.some(n => n.timestamp === message.timestamp);
-
-        if (message && message.timestamp && !alreadyExists) {
+        if (message && message.timestamp) {
           addNotification({
             title: 'Broadcast',
             body: message.text,
             timestamp: message.timestamp,
-            read: false,
           });
         }
       } else {
@@ -38,11 +36,11 @@ export function BroadcastListener() {
       }
     });
 
-    // Cleanup function to remove the listener when the component unmounts.
     return () => {
+      isMounted.current = false;
       off(messageRef, 'value', listener);
     };
-  }, [addNotification, notifications, clearAllNotifications]);
+  }, [addNotification, clearAllNotifications]);
 
-  return null; 
+  return null;
 }

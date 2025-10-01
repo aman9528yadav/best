@@ -1,8 +1,7 @@
 
-
 "use client";
 
-import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
+import React, { createContext, useContext, useState, ReactNode, useEffect, useCallback } from 'react';
 
 export type Notification = {
   id: string;
@@ -15,7 +14,7 @@ export type Notification = {
 type NotificationContextType = {
   notifications: Notification[];
   unreadCount: number;
-  addNotification: (notification: Omit<Notification, 'id'>) => void;
+  addNotification: (notification: Omit<Notification, 'id' | 'read'>) => void;
   markAllAsRead: () => void;
   removeNotification: (id: string) => void;
   clearAllNotifications: () => void;
@@ -33,48 +32,54 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
       if (savedNotifications) {
         const parsed = JSON.parse(savedNotifications) as Notification[];
         setNotifications(parsed);
-        setUnreadCount(parsed.filter(n => !n.read).length);
       }
     } catch (e) {
         console.error("Failed to load notifications from local storage", e);
     }
   }, []);
-  
+
   useEffect(() => {
     try {
         localStorage.setItem('sutradhaar_notifications', JSON.stringify(notifications));
+        setUnreadCount(notifications.filter(n => !n.read).length);
     } catch (e) {
         console.error("Failed to save notifications to local storage", e);
     }
-    setUnreadCount(notifications.filter(n => !n.read).length);
   }, [notifications]);
 
+  const addNotification = useCallback((notification: Omit<Notification, 'id' | 'read'>) => {
+    setNotifications(prev => {
+        const alreadyExists = prev.some(n => n.timestamp === notification.timestamp);
+        if (alreadyExists) {
+            return prev;
+        }
+        const newNotification: Notification = {
+          ...notification,
+          id: `${notification.timestamp}-${Math.random().toString(36).substring(2, 9)}`,
+          read: false,
+        };
+        const audio = new Audio('/sounds/notification.mp3');
+        audio.play().catch(e => console.error("Failed to play notification sound.", e));
+        return [newNotification, ...prev].slice(0, 20); // Keep last 20
+    });
+  }, []);
 
-  const addNotification = (notification: Omit<Notification, 'id'>) => {
-    const newNotification: Notification = {
-      ...notification,
-      id: `${notification.timestamp}-${Math.random().toString(36).substring(2, 9)}`,
-    };
-    setNotifications(prev => [newNotification, ...prev].slice(0, 20)); // Keep last 20
-    const audio = new Audio('/sounds/notification.mp3');
-    audio.play().catch(e => console.error("Failed to play notification sound.", e));
-  };
-
-  const markAllAsRead = () => {
-    if (unreadCount === 0) return;
-    setTimeout(() => {
-        setNotifications(prev => prev.map(n => ({ ...n, read: true })));
-    }, 1000); // Delay to allow user to see the badge before it disappears
-  };
+  const markAllAsRead = useCallback(() => {
+    setNotifications(prev => {
+      if (prev.some(n => !n.read)) {
+        return prev.map(n => ({ ...n, read: true }));
+      }
+      return prev;
+    });
+  }, []);
   
-  const removeNotification = (id: string) => {
+  const removeNotification = useCallback((id: string) => {
     setNotifications(prev => prev.filter(n => n.id !== id));
-  };
+  }, []);
   
-  const clearAllNotifications = () => {
+  const clearAllNotifications = useCallback(() => {
     setNotifications([]);
-  }
-
+  }, []);
 
   return (
     <NotificationContext.Provider value={{ notifications, unreadCount, addNotification, markAllAsRead, removeNotification, clearAllNotifications }}>
@@ -90,4 +95,3 @@ export const useNotifications = () => {
   }
   return context;
 };
-
