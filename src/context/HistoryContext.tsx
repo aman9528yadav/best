@@ -27,6 +27,15 @@ export type CalculatorHistoryItem = {
   timestamp: string; // Use ISO string for serialization
 };
 
+export type DateCalculationHistoryItem = {
+  id: string;
+  type: 'date_calculation';
+  calculationType: string;
+  details: any;
+  timestamp: string;
+};
+
+
 export type FavoriteItem = {
   id: string;
   type: 'favorite';
@@ -35,17 +44,18 @@ export type FavoriteItem = {
   category: string;
 };
 
-export type HistoryItem = ConversionHistoryItem | CalculatorHistoryItem;
+export type HistoryItem = ConversionHistoryItem | CalculatorHistoryItem | DateCalculationHistoryItem;
 
 type HistoryContextType = {
   history: HistoryItem[];
   favorites: FavoriteItem[];
   addConversionToHistory: (item: Omit<ConversionHistoryItem, 'id' | 'timestamp' | 'type'>) => void;
   addCalculatorToHistory: (item: Omit<CalculatorHistoryItem, 'id' | 'timestamp' | 'type'>) => void;
+  addDateCalculationToHistory: (item: Omit<DateCalculationHistoryItem, 'id' | 'timestamp' | 'type'>) => void;
   addFavorite: (item: Omit<FavoriteItem, 'id' | 'type'>) => void;
   deleteHistoryItem: (id: string) => void;
   deleteFavorite: (id: string) => void;
-  clearAllHistory: (type: 'conversion' | 'calculator' | 'all') => void;
+  clearAllHistory: (type: 'conversion' | 'calculator' | 'date_calculation' | 'all') => void;
   clearAllFavorites: () => void;
 };
 
@@ -66,7 +76,7 @@ const getInitialFavorites = (): FavoriteItem[] => {
 };
 
 export const HistoryProvider = ({ children }: { children: ReactNode }) => {
-  const { updateStatsForNewConversion } = useProfile();
+  const { updateStatsForNewActivity } = useProfile();
   const { user, loading: authLoading } = useAuth();
 
   const [history, setHistory] = useState<HistoryItem[]>([]);
@@ -135,7 +145,7 @@ export const HistoryProvider = ({ children }: { children: ReactNode }) => {
     if (user) {
         set(ref(rtdb, `users/${user.uid}/history/${newItem.id}`), newItem);
     }
-    updateStatsForNewConversion();
+    updateStatsForNewActivity();
   };
 
   const addCalculatorToHistory = (item: Omit<CalculatorHistoryItem, 'id' | 'timestamp' | 'type'>) => {
@@ -144,6 +154,16 @@ export const HistoryProvider = ({ children }: { children: ReactNode }) => {
      if (user) {
         set(ref(rtdb, `users/${user.uid}/history/${newItem.id}`), newItem);
     }
+    updateStatsForNewActivity();
+  };
+
+  const addDateCalculationToHistory = (item: Omit<DateCalculationHistoryItem, 'id' | 'timestamp' | 'type'>) => {
+    const newItem: DateCalculationHistoryItem = { ...item, id: new Date().getTime().toString(), timestamp: new Date().toISOString(), type: 'date_calculation' };
+    setHistory(prev => [newItem, ...prev]);
+    if (user) {
+        set(ref(rtdb, `users/${user.uid}/history/${newItem.id}`), newItem);
+    }
+    updateStatsForNewActivity();
   };
 
   const addFavorite = (item: Omit<FavoriteItem, 'id' | 'type'>) => {
@@ -168,7 +188,7 @@ export const HistoryProvider = ({ children }: { children: ReactNode }) => {
     }
   };
   
-  const clearAllHistory = (type: 'conversion' | 'calculator' | 'all') => {
+  const clearAllHistory = (type: 'conversion' | 'calculator' | 'date_calculation' | 'all') => {
     if (type === 'all') {
       setHistory([]);
       if (user) {
@@ -198,6 +218,7 @@ export const HistoryProvider = ({ children }: { children: ReactNode }) => {
         favorites, 
         addConversionToHistory,
         addCalculatorToHistory,
+        addDateCalculationToHistory,
         addFavorite,
         deleteHistoryItem,
         deleteFavorite,

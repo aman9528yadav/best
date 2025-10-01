@@ -35,6 +35,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Input } from './ui/input';
 import { ScrollArea } from './ui/scroll-area';
 import { Label } from './ui/label';
+import { useHistory } from '@/context/HistoryContext';
 
 const ResultBox = ({ value, label }: { value: string | number; label: string }) => (
   <div className="flex flex-col items-center">
@@ -45,6 +46,7 @@ const ResultBox = ({ value, label }: { value: string | number; label: string }) 
 
 function DateDifferenceCalculator() {
   const { toast } = useToast();
+  const { addDateCalculationToHistory } = useHistory();
   const [startDate, setStartDate] = useState<Date | undefined>(new Date());
   const [endDate, setEndDate] = useState<Date | undefined>(new Date());
   const [result, setResult] = useState({
@@ -71,12 +73,22 @@ function DateDifferenceCalculator() {
       const weeks = Math.floor((duration.days || 0) / 7);
       const remainingDays = (duration.days || 0) % 7;
 
-      setResult({
+      const newResult = {
         years: duration.years || 0,
         months: duration.months || 0,
         weeks: weeks,
         days: remainingDays,
         totalDays,
+      };
+
+      setResult(newResult);
+      addDateCalculationToHistory({
+        calculationType: 'Difference',
+        details: {
+          startDate: format(startDate, 'PPP'),
+          endDate: format(endDate, 'PPP'),
+          result: newResult
+        }
       });
     }
   };
@@ -196,6 +208,7 @@ function DateDifferenceCalculator() {
 
 function AddSubtractCalculator() {
   const { toast } = useToast();
+  const { addDateCalculationToHistory } = useHistory();
   const [startDate, setStartDate] = useState<Date>(new Date());
   const [resultDate, setResultDate] = useState<Date>(new Date());
   const [operation, setOperation] = useState<'add' | 'sub'>('add');
@@ -214,6 +227,16 @@ function AddSubtractCalculator() {
       newDate = sub(startDate, duration);
     }
     setResultDate(newDate);
+    addDateCalculationToHistory({
+      calculationType: 'Add/Subtract',
+      details: {
+        startDate: format(startDate, 'PPP'),
+        operation,
+        duration,
+        resultDate: format(newDate, 'PPP')
+      }
+    });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [startDate, duration, operation]);
 
   const handleCopy = () => {
@@ -270,6 +293,7 @@ function AddSubtractCalculator() {
 }
 
 function AgeCalculator() {
+    const { addDateCalculationToHistory } = useHistory();
     const [birthDate, setBirthDate] = useState<Date | undefined>(new Date(2000, 0, 1));
     const [age, setAge] = useState({ years: 0, months: 0, days: 0 });
     const [summary, setSummary] = useState({ totalMonths: 0, totalWeeks: 0, totalDays: 0 });
@@ -278,13 +302,24 @@ function AgeCalculator() {
         if(birthDate) {
             const today = new Date();
             const duration = intervalToDuration({ start: birthDate, end: today });
-            setAge({ years: duration.years || 0, months: duration.months || 0, days: duration.days || 0 });
+            const ageResult = { years: duration.years || 0, months: duration.months || 0, days: duration.days || 0 };
+            setAge(ageResult);
 
             const totalDays = differenceInDays(today, birthDate);
             const totalMonths = differenceInMonths(today, birthDate);
             const totalWeeks = Math.floor(totalDays / 7);
-            setSummary({ totalMonths, totalWeeks, totalDays });
+            const summaryResult = { totalMonths, totalWeeks, totalDays };
+            setSummary(summaryResult);
+            addDateCalculationToHistory({
+              calculationType: 'Age',
+              details: {
+                birthDate: format(birthDate, 'PPP'),
+                age: ageResult,
+                summary: summaryResult
+              }
+            })
         }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [birthDate]);
 
     return (
@@ -331,6 +366,7 @@ function AgeCalculator() {
 
 function WorkDaysCalculator() {
     const { toast } = useToast();
+    const { addDateCalculationToHistory } = useHistory();
     const [startDate, setStartDate] = useState<Date | undefined>(new Date());
     const [endDate, setEndDate] = useState<Date | undefined>(add(new Date(), {days: 7}));
     const [workDays, setWorkDays] = useState(0);
@@ -352,6 +388,14 @@ function WorkDaysCalculator() {
             }
 
             setWorkDays(count);
+            addDateCalculationToHistory({
+              calculationType: 'Workdays',
+              details: {
+                startDate: format(startDate, 'PPP'),
+                endDate: format(endDate, 'PPP'),
+                workDays: count
+              }
+            });
         }
     }
 
@@ -380,6 +424,7 @@ function WorkDaysCalculator() {
 }
 
 function CountdownCalculator() {
+    const { addDateCalculationToHistory } = useHistory();
     const [targetDate, setTargetDate] = useState<Date>(add(new Date(), {days: 30}));
     const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
 

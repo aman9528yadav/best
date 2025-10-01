@@ -142,7 +142,7 @@ export default function DashboardPage() {
   }
 
   const { appInfo, ownerInfo, updateItems } = maintenanceConfig;
-  const { allTimeConversions = 0, todayConversions = 0, streak = 0 } = profile.stats || {};
+  const { allTimeActivities = 0, todayActivities = 0, streak = 0 } = profile.stats || {};
 
   const visibleQuickAccessItems = showMore ? quickAccessItems : quickAccessItems.slice(0, 6);
   const whatsNewItems = (updateItems || []).slice(0, 2);
@@ -164,7 +164,7 @@ export default function DashboardPage() {
                   <Star className="h-4 w-4" />
                   All time
                 </div>
-                <div className="text-2xl font-bold">{allTimeConversions}</div>
+                <div className="text-2xl font-bold">{allTimeActivities}</div>
               </CardContent>
             </Card>
             <Card className="bg-accent/50">
@@ -173,7 +173,7 @@ export default function DashboardPage() {
                   <Clock className="h-4 w-4" />
                   Today
                 </div>
-                <div className="text-2xl font-bold">{todayConversions}</div>
+                <div className="text-2xl font-bold">{todayActivities}</div>
               </CardContent>
             </Card>
             <Card className="bg-accent/50">
@@ -353,6 +353,4 @@ export default function DashboardPage() {
     </div>
   );
 }
-    
-
     

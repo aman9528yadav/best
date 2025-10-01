@@ -8,9 +8,9 @@ import { useAuth } from './AuthContext';
 import { isToday, differenceInCalendarDays, startOfDay, isYesterday } from 'date-fns';
 
 export type UserStats = {
-  allTimeConversions: number;
-  todayConversions: number;
-  lastConversionDate: string | null;
+  allTimeActivities: number;
+  todayActivities: number;
+  lastActivityDate: string | null;
   lastAppOpenDate: string | null;
   streak: number;
   daysActive: number;
@@ -46,7 +46,7 @@ export type UserProfile = {
 type ProfileContextType = {
   profile: UserProfile;
   setProfile: (profile: UserProfile | ((prevState: UserProfile) => UserProfile)) => void;
-  updateStatsForNewConversion: () => void;
+  updateStatsForNewActivity: () => void;
   checkAndUpdateStreak: () => void;
   isLoading: boolean;
   addNote: (note: Omit<NoteItem, 'id' | 'createdAt' | 'updatedAt'>) => NoteItem;
@@ -61,9 +61,9 @@ type ProfileContextType = {
 const ProfileContext = createContext<ProfileContextType | undefined>(undefined);
 
 const defaultStats: UserStats = {
-    allTimeConversions: 0,
-    todayConversions: 0,
-    lastConversionDate: null,
+    allTimeActivities: 0,
+    todayActivities: 0,
+    lastActivityDate: null,
     lastAppOpenDate: null,
     streak: 0,
     daysActive: 0,
@@ -152,8 +152,8 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
           const stats = { ...defaultStats, ...(fetchedData.stats || {}) };
           const notes = fetchedData.notes || [];
 
-          if (stats.lastConversionDate !== today) {
-            stats.todayConversions = 0;
+          if (stats.lastActivityDate !== today) {
+            stats.todayActivities = 0;
           }
 
           const fullProfile = {
@@ -281,29 +281,29 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
         newStats.lastAppOpenDate = today.toISOString();
         
         // Reset today's conversion count if it's a new day
-        const lastConversion = prevProfile.stats.lastConversionDate ? startOfDay(new Date(prevProfile.stats.lastConversionDate)) : null;
-        if (!lastConversion || !isToday(lastConversion)) {
-            newStats.todayConversions = 0;
+        const lastActivity = prevProfile.stats.lastActivityDate ? startOfDay(new Date(prevProfile.stats.lastActivityDate)) : null;
+        if (!lastActivity || !isToday(lastActivity)) {
+            newStats.todayActivities = 0;
         }
 
         return { ...prevProfile, stats: newStats };
     });
   };
 
-  const updateStatsForNewConversion = () => {
+  const updateStatsForNewActivity = () => {
     setProfile(prevProfile => {
         const newStats = {...prevProfile.stats};
         const todayISO = new Date().toISOString();
 
-        newStats.allTimeConversions = (newStats.allTimeConversions || 0) + 1;
+        newStats.allTimeActivities = (newStats.allTimeActivities || 0) + 1;
         
-        const lastConversionDate = newStats.lastConversionDate;
-        if (lastConversionDate && isToday(new Date(lastConversionDate))) {
-             newStats.todayConversions = (newStats.todayConversions || 0) + 1;
+        const lastActivityDate = newStats.lastActivityDate;
+        if (lastActivityDate && isToday(new Date(lastActivityDate))) {
+             newStats.todayActivities = (newStats.todayActivities || 0) + 1;
         } else {
-             newStats.todayConversions = 1;
+             newStats.todayActivities = 1;
         }
-        newStats.lastConversionDate = todayISO;
+        newStats.lastActivityDate = todayISO;
 
         return { ...prevProfile, stats: newStats };
     });
@@ -313,7 +313,7 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
     <ProfileContext.Provider value={{ 
         profile, 
         setProfile, 
-        updateStatsForNewConversion, 
+        updateStatsForNewActivity, 
         checkAndUpdateStreak, 
         isLoading,
         addNote,

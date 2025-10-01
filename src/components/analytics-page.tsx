@@ -98,7 +98,7 @@ export function AnalyticsPage() {
     }
 
     const analyticsData = useMemo(() => {
-        const { allTimeConversions = 0, streak = 0 } = profile.stats || {};
+        const { allTimeActivities = 0, streak = 0 } = profile.stats || {};
         
         const conversions = history.filter(h => h.type === 'conversion');
         const calculatorOps = history.filter(h => h.type === 'calculator');
@@ -118,7 +118,7 @@ export function AnalyticsPage() {
 
         return {
             totalConversions: {
-                value: allTimeConversions,
+                value: allTimeActivities,
                 change: calcPercentageChange(conversionsToday, conversionsYesterday)
             },
             calculatorOps: {
@@ -149,7 +149,7 @@ export function AnalyticsPage() {
     });
 
     const allStats = [
-        { id: 'totalConversions', title: 'Total Conversions', value: analyticsData.totalConversions.value, change: analyticsData.totalConversions.change, description: 'vs prev day' },
+        { id: 'totalActivities', title: 'Total Activities', value: analyticsData.totalConversions.value, change: analyticsData.totalConversions.change, description: 'vs prev day' },
         { id: 'calculatorOps', title: 'Calculator Ops', value: analyticsData.calculatorOps.value, change: analyticsData.calculatorOps.change, description: 'vs prev day' },
         { id: 'dateCalculations', title: 'Date Calculations', value: analyticsData.dateCalculations.value, change: analyticsData.dateCalculations.change, description: 'vs prev day' },
         { id: 'currentStreak', title: 'Current Streak', value: analyticsData.currentStreak.value, description: analyticsData.currentStreak.description },

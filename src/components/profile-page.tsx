@@ -63,7 +63,7 @@ export function ProfilePage() {
     const { history } = useHistory();
     const { user, logout } = useAuth();
     
-    const { allTimeConversions = 0, daysActive = 0 } = profile.stats || {};
+    const { allTimeActivities = 0, daysActive = 0 } = profile.stats || {};
     const totalNotes = profile.notes.filter(n => !n.isTrashed).length;
 
 
@@ -135,8 +135,8 @@ export function ProfilePage() {
             <div className="grid grid-cols-3 gap-4 text-center">
                 <Card>
                     <CardContent className="p-3">
-                        <div className="text-xl font-bold">{allTimeConversions}</div>
-                        <div className="text-xs text-muted-foreground">Conversions</div>
+                        <div className="text-xl font-bold">{allTimeActivities}</div>
+                        <div className="text-xs text-muted-foreground">Activities</div>
                     </CardContent>
                 </Card>
                 <Card>
