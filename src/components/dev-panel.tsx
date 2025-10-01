@@ -19,7 +19,7 @@ import {
 } from '@/components/ui/accordion';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import { ArrowLeft, Clock, Shield, Trash, Megaphone, Pencil, ChevronRight, Send } from 'lucide-react';
+import { ArrowLeft, Clock, Shield, Trash, Megaphone, Pencil, ChevronRight, Send, KeyRound } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useMaintenance } from '@/context/MaintenanceContext';
 import { useToast } from '@/hooks/use-toast';
@@ -55,6 +55,7 @@ export function DevPanel() {
   const [broadcastMessage, setBroadcastMessage] = useState('');
   const { clearAllNotifications } = useNotifications();
   const { clearAllHistory } = useHistory();
+  const [passwordState, setPasswordState] = useState({ currentPassword: '', newPassword: '', confirmNewPassword: '' });
 
 
   const handleGlobalMaintenanceChange = (checked: boolean) => {
@@ -153,6 +154,31 @@ export function DevPanel() {
           variant: 'destructive',
         });
       });
+  };
+  
+  const handlePasswordInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setPasswordState(prev => ({ ...prev, [name]: value }));
+  }
+
+  const handleChangeDevPassword = () => {
+    const { currentPassword, newPassword, confirmNewPassword } = passwordState;
+    if (currentPassword !== (maintenanceConfig.devPassword || 'aman')) {
+        toast({ title: "Incorrect Current Password", variant: "destructive" });
+        return;
+    }
+    if (newPassword !== confirmNewPassword) {
+        toast({ title: "New passwords do not match", variant: "destructive" });
+        return;
+    }
+    if (newPassword.length < 4) {
+        toast({ title: "Password is too short", variant: "destructive" });
+        return;
+    }
+
+    setMaintenanceConfig(prev => ({ ...prev, devPassword: newPassword }));
+    toast({ title: "Developer password updated successfully!" });
+    setPasswordState({ currentPassword: '', newPassword: '', confirmNewPassword: '' });
   };
 
 
@@ -355,27 +381,37 @@ export function DevPanel() {
                     </div>
                   </AccordionTrigger>
                 </CardHeader>
-                <AccordionContent className="px-4 pb-4">
-                   <AlertDialog>
-                      <AlertDialogTrigger asChild>
-                        <Button variant="destructive" className="w-full gap-2">
-                            <Trash className="h-4 w-4"/>
-                            Clear All Local Storage
-                        </Button>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                          <AlertDialogDescription>
-                            This will clear all local storage, including history, profile, and settings for guest users. This action cannot be undone.
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel>Cancel</AlertDialogCancel>
-                          <AlertDialogAction onClick={handleClearLocalStorage}>Continue</AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
+                <AccordionContent className="px-4 pb-4 space-y-6">
+                    <div className="space-y-4">
+                        <Label className='flex items-center gap-2'><KeyRound className='h-4 w-4'/>Change Developer Password</Label>
+                        <Input name="currentPassword" type="password" placeholder="Current Password" value={passwordState.currentPassword} onChange={handlePasswordInputChange}/>
+                        <Input name="newPassword" type="password" placeholder="New Password" value={passwordState.newPassword} onChange={handlePasswordInputChange}/>
+                        <Input name="confirmNewPassword" type="password" placeholder="Confirm New Password" value={passwordState.confirmNewPassword} onChange={handlePasswordInputChange}/>
+                        <Button className="w-full" onClick={handleChangeDevPassword}>Change Password</Button>
+                    </div>
+                    <div className="space-y-4">
+                        <Label className='flex items-center gap-2'><Trash className='h-4 w-4'/>Clear Local Data</Label>
+                        <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                                <Button variant="destructive" className="w-full gap-2">
+                                    <Trash className="h-4 w-4"/>
+                                    Clear All Local Storage
+                                </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                                <AlertDialogHeader>
+                                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                    This will clear all local storage, including history, profile, and settings for guest users. This action cannot be undone.
+                                </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                <AlertDialogAction onClick={handleClearLocalStorage}>Continue</AlertDialogAction>
+                                </AlertDialogFooter>
+                            </AlertDialogContent>
+                        </AlertDialog>
+                    </div>
                 </AccordionContent>
               </Card>
             </AccordionItem>
@@ -386,4 +422,5 @@ export function DevPanel() {
     </div>
   );
 }
+
 

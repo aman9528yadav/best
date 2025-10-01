@@ -56,6 +56,7 @@ type Countdown = {
 export type MaintenanceConfig = {
     globalMaintenance: boolean;
     isDevMode: boolean;
+    devPassword?: string;
     dashboardBanner: {
         show: boolean;
         countdown: Countdown;
@@ -82,6 +83,7 @@ const MaintenanceContext = createContext<MaintenanceContextType | undefined>(und
 const defaultMaintenanceConfig: MaintenanceConfig = {
     globalMaintenance: false,
     isDevMode: false,
+    devPassword: 'aman',
     dashboardBanner: {
         show: true,
         countdown: {

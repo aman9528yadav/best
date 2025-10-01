@@ -90,7 +90,7 @@ export function MaintenancePage() {
   };
 
   const handlePasswordSubmit = () => {
-    if (password === 'aman') {
+    if (password === (maintenanceConfig.devPassword || 'aman')) {
       setDevMode(true);
       toast({ title: 'Developer Mode Enabled' });
       router.push('/dev');

@@ -126,7 +126,7 @@ export function SettingsPage() {
   };
 
   const handlePasswordSubmit = () => {
-    if (password === 'aman') {
+    if (password === (maintenanceConfig.devPassword || 'aman')) {
       setMaintenanceConfig(p => ({...p, isDevMode: true}));
       toast({ title: 'Developer Mode Enabled' });
       router.push('/dev');
