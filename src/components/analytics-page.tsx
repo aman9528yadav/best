@@ -140,6 +140,7 @@ export function AnalyticsPage() {
         let title = '';
         if (item.type === 'conversion') title = 'Unit Conversion';
         if (item.type === 'calculator') title = 'Calculator';
+        if (item.type === 'date_calculation') title = 'Date Calculation';
         
         return {
             id: item.id,
@@ -192,7 +193,7 @@ export function AnalyticsPage() {
                         </Select>
                     </div>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="h-[250px] flex flex-col gap-4">
                     <Tabs value={usageTrendType} onValueChange={setUsageTrendType} className="w-full">
                         <TabsList className="grid w-full grid-cols-3 bg-accent/50 h-auto p-1">
                             <TabsTrigger value="bar">Bar</TabsTrigger>
@@ -200,7 +201,7 @@ export function AnalyticsPage() {
                             <TabsTrigger value="area">Area</TabsTrigger>
                         </TabsList>
                     </Tabs>
-                    <div className="h-[200px] mt-4">
+                    <div className="flex-1">
                         <UsageTrendChart type={usageTrendType as any} period={usageTrendPeriod} />
                     </div>
                 </CardContent>
