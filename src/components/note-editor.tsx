@@ -19,6 +19,8 @@ import {
   Undo2,
   Undo,
   Redo,
+  CheckSquare,
+  Table2,
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -68,6 +70,38 @@ export function NoteEditor({ note, onSave, onDelete, onDeletePermanently, onRest
     editorRef.current?.focus();
   };
   
+  const insertHtml = (html: string) => {
+    const selection = window.getSelection();
+    if (!selection || selection.rangeCount === 0) return;
+    const range = selection.getRangeAt(0);
+    const fragment = range.createContextualFragment(html);
+    range.insertNode(fragment);
+    // Move cursor to the end of the inserted content
+    range.collapse(false);
+    selection.removeAllRanges();
+    selection.addRange(range);
+    editorRef.current?.focus();
+    // Update content state
+    if (editorRef.current) {
+        setContent(editorRef.current.innerHTML);
+    }
+  };
+  
+  const insertTable = () => {
+    insertHtml(
+      '<table class="note-table"><tbody><tr><td></td><td></td></tr><tr><td></td><td></td></tr></tbody></table><p><br></p>'
+    );
+  };
+
+  const insertTodo = () => {
+    // Inserts an unordered list with a single to-do item
+    execCommand('insertUnorderedList');
+    // The list is created, now we can format the LI. This is tricky.
+    // A simpler but less semantic way for contentEditable:
+    insertHtml('<div><input type="checkbox" class="note-todo-checkbox" />&nbsp;</div>');
+  };
+
+
   const handleSave = () => {
     onSave(title, content);
   }
@@ -78,7 +112,11 @@ export function NoteEditor({ note, onSave, onDelete, onDeletePermanently, onRest
       editorRef.current.innerHTML = note.content;
       setContent(note.content);
     }
-  }, [note?.id, note?.content]);
+    if (note?.title !== title) {
+        setTitle(note?.title || '');
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [note?.id]);
 
 
   return (
@@ -175,6 +213,8 @@ export function NoteEditor({ note, onSave, onDelete, onDeletePermanently, onRest
                 <Button variant="ghost" size="icon" onClick={() => execCommand('strikeThrough')}><Strikethrough className="h-5 w-5"/></Button>
                 <Button variant="ghost" size="icon" onClick={() => execCommand('insertUnorderedList')}><List className="h-5 w-5"/></Button>
                 <Button variant="ghost" size="icon" onClick={() => execCommand('insertOrderedList')}><ListOrdered className="h-5 w-5"/></Button>
+                <Button variant="ghost" size="icon" onClick={insertTodo}><CheckSquare className="h-5 w-5"/></Button>
+                <Button variant="ghost" size="icon" onClick={insertTable}><Table2 className="h-5 w-5"/></Button>
             </div>
         </footer>
       )}
