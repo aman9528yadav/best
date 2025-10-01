@@ -15,7 +15,7 @@ export type Notification = {
 type NotificationContextType = {
   notifications: Notification[];
   unreadCount: number;
-  addNotification: (notification: Notification) => void;
+  addNotification: (notification: Omit<Notification, 'id'>) => void;
   markAllAsRead: () => void;
   removeNotification: (id: string) => void;
   clearAllNotifications: () => void;
@@ -50,8 +50,12 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
   }, [notifications]);
 
 
-  const addNotification = (notification: Notification) => {
-    setNotifications(prev => [notification, ...prev].slice(0, 20)); // Keep last 20
+  const addNotification = (notification: Omit<Notification, 'id'>) => {
+    const newNotification: Notification = {
+      ...notification,
+      id: `${notification.timestamp}-${Math.random().toString(36).substring(2, 9)}`,
+    };
+    setNotifications(prev => [newNotification, ...prev].slice(0, 20)); // Keep last 20
     const audio = new Audio('/sounds/notification.mp3');
     audio.play().catch(e => console.error("Failed to play notification sound.", e));
   };

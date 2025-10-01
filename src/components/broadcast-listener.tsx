@@ -22,11 +22,10 @@ export function BroadcastListener() {
         const message = snapshot.val() as BroadcastMessage;
         
         // Check if a notification with this timestamp already exists
-        const notificationExists = notifications.some(n => n.id === message.timestamp);
+        const notificationExists = notifications.some(n => n.timestamp === message.timestamp);
 
         if (!notificationExists) {
           addNotification({
-            id: message.timestamp,
             title: 'Broadcast',
             body: message.text,
             timestamp: message.timestamp,
