@@ -111,15 +111,19 @@ export default function DashboardPage() {
   useEffect(() => {
     if (isMaintenanceLoading) return;
     
-    const showWelcomeSetting = localStorage.getItem('sutradhaar_show_welcome') === 'true';
-    if (showWelcomeSetting) {
+    const showWelcomeSetting = localStorage.getItem('sutradhaar_show_welcome') !== 'false';
+    const hasSeenWelcome = localStorage.getItem('sutradhaar_has_seen_welcome') === 'true';
+
+    if (showWelcomeSetting && !hasSeenWelcome) {
       setShowWelcomeDialog(true);
     }
   }, [isMaintenanceLoading]);
 
-  const handleWelcomeConfirm = () => {
+  const handleWelcomeConfirm = (dontShowAgain: boolean) => {
     setShowWelcomeDialog(false);
-    // User can re-enable from settings if they want
+    if (dontShowAgain) {
+      localStorage.setItem('sutradhaar_has_seen_welcome', 'true');
+    }
   };
 
 
@@ -378,7 +382,3 @@ export default function DashboardPage() {
   );
 }
     
-
-    
-
-
