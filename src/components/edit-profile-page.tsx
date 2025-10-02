@@ -170,11 +170,6 @@ export function EditProfilePage() {
                                     <Textarea id="skills" name="skills" value={formData.skills.join(', ')} onChange={(e) => setFormData(prev => ({...prev, skills: e.target.value.split(',').map(s => s.trim())}))} />
                                 </div>
 
-                                <InputField icon={Linkedin} label="LinkedIn" id="linkedin" value={formData.socialLinks.linkedin} onChange={handleSocialChange} />
-                                <InputField icon={Twitter} label="Twitter" id="twitter" value={formData.socialLinks.twitter} onChange={handleSocialChange} />
-                                <InputField icon={Github} label="GitHub" id="github" value={formData.socialLinks.github} onChange={handleSocialChange} />
-                                <InputField icon={Instagram} label="Instagram" id="instagram" value={formData.socialLinks.instagram} onChange={handleSocialChange} />
-
                                 <Button size="lg" className="w-full" onClick={handleSaveChanges}>Save Changes</Button>
                             </div>
                         </TabsContent>

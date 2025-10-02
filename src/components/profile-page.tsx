@@ -188,21 +188,6 @@ export function ProfilePage() {
                     </div>
                  </CardContent>
             </Card>
-            
-            <Card>
-                 <CardContent className="p-4">
-                    <h3 className="font-semibold text-base mb-3 flex items-center gap-2">
-                        <Share2 className="h-5 w-5 text-primary" />
-                       Social Links
-                    </h3>
-                    <div className="flex items-center gap-4 text-muted-foreground">
-                        <a href={profile.socialLinks.linkedin} className="flex items-center gap-1.5 hover:text-primary"><Linkedin className="h-4 w-4" /> <span className='text-sm'>LinkedIn</span></a>
-                        <a href={profile.socialLinks.twitter} className="flex items-center gap-1.5 hover:text-primary"><Twitter className="h-4 w-4" /> <span className='text-sm'>Twitter</span></a>
-                        <a href={profile.socialLinks.github} className="flex items-center gap-1.5 hover:text-primary"><Github className="h-4 w-4" /> <span className='text-sm'>GitHub</span></a>
-                        <a href={profile.socialLinks.instagram} className="flex items-center gap-1.5 hover:text-primary"><Instagram className="h-4 w-4" /> <span className='text-sm'>Instagram</span></a>
-                    </div>
-                 </CardContent>
-            </Card>
 
              <div className="text-center text-xs text-muted-foreground pt-4">
                 © 2025 Sutradhar | Owned by Aman Yadav.
