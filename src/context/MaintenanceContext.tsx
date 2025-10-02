@@ -73,13 +73,11 @@ export type MaintenanceConfig = {
     devPassword?: string;
     dashboardBanner: {
         show: boolean;
-        targetDate: string;
-        timerMode: 'targetDate' | 'manual';
         manualCountdown: Countdown;
         category: string;
         upcomingFeatureDetails: string;
     };
-    maintenanceTargetDate: string;
+    maintenanceCountdown: Countdown;
     maintenanceMessage: string;
     updateItems: UpdateItem[];
     aboutPageContent: AboutPageContent;
@@ -104,13 +102,11 @@ const defaultMaintenanceConfig: MaintenanceConfig = {
     devPassword: 'aman',
     dashboardBanner: {
         show: true,
-        targetDate: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString(),
-        timerMode: 'targetDate',
-        manualCountdown: { days: 5, hours: 0, minutes: 0, seconds: 0 },
+        manualCountdown: { days: 5, hours: 10, minutes: 30, seconds: 0 },
         category: 'Bug Fix',
         upcomingFeatureDetails: '1. bug fix\n2. may be some feature not working',
     },
-    maintenanceTargetDate: new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString(), // Default to 2 hours from now
+    maintenanceCountdown: { days: 0, hours: 2, minutes: 0, seconds: 0 },
     maintenanceMessage: "We're currently performing scheduled maintenance to improve our services. We're working as quickly as possible to restore service.",
     updateItems: [
         {

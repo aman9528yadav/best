@@ -8,7 +8,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Wrench, Shield, Hourglass, Zap, PartyPopper } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useMaintenance } from '@/context/MaintenanceContext';
+import { useMaintenance, Countdown } from '@/context/MaintenanceContext';
 import { useToast } from '@/hooks/use-toast';
 import {
   AlertDialog,
@@ -29,38 +29,48 @@ const CountdownBox = ({ value, label }: { value: string; label: string }) => (
   </div>
 );
 
+const calculateTimeLeft = (countdown: Countdown): Countdown => {
+    let { days, hours, minutes, seconds } = countdown;
+
+    if (seconds > 0) seconds--;
+    else if (minutes > 0) { seconds = 59; minutes--; }
+    else if (hours > 0) { seconds = 59; minutes = 59; hours--; }
+    else if (days > 0) { seconds = 59; minutes = 59; hours = 23; days--; }
+    else { return { days: 0, hours: 0, minutes: 0, seconds: 0 }; }
+
+    return { days, hours, minutes, seconds };
+};
+
 export function MaintenancePage() {
   const router = useRouter();
   const { maintenanceConfig, setMaintenanceConfig, setDevMode } = useMaintenance();
-  const { maintenanceTargetDate, maintenanceMessage } = maintenanceConfig;
+  const { maintenanceCountdown, maintenanceMessage } = maintenanceConfig;
   const { toast } = useToast();
   
   const [clickCount, setClickCount] = useState(0);
   const [isPasswordDialogOpen, setIsPasswordDialogOpen] = useState(false);
   const [password, setPassword] = useState('');
-  const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+  const [timeLeft, setTimeLeft] = useState<Countdown>(maintenanceCountdown);
+  
+  useEffect(() => {
+    setTimeLeft(maintenanceCountdown);
+  }, [maintenanceCountdown]);
+
 
   useEffect(() => {
-    const target = new Date(maintenanceTargetDate);
-    const updateCountdown = () => {
-      const now = new Date();
-      const difference = target.getTime() - now.getTime();
-      
-      if(difference > 0) {
-        const days = Math.floor(difference / (1000 * 60 * 60 * 24));
-        const hours = Math.floor((difference / (1000 * 60 * 60)) % 24);
-        const minutes = Math.floor((difference / 1000 / 60) % 60);
-        const seconds = Math.floor((difference / 1000) % 60);
-        setTimeLeft({ days, hours, minutes, seconds });
-      } else {
-        setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0 });
-      }
-    };
+    const timer = setInterval(() => {
+      setTimeLeft(prevTime => {
+        const newTime = calculateTimeLeft(prevTime);
+         // Sync back to context if dev mode is on to persist changes for the dev
+        if(maintenanceConfig.isDevMode) {
+          setMaintenanceConfig(prev => ({ ...prev, maintenanceCountdown: newTime }));
+        }
+        return newTime;
+      });
+    }, 1000);
 
-    updateCountdown();
-    const interval = setInterval(updateCountdown, 1000);
-    return () => clearInterval(interval);
-  }, [maintenanceTargetDate]);
+    return () => clearInterval(timer);
+  }, [maintenanceConfig.isDevMode, setMaintenanceConfig]);
 
 
   const handleIconClick = () => {

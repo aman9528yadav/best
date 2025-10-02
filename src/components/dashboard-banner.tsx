@@ -16,29 +16,23 @@ const CountdownBox = ({ value, label }: { value: string; label: string }) => (
   </div>
 );
 
-const calculateTimeLeft = (targetDate: string): Countdown => {
-    const difference = +new Date(targetDate) - +new Date();
-    if (difference > 0) {
-      return {
-        days: Math.floor(difference / (1000 * 60 * 60 * 24)),
-        hours: Math.floor((difference / (1000 * 60 * 60)) % 24),
-        minutes: Math.floor((difference / 1000 / 60) % 60),
-        seconds: Math.floor((difference / 1000) % 60),
-      };
-    }
-    return { days: 0, hours: 0, minutes: 0, seconds: 0 };
+const calculateTimeLeft = (countdown: Countdown): Countdown => {
+    let { days, hours, minutes, seconds } = countdown;
+
+    if (seconds > 0) seconds--;
+    else if (minutes > 0) { seconds = 59; minutes--; }
+    else if (hours > 0) { seconds = 59; minutes = 59; hours--; }
+    else if (days > 0) { seconds = 59; minutes = 59; hours = 23; days--; }
+    else { return { days: 0, hours: 0, minutes: 0, seconds: 0 }; }
+
+    return { days, hours, minutes, seconds };
 };
 
 export function DashboardBanner() {
   const { maintenanceConfig, setMaintenanceConfig } = useMaintenance();
-  const { show, category, timerMode, targetDate, manualCountdown } = maintenanceConfig.dashboardBanner || {};
+  const { show, category, manualCountdown } = maintenanceConfig.dashboardBanner || {};
   
-  const [timeLeft, setTimeLeft] = useState<Countdown>(() => {
-    if (timerMode === 'targetDate') {
-        return calculateTimeLeft(targetDate);
-    }
-    return manualCountdown || { days: 0, hours: 0, minutes: 0, seconds: 0 };
-  });
+  const [timeLeft, setTimeLeft] = useState<Countdown>(manualCountdown || { days: 0, hours: 0, minutes: 0, seconds: 0 });
 
   const [isVisible, setIsVisible] = useState(show || false);
   const [isClient, setIsClient] = useState(false);
@@ -54,19 +48,28 @@ export function DashboardBanner() {
   }, [maintenanceConfig.dashboardBanner]);
 
   useEffect(() => {
+    setTimeLeft(manualCountdown);
+  }, [manualCountdown]);
+
+
+  useEffect(() => {
     if (!isVisible || !isClient) return;
 
-    if(timerMode === 'manual') {
-        setTimeLeft(manualCountdown);
-        return;
-    }
-
     const timer = setTimeout(() => {
-      setTimeLeft(calculateTimeLeft(targetDate));
+        const newTimeLeft = calculateTimeLeft(timeLeft);
+        setTimeLeft(newTimeLeft);
+        // Also update the context so it persists if the user is a dev
+        setMaintenanceConfig(prev => ({
+            ...prev,
+            dashboardBanner: {
+                ...prev.dashboardBanner,
+                manualCountdown: newTimeLeft
+            }
+        }));
     }, 1000);
 
     return () => clearTimeout(timer);
-  }, [timeLeft, isVisible, isClient, timerMode, targetDate, manualCountdown]);
+  }, [timeLeft, isVisible, isClient, setMaintenanceConfig]);
 
   if (!isVisible || !maintenanceConfig.dashboardBanner) {
     return null;
