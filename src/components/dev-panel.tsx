@@ -19,9 +19,9 @@ import {
 } from '@/components/ui/accordion';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import { ArrowLeft, Clock, Shield, Trash, Megaphone, Pencil, ChevronRight, Send, KeyRound, MessageSquare } from 'lucide-react';
+import { ArrowLeft, Clock, Shield, Trash, Megaphone, Pencil, ChevronRight, Send, KeyRound, MessageSquare, Timer, Calendar } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useMaintenance } from '@/context/MaintenanceContext';
+import { useMaintenance, Countdown } from '@/context/MaintenanceContext';
 import { useToast } from '@/hooks/use-toast';
 import { Input } from './ui/input';
 import { Textarea } from './ui/textarea';
@@ -40,6 +40,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 import { useHistory } from '@/context/HistoryContext';
+import { RadioGroup, RadioGroupItem } from './ui/radio-group';
 
 
 export function DevPanel() {
@@ -104,6 +105,13 @@ export function DevPanel() {
             [field]: value
         }
     }));
+  }
+
+  const handleManualCountdownChange = (field: keyof Countdown, value: string) => {
+    handleBannerChange('manualCountdown', {
+        ...dashboardBanner.manualCountdown,
+        [field]: parseInt(value) || 0
+    });
   }
   
   const handleMaintenanceMessageChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -278,17 +286,38 @@ export function DevPanel() {
                     <Label htmlFor="show-banner">Show Banner</Label>
                     <Switch id="show-banner" checked={dashboardBanner.show} onCheckedChange={(c) => handleBannerChange('show', c)} />
                   </div>
-                   <div className="bg-accent/50 p-4 rounded-lg space-y-2">
-                      <Label>Banner Countdown Target Date</Label>
-                      <Input 
-                        type="datetime-local" 
-                        value={dashboardBanner.targetDate.substring(0, 16)} 
-                        onChange={e => {
-                            if (e.target.value) {
-                                handleBannerChange('targetDate', new Date(e.target.value).toISOString())
-                            }
-                        }} 
-                      />
+                   <div className="bg-accent/50 p-4 rounded-lg space-y-4">
+                      <Label>Banner Countdown Timer</Label>
+                        <RadioGroup value={dashboardBanner.timerMode} onValueChange={(value) => handleBannerChange('timerMode', value)} className="flex gap-4">
+                            <div className="flex items-center space-x-2">
+                                <RadioGroupItem value="targetDate" id="targetDate" />
+                                <Label htmlFor="targetDate" className='flex items-center gap-2'><Calendar className='h-4 w-4' />Target Date</Label>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                                <RadioGroupItem value="manual" id="manual" />
+                                <Label htmlFor="manual" className='flex items-center gap-2'><Timer className='h-4 w-4' />Manual</Label>
+                            </div>
+                        </RadioGroup>
+
+                        {dashboardBanner.timerMode === 'targetDate' ? (
+                            <Input 
+                                type="datetime-local" 
+                                value={dashboardBanner.targetDate.substring(0, 16)} 
+                                onChange={e => {
+                                    if (e.target.value) {
+                                        handleBannerChange('targetDate', new Date(e.target.value).toISOString())
+                                    }
+                                }} 
+                            />
+                        ) : (
+                            <div className='grid grid-cols-4 gap-2'>
+                                <div><Label>Days</Label><Input type="number" value={dashboardBanner.manualCountdown.days} onChange={(e) => handleManualCountdownChange('days', e.target.value)} /></div>
+                                <div><Label>Hours</Label><Input type="number" value={dashboardBanner.manualCountdown.hours} onChange={(e) => handleManualCountdownChange('hours', e.target.value)} /></div>
+                                <div><Label>Mins</Label><Input type="number" value={dashboardBanner.manualCountdown.minutes} onChange={(e) => handleManualCountdownChange('minutes', e.target.value)} /></div>
+                                <div><Label>Secs</Label><Input type="number" value={dashboardBanner.manualCountdown.seconds} onChange={(e) => handleManualCountdownChange('seconds', e.target.value)} /></div>
+                            </div>
+                        )}
+
                    </div>
                    <div className="bg-accent/50 p-4 rounded-lg space-y-2">
                       <Label htmlFor="banner-category">Category</Label>

@@ -6,7 +6,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Rocket, Info, PartyPopper } from 'lucide-react';
-import { useMaintenance } from '@/context/MaintenanceContext';
+import { useMaintenance, Countdown } from '@/context/MaintenanceContext';
 import Link from 'next/link';
 
 const CountdownBox = ({ value, label }: { value: string; label: string }) => (
@@ -16,13 +16,30 @@ const CountdownBox = ({ value, label }: { value: string; label: string }) => (
   </div>
 );
 
+const calculateTimeLeft = (targetDate: string): Countdown => {
+    const difference = +new Date(targetDate) - +new Date();
+    if (difference > 0) {
+      return {
+        days: Math.floor(difference / (1000 * 60 * 60 * 24)),
+        hours: Math.floor((difference / (1000 * 60 * 60)) % 24),
+        minutes: Math.floor((difference / 1000 / 60) % 60),
+        seconds: Math.floor((difference / 1000) % 60),
+      };
+    }
+    return { days: 0, hours: 0, minutes: 0, seconds: 0 };
+};
+
 export function DashboardBanner() {
   const { maintenanceConfig, setMaintenanceConfig } = useMaintenance();
+  const { show, category, timerMode, targetDate, manualCountdown } = maintenanceConfig.dashboardBanner || {};
   
-  // Safeguard against dashboardBanner being undefined during initial load
-  const { show, countdown, category } = maintenanceConfig.dashboardBanner || {};
-  
-  const [timeLeft, setTimeLeft] = useState(countdown || { days: 0, hours: 0, minutes: 0, seconds: 0 });
+  const [timeLeft, setTimeLeft] = useState<Countdown>(() => {
+    if (timerMode === 'targetDate') {
+        return calculateTimeLeft(targetDate);
+    }
+    return manualCountdown || { days: 0, hours: 0, minutes: 0, seconds: 0 };
+  });
+
   const [isVisible, setIsVisible] = useState(show || false);
   const [isClient, setIsClient] = useState(false);
 
@@ -33,59 +50,23 @@ export function DashboardBanner() {
   useEffect(() => {
     if (maintenanceConfig.dashboardBanner) {
         setIsVisible(maintenanceConfig.dashboardBanner.show);
-        setTimeLeft(maintenanceConfig.dashboardBanner.countdown);
     }
   }, [maintenanceConfig.dashboardBanner]);
 
   useEffect(() => {
     if (!isVisible || !isClient) return;
-    
-    if (timeLeft.days <= 0 && timeLeft.hours <= 0 && timeLeft.minutes <= 0 && timeLeft.seconds <= 0) {
+
+    if(timerMode === 'manual') {
+        setTimeLeft(manualCountdown);
         return;
     }
 
     const timer = setTimeout(() => {
-      let { days, hours, minutes, seconds } = timeLeft;
-
-        if (seconds > 0) {
-            seconds--;
-        } else if (minutes > 0) {
-            seconds = 59;
-            minutes--;
-        } else if (hours > 0) {
-            seconds = 59;
-            minutes = 59;
-            hours--;
-        } else if (days > 0) {
-            seconds = 59;
-            minutes = 59;
-            hours = 23;
-            days--;
-        }
-        
-        const newTimeLeft = { days, hours, minutes, seconds };
-
-        if (days <= 0 && hours <= 0 && minutes <= 0 && seconds <= 0) {
-             setMaintenanceConfig(prev => ({ ...prev, dashboardBanner: { ...prev.dashboardBanner, countdown: { days: 0, hours: 0, minutes: 0, seconds: 0 } } }));
-        } else {
-             setMaintenanceConfig(prev => ({ ...prev, dashboardBanner: { ...prev.dashboardBanner, countdown: newTimeLeft } }));
-        }
+      setTimeLeft(calculateTimeLeft(targetDate));
     }, 1000);
 
     return () => clearTimeout(timer);
-  }, [timeLeft, isVisible, isClient, setMaintenanceConfig]);
-
-  const handleDismiss = () => {
-    setIsVisible(false);
-    // Optionally update the context/localStorage to keep it dismissed
-    setMaintenanceConfig(prev => ({
-        ...prev,
-        dashboardBanner: {
-            ...prev.dashboardBanner,
-            show: false,
-        }
-    }));
-  };
+  }, [timeLeft, isVisible, isClient, timerMode, targetDate, manualCountdown]);
 
   if (!isVisible || !maintenanceConfig.dashboardBanner) {
     return null;

@@ -60,7 +60,7 @@ type WelcomeDialogContent = {
 };
 
 
-type Countdown = {
+export type Countdown = {
     days: number;
     hours: number;
     minutes: number;
@@ -74,6 +74,8 @@ export type MaintenanceConfig = {
     dashboardBanner: {
         show: boolean;
         targetDate: string;
+        timerMode: 'targetDate' | 'manual';
+        manualCountdown: Countdown;
         category: string;
         upcomingFeatureDetails: string;
     };
@@ -102,7 +104,9 @@ const defaultMaintenanceConfig: MaintenanceConfig = {
     devPassword: 'aman',
     dashboardBanner: {
         show: true,
-        targetDate: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString(), // Default to 5 days from now
+        targetDate: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString(),
+        timerMode: 'targetDate',
+        manualCountdown: { days: 5, hours: 0, minutes: 0, seconds: 0 },
         category: 'Bug Fix',
         upcomingFeatureDetails: '1. bug fix\n2. may be some feature not working',
     },
