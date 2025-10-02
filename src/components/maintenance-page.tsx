@@ -32,52 +32,36 @@ const CountdownBox = ({ value, label }: { value: string; label: string }) => (
 export function MaintenancePage() {
   const router = useRouter();
   const { maintenanceConfig, setMaintenanceConfig, setDevMode } = useMaintenance();
-  const { maintenanceCountdown, maintenanceMessage } = maintenanceConfig;
+  const { maintenanceTargetDate, maintenanceMessage } = maintenanceConfig;
   const { toast } = useToast();
   
   const [clickCount, setClickCount] = useState(0);
   const [isPasswordDialogOpen, setIsPasswordDialogOpen] = useState(false);
   const [password, setPassword] = useState('');
-  const [timeLeft, setTimeLeft] = useState(maintenanceCountdown);
+  const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
 
   useEffect(() => {
-    setTimeLeft(maintenanceCountdown);
-  }, [maintenanceCountdown]);
+    const target = new Date(maintenanceTargetDate);
+    const updateCountdown = () => {
+      const now = new Date();
+      const difference = target.getTime() - now.getTime();
+      
+      if(difference > 0) {
+        const days = Math.floor(difference / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((difference / (1000 * 60 * 60)) % 24);
+        const minutes = Math.floor((difference / 1000 / 60) % 60);
+        const seconds = Math.floor((difference / 1000) % 60);
+        setTimeLeft({ days, hours, minutes, seconds });
+      } else {
+        setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+      }
+    };
 
-  useEffect(() => {
-    if (timeLeft.days <= 0 && timeLeft.hours <= 0 && timeLeft.minutes <= 0 && timeLeft.seconds <= 0) {
-      return;
-    }
+    updateCountdown();
+    const interval = setInterval(updateCountdown, 1000);
+    return () => clearInterval(interval);
+  }, [maintenanceTargetDate]);
 
-    const timer = setTimeout(() => {
-        let { days, hours, minutes, seconds } = timeLeft;
-
-        if (seconds > 0) {
-            seconds--;
-        } else if (minutes > 0) {
-            seconds = 59;
-            minutes--;
-        } else if (hours > 0) {
-            seconds = 59;
-            minutes = 59;
-            hours--;
-        } else if (days > 0) {
-            seconds = 59;
-            minutes = 59;
-            hours = 23;
-            days--;
-        }
-
-        const newTimeLeft = { days, hours, minutes, seconds };
-
-        if(days <= 0 && hours <= 0 && minutes <= 0 && seconds <= 0){
-             setMaintenanceConfig(prev => ({ ...prev, maintenanceCountdown: { days: 0, hours: 0, minutes: 0, seconds: 0 } }));
-        } else {
-             setMaintenanceConfig(prev => ({ ...prev, maintenanceCountdown: newTimeLeft }));
-        }
-    }, 1000);
-    return () => clearTimeout(timer);
-  }, [timeLeft, setMaintenanceConfig]);
 
   const handleIconClick = () => {
     const newClickCount = clickCount + 1;
@@ -137,7 +121,7 @@ export function MaintenancePage() {
             </div>
           ) : (
              <div className="flex justify-center gap-3">
-                <CountdownBox value={String(timeLeft.days).padStart(2, '0')} label="DAYS" />
+                <CountdownBox value={String(timeLeft.days)} label="DAYS" />
                 <CountdownBox value={String(timeLeft.hours).padStart(2, '0')} label="HOURS" />
                 <CountdownBox value={String(timeLeft.minutes).padStart(2, '0')} label="MINUTES" />
                 <CountdownBox value={String(timeLeft.seconds).padStart(2, '0')} label="SECONDS" />

@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import React, { useState, useEffect } from 'react';
@@ -32,8 +33,8 @@ const iconMap: { [key: string]: Icon } = {
 
 export function WhatsNewPage() {
   const { maintenanceConfig } = useMaintenance();
-  const { show: showBanner, countdown, category, upcomingFeatureDetails } = maintenanceConfig.dashboardBanner || {};
-  const [timeLeft, setTimeLeft] = useState(countdown || { days: 0, hours: 0, minutes: 0, seconds: 0 });
+  const { show: showBanner, targetDate, category, upcomingFeatureDetails } = maintenanceConfig.dashboardBanner || {};
+  const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
   const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
@@ -41,39 +42,30 @@ export function WhatsNewPage() {
   }, []);
 
   useEffect(() => {
-    if (countdown) {
-      setTimeLeft(countdown);
-    }
-  }, [countdown]);
+    if (!isClient || !targetDate) return;
 
+    const target = new Date(targetDate);
 
-  useEffect(() => {
-    if (!isClient) return;
-    const timer = setTimeout(() => {
-      setTimeLeft(prevTime => {
-        if (!prevTime) return { days: 0, hours: 0, minutes: 0, seconds: 0 };
-        let { days, hours, minutes, seconds } = prevTime;
-        if (seconds > 0) seconds--;
-        else {
-          seconds = 59;
-          if (minutes > 0) minutes--;
-          else {
-            minutes = 59;
-            if (hours > 0) hours--;
-            else {
-              hours = 23;
-              if (days > 0) days--;
-            }
-          }
-        }
-        if(days <= 0 && hours <= 0 && minutes <= 0 && seconds <= 0){
-             return { days: 0, hours: 0, minutes: 0, seconds: 0 };
-        }
-        return { days, hours, minutes, seconds };
-      });
-    }, 1000);
-    return () => clearTimeout(timer);
-  }, [timeLeft, isClient]);
+    const updateCountdown = () => {
+      const now = new Date();
+      const difference = target.getTime() - now.getTime();
+      
+      if(difference > 0) {
+        const days = Math.floor(difference / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((difference / (1000 * 60 * 60)) % 24);
+        const minutes = Math.floor((difference / 1000 / 60) % 60);
+        const seconds = Math.floor((difference / 1000) % 60);
+        setTimeLeft({ days, hours, minutes, seconds });
+      } else {
+        setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+      }
+    };
+    
+    updateCountdown();
+    const interval = setInterval(updateCountdown, 1000);
+    return () => clearInterval(interval);
+
+  }, [isClient, targetDate]);
 
   const updateItems = maintenanceConfig.updateItems || [];
 
@@ -85,7 +77,7 @@ export function WhatsNewPage() {
                 <CardContent className="p-4 text-center space-y-4">
                      <h2 className="text-lg font-semibold">Next Update In</h2>
                      <div className="flex justify-center gap-3">
-                        <CountdownBox value={String(timeLeft.days).padStart(2, '0')} label="DAYS" />
+                        <CountdownBox value={String(timeLeft.days)} label="DAYS" />
                         <CountdownBox value={String(timeLeft.hours).padStart(2, '0')} label="HOURS" />
                         <CountdownBox value={String(timeLeft.minutes).padStart(2, '0')} label="MINUTES" />
                         <CountdownBox value={String(timeLeft.seconds).padStart(2, '0')} label="SECONDS" />
