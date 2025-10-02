@@ -109,11 +109,12 @@ export default function DashboardPage() {
   const [showWelcomeDialog, setShowWelcomeDialog] = useState(false);
 
   useEffect(() => {
+    if (isMaintenanceLoading) return;
     const welcomeSeen = localStorage.getItem('sutradhaar_welcome_seen');
     if (!welcomeSeen) {
       setShowWelcomeDialog(true);
     }
-  }, []);
+  }, [isMaintenanceLoading]);
 
   const handleWelcomeConfirm = (dontShowAgain: boolean) => {
     if (dontShowAgain) {
@@ -153,7 +154,7 @@ export default function DashboardPage() {
     )
   }
 
-  const { appInfo, ownerInfo, updateItems, comingSoonItems } = maintenanceConfig;
+  const { appInfo, ownerInfo, updateItems, comingSoonItems, welcomeDialog } = maintenanceConfig;
   const { allTimeActivities = 0, todayActivities = 0, streak = 0 } = profile.stats || {};
 
   const visibleQuickAccessItems = showMore ? quickAccessItems : quickAccessItems.slice(0, 6);
@@ -366,7 +367,13 @@ export default function DashboardPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-      <WelcomeDialog open={showWelcomeDialog} onOpenChange={setShowWelcomeDialog} onConfirm={handleWelcomeConfirm} />
+      <WelcomeDialog 
+        open={showWelcomeDialog} 
+        onOpenChange={setShowWelcomeDialog} 
+        onConfirm={handleWelcomeConfirm}
+        title={welcomeDialog.title}
+        description={welcomeDialog.description}
+      />
       </div>
     </div>
   );
@@ -374,4 +381,5 @@ export default function DashboardPage() {
     
 
     
+
 

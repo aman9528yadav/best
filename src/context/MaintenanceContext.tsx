@@ -54,6 +54,11 @@ type AboutPageContent = {
     roadmap: RoadmapItem[];
 };
 
+type WelcomeDialogContent = {
+    title: string;
+    description: string;
+};
+
 
 type Countdown = {
     days: number;
@@ -68,15 +73,16 @@ export type MaintenanceConfig = {
     devPassword?: string;
     dashboardBanner: {
         show: boolean;
-        countdown: Countdown;
+        targetDate: string;
         category: string;
         upcomingFeatureDetails: string;
     };
-    maintenanceCountdown: Countdown;
+    maintenanceTargetDate: string;
     maintenanceMessage: string;
     updateItems: UpdateItem[];
     aboutPageContent: AboutPageContent;
     comingSoonItems: ComingSoonItem[];
+    welcomeDialog: WelcomeDialogContent;
 };
 
 
@@ -96,21 +102,11 @@ const defaultMaintenanceConfig: MaintenanceConfig = {
     devPassword: 'aman',
     dashboardBanner: {
         show: true,
-        countdown: {
-            days: 1,
-            hours: 10,
-            minutes: 59,
-            seconds: 32,
-        },
+        targetDate: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString(), // Default to 5 days from now
         category: 'Bug Fix',
         upcomingFeatureDetails: '1. bug fix\n2. may be some feature not working',
     },
-    maintenanceCountdown: {
-      days: 0,
-      hours: 2,
-      minutes: 30,
-      seconds: 0,
-    },
+    maintenanceTargetDate: new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString(), // Default to 2 hours from now
     maintenanceMessage: "We're currently performing scheduled maintenance to improve our services. We're working as quickly as possible to restore service.",
     updateItems: [
         {
@@ -172,15 +168,17 @@ const defaultMaintenanceConfig: MaintenanceConfig = {
             description: 'Context-aware steps',
         },
     ],
+    welcomeDialog: {
+        title: "Welcome to Sutradhaar!",
+        description: "This is a smart unit converter and calculator app designed to make your life easier. Explore all the features available to you."
+    }
 };
 
 export const MaintenanceProvider = ({ children }: { children: ReactNode }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [maintenanceConfig, setMaintenanceConfigState] = useState<MaintenanceConfig>(defaultMaintenanceConfig);
   const configRef = ref(rtdb, 'config');
-  const isInitialLoad = useRef(true);
 
-  // Function to save the entire config to DB
   const updateConfigInDb = (config: MaintenanceConfig) => {
     return set(configRef, config).catch(error => {
       console.error("Error updating maintenance config:", error);
@@ -200,34 +198,29 @@ export const MaintenanceProvider = ({ children }: { children: ReactNode }) => {
       (snapshot) => {
         if (snapshot.exists()) {
             const dbConfig = snapshot.val();
-            // Deep merge to avoid losing nested defaults
             const mergedConfig = {
                 ...defaultMaintenanceConfig,
                 ...dbConfig,
                 dashboardBanner: { ...defaultMaintenanceConfig.dashboardBanner, ...(dbConfig.dashboardBanner || {}) },
-                maintenanceCountdown: { ...defaultMaintenanceConfig.maintenanceCountdown, ...(dbConfig.maintenanceCountdown || {}) },
-                updateItems: dbConfig.updateItems || defaultMaintenanceConfig.updateItems,
                 aboutPageContent: {
                     ...defaultMaintenanceConfig.aboutPageContent,
                     ...(dbConfig.aboutPageContent || {}),
                     roadmap: dbConfig.aboutPageContent?.roadmap || defaultMaintenanceConfig.aboutPageContent.roadmap,
                 },
                 comingSoonItems: dbConfig.comingSoonItems || defaultMaintenanceConfig.comingSoonItems,
+                welcomeDialog: { ...defaultMaintenanceConfig.welcomeDialog, ...(dbConfig.welcomeDialog || {}) },
             };
             setMaintenanceConfigState(mergedConfig);
         } else {
-            // If no config in DB, set the default one
             updateConfigInDb(defaultMaintenanceConfig);
             setMaintenanceConfigState(defaultMaintenanceConfig);
         }
         setIsLoading(false);
-        isInitialLoad.current = false;
       }, 
       (error) => {
           console.error("Error fetching maintenance config:", error);
           setMaintenanceConfigState(defaultMaintenanceConfig); // Fallback to default
           setIsLoading(false);
-          isInitialLoad.current = false;
       });
 
     return () => unsubscribe();

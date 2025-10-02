@@ -19,7 +19,7 @@ import {
 } from '@/components/ui/accordion';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import { ArrowLeft, Clock, Shield, Trash, Megaphone, Pencil, ChevronRight, Send, KeyRound } from 'lucide-react';
+import { ArrowLeft, Clock, Shield, Trash, Megaphone, Pencil, ChevronRight, Send, KeyRound, MessageSquare } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useMaintenance } from '@/context/MaintenanceContext';
 import { useToast } from '@/hooks/use-toast';
@@ -50,7 +50,7 @@ export function DevPanel() {
     setMaintenanceConfig,
     isLoading,
   } = useMaintenance();
-  const { globalMaintenance, dashboardBanner, maintenanceCountdown, maintenanceMessage } = maintenanceConfig;
+  const { globalMaintenance, dashboardBanner, maintenanceMessage, devPassword, welcomeDialog } = maintenanceConfig;
   const [broadcastMessage, setBroadcastMessage] = useState('');
   const { clearAllHistory } = useHistory();
   const [passwordState, setPasswordState] = useState({ currentPassword: '', newPassword: '', confirmNewPassword: '' });
@@ -82,7 +82,6 @@ export function DevPanel() {
     try {
         localStorage.clear();
         clearAllHistory('all');
-        // We don't clear notifications here, that's a separate concern for the user.
         toast({
             title: "Local Storage Cleared",
             description: "All application data stored in your browser has been cleared.",
@@ -107,29 +106,6 @@ export function DevPanel() {
     }));
   }
   
-  const handleBannerCountdownChange = (field: 'days' | 'hours' | 'minutes' | 'seconds', value: string) => {
-     setMaintenanceConfig(prev => ({
-        ...prev,
-        dashboardBanner: {
-            ...prev.dashboardBanner,
-            countdown: {
-                ...prev.dashboardBanner.countdown,
-                [field]: parseInt(value, 10) || 0
-            }
-        }
-    }));
-  }
-
-  const handleMaintenanceCountdownChange = (field: 'days' | 'hours' | 'minutes' | 'seconds', value: string) => {
-     setMaintenanceConfig(prev => ({
-        ...prev,
-        maintenanceCountdown: {
-            ...prev.maintenanceCountdown,
-            [field]: parseInt(value, 10) || 0
-        }
-    }));
-  }
-
   const handleMaintenanceMessageChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setMaintenanceConfig(prev => ({ ...prev, maintenanceMessage: e.target.value }));
   }
@@ -175,7 +151,7 @@ export function DevPanel() {
 
   const handleChangeDevPassword = () => {
     const { currentPassword, newPassword, confirmNewPassword } = passwordState;
-    if (currentPassword !== (maintenanceConfig.devPassword || 'aman')) {
+    if (currentPassword !== (devPassword || 'aman')) {
         toast({ title: "Incorrect Current Password", variant: "destructive" });
         return;
     }
@@ -192,6 +168,16 @@ export function DevPanel() {
     toast({ title: "Developer password updated successfully!" });
     setPasswordState({ currentPassword: '', newPassword: '', confirmNewPassword: '' });
   };
+  
+  const handleWelcomeDialogChange = (field: 'title' | 'description', value: string) => {
+    setMaintenanceConfig(prev => ({
+        ...prev,
+        welcomeDialog: {
+            ...prev.welcomeDialog,
+            [field]: value
+        }
+    }));
+  }
 
 
   return (
@@ -252,13 +238,12 @@ export function DevPanel() {
                       )}
                     </div>
                     <div className="bg-accent/50 p-4 rounded-lg space-y-2">
-                      <Label>Maintenance Page Countdown</Label>
-                      <div className="grid grid-cols-2 gap-2">
-                        <div><Label className="text-xs">Days</Label><Input type="number" value={maintenanceCountdown.days} onChange={e => handleMaintenanceCountdownChange('days', e.target.value)} /></div>
-                        <div><Label className="text-xs">Hours</Label><Input type="number" value={maintenanceCountdown.hours} onChange={e => handleMaintenanceCountdownChange('hours', e.target.value)} /></div>
-                        <div><Label className="text-xs">Minutes</Label><Input type="number" value={maintenanceCountdown.minutes} onChange={e => handleMaintenanceCountdownChange('minutes', e.target.value)} /></div>
-                        <div><Label className="text-xs">Seconds</Label><Input type="number" value={maintenanceCountdown.seconds} onChange={e => handleMaintenanceCountdownChange('seconds', e.target.value)} /></div>
-                      </div>
+                      <Label>Maintenance Page Target Date</Label>
+                      <Input 
+                        type="datetime-local" 
+                        value={maintenanceConfig.maintenanceTargetDate.substring(0, 16)} 
+                        onChange={e => setMaintenanceConfig(prev => ({...prev, maintenanceTargetDate: new Date(e.target.value).toISOString()}))} 
+                      />
                    </div>
                     <div className="bg-accent/50 p-4 rounded-lg space-y-2">
                         <Label htmlFor="maintenance-message">Maintenance Page Message</Label>
@@ -290,13 +275,12 @@ export function DevPanel() {
                     <Switch id="show-banner" checked={dashboardBanner.show} onCheckedChange={(c) => handleBannerChange('show', c)} />
                   </div>
                    <div className="bg-accent/50 p-4 rounded-lg space-y-2">
-                      <Label>Banner Countdown Timer</Label>
-                      <div className="grid grid-cols-2 gap-2">
-                        <div><Label className="text-xs">Days</Label><Input type="number" value={dashboardBanner.countdown.days} onChange={e => handleBannerCountdownChange('days', e.target.value)} /></div>
-                        <div><Label className="text-xs">Hours</Label><Input type="number" value={dashboardBanner.countdown.hours} onChange={e => handleBannerCountdownChange('hours', e.target.value)} /></div>
-                        <div><Label className="text-xs">Minutes</Label><Input type="number" value={dashboardBanner.countdown.minutes} onChange={e => handleBannerCountdownChange('minutes', e.target.value)} /></div>
-                        <div><Label className="text-xs">Seconds</Label><Input type="number" value={dashboardBanner.countdown.seconds} onChange={e => handleBannerCountdownChange('seconds', e.target.value)} /></div>
-                      </div>
+                      <Label>Banner Countdown Target Date</Label>
+                      <Input 
+                        type="datetime-local" 
+                        value={dashboardBanner.targetDate.substring(0, 16)} 
+                        onChange={e => handleBannerChange('targetDate', new Date(e.target.value).toISOString())} 
+                      />
                    </div>
                    <div className="bg-accent/50 p-4 rounded-lg space-y-2">
                       <Label htmlFor="banner-category">Category</Label>
@@ -344,6 +328,34 @@ export function DevPanel() {
                       <ChevronRight className="h-4 w-4" />
                     </Link>
                   </Button>
+                </AccordionContent>
+              </Card>
+            </AccordionItem>
+            
+             <AccordionItem value="item-5" asChild>
+              <Card>
+                 <CardHeader className="p-4">
+                  <AccordionTrigger className="p-0 hover:no-underline">
+                    <div className="flex items-center gap-3">
+                      <MessageSquare className="h-5 w-5" />
+                      <div>
+                        <CardTitle className="text-lg">Welcome Dialog</CardTitle>
+                        <CardDescription>
+                          Edit the welcome dialog content.
+                        </CardDescription>
+                      </div>
+                    </div>
+                  </AccordionTrigger>
+                </CardHeader>
+                <AccordionContent className="px-4 pb-4 space-y-4">
+                     <div className="bg-accent/50 p-4 rounded-lg space-y-2">
+                      <Label htmlFor="welcome-title">Title</Label>
+                      <Input id="welcome-title" value={welcomeDialog.title} onChange={e => handleWelcomeDialogChange('title', e.target.value)} />
+                   </div>
+                   <div className="bg-accent/50 p-4 rounded-lg space-y-2">
+                      <Label htmlFor="welcome-description">Description</Label>
+                      <Textarea id="welcome-description" value={welcomeDialog.description} onChange={e => handleWelcomeDialogChange('description', e.target.value)} />
+                   </div>
                 </AccordionContent>
               </Card>
             </AccordionItem>

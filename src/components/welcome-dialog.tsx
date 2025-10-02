@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState } from 'react';
@@ -17,9 +18,11 @@ interface WelcomeDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onConfirm: (dontShowAgain: boolean) => void;
+  title: string;
+  description: string;
 }
 
-export function WelcomeDialog({ open, onOpenChange, onConfirm }: WelcomeDialogProps) {
+export function WelcomeDialog({ open, onOpenChange, onConfirm, title, description }: WelcomeDialogProps) {
   const [dontShowAgain, setDontShowAgain] = useState(false);
 
   const handleConfirm = () => {
@@ -30,9 +33,9 @@ export function WelcomeDialog({ open, onOpenChange, onConfirm }: WelcomeDialogPr
     <AlertDialog open={open} onOpenChange={onOpenChange}>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Welcome to Sutradhaar!</AlertDialogTitle>
+          <AlertDialogTitle>{title}</AlertDialogTitle>
           <AlertDialogDescription>
-            This is a smart unit converter and calculator app designed to make your life easier. Explore all the features available to you.
+            {description}
           </AlertDialogDescription>
         </AlertDialogHeader>
         <div className="flex items-center space-x-2">
