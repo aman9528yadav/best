@@ -17,6 +17,17 @@ import {
   TabsList,
   TabsTrigger,
 } from '@/components/ui/tabs';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 import {
   Phone,
@@ -30,6 +41,7 @@ import {
   Mail,
   Eye,
   EyeOff,
+  Trash2,
 } from 'lucide-react';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { useProfile } from '@/context/ProfileContext';
@@ -65,7 +77,7 @@ const PasswordField = ({ label, id, value, onChange }: { label: string, id: stri
 
 
 export function EditProfilePage() {
-    const { profile, setProfile } = useProfile();
+    const { profile, setProfile, deleteAllUserData } = useProfile();
     const { changePassword } = useAuth();
     const [formData, setFormData] = useState(profile);
     const [passwordData, setPasswordData] = useState({ currentPassword: '', newPassword: '', confirmPassword: '' });
@@ -124,6 +136,14 @@ export function EditProfilePage() {
             setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
         }
     };
+    
+    const handleDeleteData = () => {
+        deleteAllUserData();
+        toast({
+            title: "All Data Deleted",
+            description: "Your profile and history have been permanently removed.",
+        });
+    }
 
     return (
         <div className="w-full space-y-6 pb-12">
@@ -174,13 +194,39 @@ export function EditProfilePage() {
                             </div>
                         </TabsContent>
                          <TabsContent value="security" className="pt-6 text-left">
-                            <form className="space-y-6" onSubmit={handleChangePasswordSubmit}>
-                                <h3 className="text-lg font-semibold">Change Password</h3>
-                                <PasswordField label="Current Password" id="currentPassword" value={passwordData.currentPassword} onChange={handlePasswordChange} />
-                                <PasswordField label="New Password" id="newPassword" value={passwordData.newPassword} onChange={handlePasswordChange} />
-                                <PasswordField label="Confirm New Password" id="confirmPassword" value={passwordData.confirmPassword} onChange={handlePasswordChange} />
-                                <Button size="lg" type="submit" className="w-full">Change Password</Button>
-                            </form>
+                            <div className="space-y-6">
+                                <form className="space-y-6" onSubmit={handleChangePasswordSubmit}>
+                                    <h3 className="text-lg font-semibold">Change Password</h3>
+                                    <PasswordField label="Current Password" id="currentPassword" value={passwordData.currentPassword} onChange={handlePasswordChange} />
+                                    <PasswordField label="New Password" id="newPassword" value={passwordData.newPassword} onChange={handlePasswordChange} />
+                                    <PasswordField label="Confirm New Password" id="confirmPassword" value={passwordData.confirmPassword} onChange={handlePasswordChange} />
+                                    <Button size="lg" type="submit" className="w-full">Change Password</Button>
+                                </form>
+
+                                <div className="space-y-4 pt-4 border-t">
+                                     <h3 className="text-lg font-semibold text-destructive">Danger Zone</h3>
+                                     <AlertDialog>
+                                        <AlertDialogTrigger asChild>
+                                            <Button variant="destructive" className="w-full gap-2">
+                                                <Trash2 className="h-4 w-4" />
+                                                Delete All Data
+                                            </Button>
+                                        </AlertDialogTrigger>
+                                        <AlertDialogContent>
+                                            <AlertDialogHeader>
+                                            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                                            <AlertDialogDescription>
+                                                This action is irreversible. All your profile information, history, notes, and settings will be permanently deleted from our servers and your device.
+                                            </AlertDialogDescription>
+                                            </AlertDialogHeader>
+                                            <AlertDialogFooter>
+                                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                            <AlertDialogAction onClick={handleDeleteData}>Yes, delete everything</AlertDialogAction>
+                                            </AlertDialogFooter>
+                                        </AlertDialogContent>
+                                    </AlertDialog>
+                                </div>
+                            </div>
                         </TabsContent>
                     </Tabs>
 

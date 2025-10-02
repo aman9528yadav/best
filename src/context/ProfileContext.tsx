@@ -3,7 +3,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, ReactNode, useEffect, useRef } from 'react';
-import { doc, getDoc, setDoc, onSnapshot } from 'firebase/firestore';
+import { doc, getDoc, setDoc, onSnapshot, deleteDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useAuth } from './AuthContext';
 import { isToday, differenceInCalendarDays, startOfDay, isYesterday } from 'date-fns';
@@ -65,6 +65,7 @@ type ProfileContextType = {
   restoreNote: (id: string) => void;
   toggleFavoriteNote: (id: string) => void;
   getNoteById: (id: string) => NoteItem | undefined;
+  deleteAllUserData: () => void;
 };
 
 const ProfileContext = createContext<ProfileContextType | undefined>(undefined);
@@ -119,7 +120,7 @@ const guestProfileDefault: UserProfile = {
 export const ProfileProvider = ({ children }: { children: ReactNode }) => {
   const [profile, setProfileState] = useState<UserProfile>(getInitialProfile());
   const [isLoading, setIsLoading] = useState(true);
-  const { user, loading: authLoading } = useAuth();
+  const { user, loading: authLoading, logout } = useAuth();
   
   // Ref to track if initial data load is complete
   const dataLoaded = useRef(false);
@@ -320,6 +321,23 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
       };
     });
   };
+  
+  const deleteAllUserData = async () => {
+    if (user) {
+        const docRef = doc(db, 'users', user.uid);
+        await deleteDoc(docRef);
+        // Also clear any other DB paths, e.g. RTDB
+    }
+    // Clear all local storage keys used by the app
+    Object.keys(localStorage).forEach(key => {
+        if(key.startsWith('unitwise_')) {
+            localStorage.removeItem(key);
+        }
+    });
+    // Reset state to default and log out
+    setProfileState(getInitialProfile());
+    logout();
+  };
 
   return (
     <ProfileContext.Provider value={{ 
@@ -335,6 +353,7 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
         restoreNote,
         toggleFavoriteNote,
         getNoteById,
+        deleteAllUserData,
     }}>
       {children}
     </ProfileContext.Provider>
