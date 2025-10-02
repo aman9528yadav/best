@@ -2,7 +2,7 @@
 
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import {
   Card,
   CardContent,
@@ -30,15 +30,6 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter
-} from '@/components/ui/dialog';
-
-import {
   Phone,
   MapPin,
   Cake,
@@ -47,14 +38,10 @@ import {
   EyeOff,
   Trash2,
 } from 'lucide-react';
-import { PlaceHolderImages, ImagePlaceholder } from '@/lib/placeholder-images';
 import { useProfile } from '@/context/ProfileContext';
 import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
-import { ScrollArea } from './ui/scroll-area';
-import { cn } from '@/lib/utils';
-import Image from 'next/image';
 
 
 const InputField = ({ icon: Icon, label, id, value, placeholder, onChange, type = 'text' }: { icon?: React.ElementType, label: string, id: string, value: string, placeholder?: string, onChange: (e: React.ChangeEvent<HTMLInputElement>) => void, type?: string }) => (
@@ -82,40 +69,13 @@ const PasswordField = ({ label, id, value, onChange }: { label: string, id: stri
     );
 };
 
-const AvatarSelectionDialog = ({ open, onOpenChange, onSelectAvatar }: { open: boolean, onOpenChange: (open: boolean) => void, onSelectAvatar: (id: string) => void }) => {
-    const avatars = PlaceHolderImages.filter(p => p.id.startsWith('user-avatar-'));
-    return (
-        <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent>
-                <DialogHeader>
-                    <DialogTitle>Choose Your Avatar</DialogTitle>
-                    <DialogDescription>Select a profile picture from the options below.</DialogDescription>
-                </DialogHeader>
-                <ScrollArea className="h-96">
-                    <div className="grid grid-cols-3 gap-4 p-4">
-                        {avatars.map(avatar => (
-                            <button key={avatar.id} onClick={() => onSelectAvatar(avatar.id)} className="p-2 border-2 border-transparent hover:border-primary rounded-lg transition-all focus:outline-none focus:ring-2 focus:ring-primary">
-                                <Avatar className="h-20 w-20">
-                                    <AvatarImage src={avatar.imageUrl} alt={avatar.description} />
-                                </Avatar>
-                            </button>
-                        ))}
-                    </div>
-                </ScrollArea>
-            </DialogContent>
-        </Dialog>
-    );
-};
-
-
 export function EditProfilePage() {
     const { profile, setProfile, deleteAllUserData } = useProfile();
     const { changePassword } = useAuth();
     const [formData, setFormData] = useState(profile);
     const [passwordData, setPasswordData] = useState({ currentPassword: '', newPassword: '', confirmPassword: '' });
-    const [isAvatarDialogOpen, setIsAvatarDialogOpen] = useState(false);
+    const fileInputRef = useRef<HTMLInputElement>(null);
     
-    const userAvatar = PlaceHolderImages.find(p => p.id === formData.photoId);
     const { toast } = useToast();
     const router = useRouter();
 
@@ -127,26 +87,27 @@ export function EditProfilePage() {
         }));
     };
     
-    const handleSocialChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const { name, value } = e.target;
-        setFormData(prev => ({
-            ...prev,
-            socialLinks: {
-                ...prev.socialLinks,
-                [name]: value,
-            }
-        }));
-    };
-    
     const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
         setPasswordData(prev => ({ ...prev, [name]: value }));
     };
     
-    const handleSelectAvatar = (id: string) => {
-        setFormData(prev => ({ ...prev, photoId: id }));
-        setIsAvatarDialogOpen(false);
-    }
+    const handleAvatarClick = () => {
+        fileInputRef.current?.click();
+    };
+
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                const dataUrl = reader.result as string;
+                setFormData(prev => ({ ...prev, photoUrl: dataUrl }));
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+
 
     const handleSaveChanges = () => {
         setProfile(formData);
@@ -199,13 +160,19 @@ export function EditProfilePage() {
                         <TabsContent value="account" className="pt-6">
                             <div className="flex flex-col items-center space-y-4">
                                 <Avatar className="h-24 w-24 border-4 border-background shadow-md">
-                                    {userAvatar && <AvatarImage src={userAvatar.imageUrl} alt="User Avatar" />}
+                                     <AvatarImage src={formData.photoUrl} alt="User Avatar" />
                                     <div className="h-full w-full rounded-full bg-gradient-to-br from-primary to-purple-400 flex items-center justify-center">
                                         <span className="text-4xl font-bold text-primary-foreground">{profile.name.charAt(0)}</span>
                                     </div>
                                 </Avatar>
-                                <Button variant="link" className="text-primary" onClick={() => setIsAvatarDialogOpen(true)}>Change Photo</Button>
-                                <AvatarSelectionDialog open={isAvatarDialogOpen} onOpenChange={setIsAvatarDialogOpen} onSelectAvatar={handleSelectAvatar} />
+                                 <input
+                                    type="file"
+                                    ref={fileInputRef}
+                                    onChange={handleFileChange}
+                                    className="hidden"
+                                    accept="image/*"
+                                />
+                                <Button variant="link" className="text-primary" onClick={handleAvatarClick}>Change Photo</Button>
                             </div>
                             
                             <div className="space-y-6 text-left mt-8">

@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import React from 'react';
@@ -32,7 +33,6 @@ import {
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import Image from 'next/image';
-import { PlaceHolderImages } from '@/lib/placeholder-images';
 import Link from 'next/link';
 import { useProfile } from '@/context/ProfileContext';
 import { useHistory } from '@/context/HistoryContext';
@@ -65,12 +65,10 @@ export function ProfilePage() {
     
     const { allTimeActivities = 0, daysActive = 0 } = profile.stats || {};
     const totalNotes = profile.notes.filter(n => !n.isTrashed).length;
-
-    const userAvatar = PlaceHolderImages.find(p => p.id === profile.photoId);
     
     const displayName = user?.displayName || profile.name;
     const displayEmail = user?.email || profile.email;
-    const displayAvatar = user?.photoURL || userAvatar?.imageUrl;
+    const displayAvatar = user?.photoURL || profile.photoUrl;
     const avatarFallback = displayName.charAt(0).toUpperCase();
 
     const isOwner = displayEmail === 'amanyadavyadav9458@gmail.com';
