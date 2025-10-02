@@ -1,10 +1,9 @@
 
-
 "use client";
 
 import React, { createContext, useContext, useState, ReactNode, useEffect, useRef } from 'react';
-import { doc, getDoc, setDoc, onSnapshot, deleteDoc } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { ref, onValue, set, remove } from "firebase/database";
+import { rtdb } from '@/lib/firebase';
 import { useAuth } from './AuthContext';
 import { isToday, differenceInCalendarDays, startOfDay, isYesterday } from 'date-fns';
 
@@ -51,6 +50,7 @@ export type UserProfile = {
   notes: NoteItem[];
   activityLog: ActivityLogItem[];
   photoUrl?: string;
+  photoId?: string;
 };
 
 type ProfileContextType = {
@@ -98,6 +98,7 @@ const getInitialProfile = (): UserProfile => {
     notes: [],
     activityLog: [],
     photoUrl: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxtYW4lMjBwb3J0cmFpdHxlbnwwfHx8fDE3NTkwNzk5MTd8MA&ixlib=rb-4.1.0&q=80&w=1080",
+    photoId: 'user-avatar-1',
   };
 };
 
@@ -118,6 +119,7 @@ const guestProfileDefault: UserProfile = {
     notes: [],
     activityLog: [],
     photoUrl: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxtYW4lMjBwb3J0cmFpdHxlbnwwfHx8fDE3NTkwNzk5MTd8MA&ixlib=rb-4.1.0&q=80&w=1080",
+    photoId: 'user-avatar-1',
 }
 
 export const ProfileProvider = ({ children }: { children: ReactNode }) => {
@@ -158,16 +160,15 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
     
     if (user) {
       setIsLoading(true);
-      const docRef = doc(db, 'users', user.uid);
+      const userRef = ref(rtdb, `users/${user.uid}/profile`);
       
-      const unsubscribe = onSnapshot(docRef, async (snapshot) => {
+      const unsubscribe = onValue(userRef, async (snapshot) => {
         if (snapshot.exists()) {
-          const fetchedData = snapshot.data() as Partial<UserProfile>;
+          const fetchedData = snapshot.val() as Partial<UserProfile>;
           
           const stats = { ...defaultStats, ...(fetchedData.stats || {}) };
           const notes = fetchedData.notes || [];
           const activityLog = fetchedData.activityLog || [];
-
 
           const fullProfile = {
             ...getInitialProfile(),
@@ -189,8 +190,9 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
             notes: [],
             activityLog: [],
             photoUrl: user.photoURL || guestProfileDefault.photoUrl,
+            photoId: guestProfileDefault.photoId
           };
-          await setDoc(docRef, newProfile);
+          await set(userRef, newProfile);
           setProfileState(newProfile);
         }
         setIsLoading(false);
@@ -211,9 +213,9 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
         const updatedProfile = typeof newProfileData === 'function' ? newProfileData(currentProfile) : newProfileData;
         
         if (user) {
-            const docRef = doc(db, 'users', user.uid);
-            setDoc(docRef, updatedProfile, { merge: true }).catch(error => {
-                 console.error("Failed to save profile to Firestore", error);
+            const userRef = ref(rtdb, `users/${user.uid}/profile`);
+            set(userRef, updatedProfile).catch(error => {
+                 console.error("Failed to save profile to Realtime DB", error);
             });
         } else {
             try {
@@ -328,9 +330,8 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
   
   const deleteAllUserData = async () => {
     if (user) {
-        const docRef = doc(db, 'users', user.uid);
-        await deleteDoc(docRef);
-        // Also clear any other DB paths, e.g. RTDB
+        const userRef = ref(rtdb, `users/${user.uid}`);
+        await remove(userRef);
     }
     // Clear all local storage keys used by the app
     Object.keys(localStorage).forEach(key => {
