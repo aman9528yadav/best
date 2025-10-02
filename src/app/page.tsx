@@ -66,6 +66,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
+import { WelcomeDialog } from '@/components/welcome-dialog';
 
 const quickAccessItems = [
   {
@@ -105,6 +106,22 @@ export default function DashboardPage() {
 
   const [showMore, setShowMore] = useState(false);
   const [showLoginDialog, setShowLoginDialog] = useState(false);
+  const [showWelcomeDialog, setShowWelcomeDialog] = useState(false);
+
+  useEffect(() => {
+    const welcomeSeen = localStorage.getItem('sutradhaar_welcome_seen');
+    if (!welcomeSeen) {
+      setShowWelcomeDialog(true);
+    }
+  }, []);
+
+  const handleWelcomeConfirm = (dontShowAgain: boolean) => {
+    if (dontShowAgain) {
+      localStorage.setItem('sutradhaar_welcome_seen', 'true');
+    }
+    setShowWelcomeDialog(false);
+  };
+
 
   useEffect(() => {
     if (!isProfileLoading) {
@@ -349,6 +366,7 @@ export default function DashboardPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+      <WelcomeDialog open={showWelcomeDialog} onOpenChange={setShowWelcomeDialog} onConfirm={handleWelcomeConfirm} />
       </div>
     </div>
   );
