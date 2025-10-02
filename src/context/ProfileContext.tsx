@@ -50,6 +50,7 @@ export type UserProfile = {
   stats: UserStats;
   notes: NoteItem[];
   activityLog: ActivityLogItem[];
+  photoId?: string;
 };
 
 type ProfileContextType = {
@@ -96,6 +97,7 @@ const getInitialProfile = (): UserProfile => {
     stats: defaultStats,
     notes: [],
     activityLog: [],
+    photoId: "user-avatar-1",
   };
 };
 
@@ -115,6 +117,7 @@ const guestProfileDefault: UserProfile = {
     stats: defaultStats,
     notes: [],
     activityLog: [],
+    photoId: "user-avatar-1",
 }
 
 export const ProfileProvider = ({ children }: { children: ReactNode }) => {
@@ -185,6 +188,7 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
             stats: defaultStats,
             notes: [],
             activityLog: [],
+            photoId: 'user-avatar-1',
           };
           await setDoc(docRef, newProfile);
           setProfileState(newProfile);

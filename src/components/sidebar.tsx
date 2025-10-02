@@ -32,6 +32,7 @@ import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { ScrollArea } from './ui/scroll-area';
 import { useAuth } from '@/context/AuthContext';
 import { useProfile } from '@/context/ProfileContext';
+import { PlaceHolderImages } from '@/lib/placeholder-images';
 
 const sidebarNavItems = [
   {
@@ -96,8 +97,10 @@ export function Sidebar() {
     setIsClient(true);
   }, []);
 
+  const userAvatar = PlaceHolderImages.find(p => p.id === profile.photoId);
+
   const displayName = user ? (user.displayName || profile.name) : 'Guest';
-  const avatarUrl = user?.photoURL;
+  const avatarUrl = user?.photoURL || userAvatar?.imageUrl;
   const avatarFallback = displayName.charAt(0).toUpperCase();
 
 

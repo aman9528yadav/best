@@ -66,10 +66,11 @@ export function ProfilePage() {
     const { allTimeActivities = 0, daysActive = 0 } = profile.stats || {};
     const totalNotes = profile.notes.filter(n => !n.isTrashed).length;
 
-
+    const userAvatar = PlaceHolderImages.find(p => p.id === profile.photoId);
+    
     const displayName = user?.displayName || profile.name;
     const displayEmail = user?.email || profile.email;
-    const displayAvatar = user?.photoURL;
+    const displayAvatar = user?.photoURL || userAvatar?.imageUrl;
     const avatarFallback = displayName.charAt(0).toUpperCase();
 
     const isOwner = displayEmail === 'amanyadavyadav9458@gmail.com';
