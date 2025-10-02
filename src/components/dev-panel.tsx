@@ -242,7 +242,11 @@ export function DevPanel() {
                       <Input 
                         type="datetime-local" 
                         value={maintenanceConfig.maintenanceTargetDate.substring(0, 16)} 
-                        onChange={e => setMaintenanceConfig(prev => ({...prev, maintenanceTargetDate: new Date(e.target.value).toISOString()}))} 
+                        onChange={e => {
+                            if (e.target.value) {
+                                setMaintenanceConfig(prev => ({...prev, maintenanceTargetDate: new Date(e.target.value).toISOString()}))
+                            }
+                        }} 
                       />
                    </div>
                     <div className="bg-accent/50 p-4 rounded-lg space-y-2">
@@ -279,7 +283,11 @@ export function DevPanel() {
                       <Input 
                         type="datetime-local" 
                         value={dashboardBanner.targetDate.substring(0, 16)} 
-                        onChange={e => handleBannerChange('targetDate', new Date(e.target.value).toISOString())} 
+                        onChange={e => {
+                            if (e.target.value) {
+                                handleBannerChange('targetDate', new Date(e.target.value).toISOString())
+                            }
+                        }} 
                       />
                    </div>
                    <div className="bg-accent/50 p-4 rounded-lg space-y-2">
