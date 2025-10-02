@@ -79,6 +79,11 @@ export function ProfilePage() {
             <Card className="shadow-lg overflow-visible">
                 <CardContent className="p-6 text-center relative">
                      <div className="absolute top-4 right-4 flex gap-2">
+                        <Button asChild variant="outline" size="icon" className="h-9 w-9">
+                           <Link href="/settings">
+                                <Settings className="h-4 w-4" />
+                           </Link>
+                        </Button>
                         <Button asChild variant="outline" size="sm" className="gap-2">
                             <Link href="/profile/edit">
                                 <Pencil className="h-3 w-3" />
