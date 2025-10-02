@@ -110,17 +110,16 @@ export default function DashboardPage() {
 
   useEffect(() => {
     if (isMaintenanceLoading) return;
-    const welcomeSeen = localStorage.getItem('sutradhaar_welcome_seen');
-    if (!welcomeSeen) {
+    
+    const showWelcomeSetting = localStorage.getItem('sutradhaar_show_welcome') === 'true';
+    if (showWelcomeSetting) {
       setShowWelcomeDialog(true);
     }
   }, [isMaintenanceLoading]);
 
-  const handleWelcomeConfirm = (dontShowAgain: boolean) => {
-    if (dontShowAgain) {
-      localStorage.setItem('sutradhaar_welcome_seen', 'true');
-    }
+  const handleWelcomeConfirm = () => {
     setShowWelcomeDialog(false);
+    // User can re-enable from settings if they want
   };
 
 

@@ -48,6 +48,7 @@ import {
   Laptop,
   Code,
   Volume2,
+  MessageSquare,
 } from 'lucide-react';
 import { useMaintenance } from '@/context/MaintenanceContext';
 import { useRouter } from 'next/navigation';
@@ -72,6 +73,7 @@ export function SettingsPage() {
   const { toast } = useToast();
   const [saveHistory, setSaveHistory] = useState(true);
   const [calculatorSounds, setCalculatorSounds] = useState(false);
+  const [showWelcome, setShowWelcome] = useState(false);
   const { theme, setTheme } = useTheme();
   const [isPasswordDialogOpen, setIsPasswordDialogOpen] = useState(false);
   const [password, setPassword] = useState('');
@@ -83,6 +85,8 @@ export function SettingsPage() {
   useEffect(() => {
     const soundsEnabled = localStorage.getItem('sutradhaar_calculator_sounds') === 'true';
     setCalculatorSounds(soundsEnabled);
+    const welcomeEnabled = localStorage.getItem('sutradhaar_show_welcome') === 'true';
+    setShowWelcome(welcomeEnabled);
   }, []);
 
   const handleCalculatorSoundsChange = (checked: boolean) => {
@@ -90,6 +94,14 @@ export function SettingsPage() {
     localStorage.setItem('sutradhaar_calculator_sounds', String(checked));
     toast({
       title: `Calculator sounds ${checked ? 'enabled' : 'disabled'}`,
+    });
+  };
+
+  const handleShowWelcomeChange = (checked: boolean) => {
+    setShowWelcome(checked);
+    localStorage.setItem('sutradhaar_show_welcome', String(checked));
+    toast({
+      title: `Welcome screen on startup ${checked ? 'enabled' : 'disabled'}`,
     });
   };
 
@@ -179,6 +191,12 @@ export function SettingsPage() {
                 <Switch
                   checked={calculatorSounds}
                   onCheckedChange={handleCalculatorSoundsChange}
+                />
+              </SettingRow>
+              <SettingRow label="Show Welcome Screen" icon={MessageSquare}>
+                <Switch
+                  checked={showWelcome}
+                  onCheckedChange={handleShowWelcomeChange}
                 />
               </SettingRow>
               {isOwner && (
