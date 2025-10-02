@@ -130,6 +130,9 @@ function DateDifferenceCalculator() {
                   selected={startDate}
                   onSelect={setStartDate}
                   initialFocus
+                  captionLayout="dropdown-buttons"
+                  fromYear={1900}
+                  toYear={new Date().getFullYear() + 10}
                 />
               </PopoverContent>
             </Popover>
@@ -159,6 +162,9 @@ function DateDifferenceCalculator() {
                   selected={endDate}
                   onSelect={setEndDate}
                   initialFocus
+                  captionLayout="dropdown-buttons"
+                  fromYear={1900}
+                  toYear={new Date().getFullYear() + 10}
                 />
               </PopoverContent>
             </Popover>
@@ -259,7 +265,7 @@ function AddSubtractCalculator() {
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-auto p-0">
-                <Calendar mode="single" selected={startDate} onSelect={(d) => setStartDate(d || new Date())} initialFocus />
+                <Calendar mode="single" selected={startDate} onSelect={(d) => setStartDate(d || new Date())} initialFocus captionLayout="dropdown-buttons" fromYear={1900} toYear={new Date().getFullYear() + 10} />
               </PopoverContent>
             </Popover>
           </div>
@@ -406,11 +412,11 @@ function WorkDaysCalculator() {
                  <div className="space-y-4">
                     <div>
                         <label className="text-sm font-medium text-muted-foreground">Start Date</label>
-                        <Popover><PopoverTrigger asChild><Button variant={"outline"} className="w-full justify-start text-left font-normal h-12 mt-1"><CalendarIcon className="mr-2 h-4 w-4" />{startDate ? format(startDate, "PPP") : <span>Pick a date</span>}</Button></PopoverTrigger><PopoverContent className="w-auto p-0"><Calendar mode="single" selected={startDate} onSelect={setStartDate} initialFocus /></PopoverContent></Popover>
+                        <Popover><PopoverTrigger asChild><Button variant={"outline"} className="w-full justify-start text-left font-normal h-12 mt-1"><CalendarIcon className="mr-2 h-4 w-4" />{startDate ? format(startDate, "PPP") : <span>Pick a date</span>}</Button></PopoverTrigger><PopoverContent className="w-auto p-0"><Calendar mode="single" selected={startDate} onSelect={setStartDate} initialFocus captionLayout="dropdown-buttons" fromYear={1900} toYear={new Date().getFullYear() + 10} /></PopoverContent></Popover>
                     </div>
                     <div>
                         <label className="text-sm font-medium text-muted-foreground">End Date</label>
-                        <Popover><PopoverTrigger asChild><Button variant={"outline"} className="w-full justify-start text-left font-normal h-12 mt-1"><CalendarIcon className="mr-2 h-4 w-4" />{endDate ? format(endDate, "PPP") : <span>Pick a date</span>}</Button></PopoverTrigger><PopoverContent className="w-auto p-0"><Calendar mode="single" selected={endDate} onSelect={setEndDate} initialFocus /></PopoverContent></Popover>
+                        <Popover><PopoverTrigger asChild><Button variant={"outline"} className="w-full justify-start text-left font-normal h-12 mt-1"><CalendarIcon className="mr-2 h-4 w-4" />{endDate ? format(endDate, "PPP") : <span>Pick a date</span>}</Button></PopoverTrigger><PopoverContent className="w-auto p-0"><Calendar mode="single" selected={endDate} onSelect={setEndDate} initialFocus captionLayout="dropdown-buttons" fromYear={1900} toYear={new Date().getFullYear() + 10} /></PopoverContent></Popover>
                     </div>
                 </div>
                  <Button size="lg" className="w-full" onClick={calculateWorkDays}>Calculate Work Days</Button>
@@ -462,7 +468,7 @@ function CountdownCalculator() {
                                 </Button>
                             </PopoverTrigger>
                             <PopoverContent className="w-auto p-0">
-                                <Calendar mode="single" selected={targetDate} onSelect={(d) => setTargetDate(d || new Date())} initialFocus />
+                                <Calendar mode="single" selected={targetDate} onSelect={(d) => setTargetDate(d || new Date())} initialFocus captionLayout="dropdown-buttons" fromYear={1900} toYear={new Date().getFullYear() + 10} />
                             </PopoverContent>
                         </Popover>
                     </div>
