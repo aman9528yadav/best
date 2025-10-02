@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import React from 'react';
@@ -164,9 +163,6 @@ export function AboutPage() {
                         </AccordionItem>
                     )})}
                 </Accordion>
-                <Button variant="outline" className="w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white border-none">
-                    <Sparkles className="mr-2 h-4 w-4"/> Click for WOW!
-                </Button>
             </section>
             
             <section className="space-y-4">
