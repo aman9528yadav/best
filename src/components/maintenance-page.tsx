@@ -80,11 +80,6 @@ export function MaintenancePage() {
     if (newClickCount >= 5) {
       setIsPasswordDialogOpen(true);
       setClickCount(0); // Reset after activation
-    } else if (newClickCount > 2) {
-      const clicksRemaining = 5 - newClickCount;
-      toast({
-        description: `You are ${clicksRemaining} step${clicksRemaining > 1 ? 's' : ''} away from being a developer.`,
-      });
     }
 
     setTimeout(() => {

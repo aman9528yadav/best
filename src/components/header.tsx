@@ -50,6 +50,7 @@ export function Header() {
 
     if (newClickCount >= 5) {
       setDevMode(true);
+      toast({ title: 'Developer Mode Enabled' });
       setClickCount(0); // Reset after activation
     }
 
