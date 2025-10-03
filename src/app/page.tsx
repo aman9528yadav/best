@@ -44,6 +44,7 @@ import {
   Icon as LucideIcon,
   Share2,
   Bot,
+  CheckSquare,
 } from 'lucide-react';
 import Link from 'next/link';
 import { AdMobBanner } from '@/components/admob-banner';
@@ -77,6 +78,7 @@ const quickAccessItems = [
   },
   { icon: Calculator, label: 'Calculator', href: '/calculator', requiresAuth: false },
   { icon: BookText, label: 'Notes', href: '/notes', requiresAuth: true },
+  { icon: CheckSquare, label: 'Todo', href: '/todo', requiresAuth: true },
   { icon: History, label: 'History', href: '/history', requiresAuth: true },
   { icon: Newspaper, label: 'News', href: 'https://aman9528.wixstudio.com/my-site-3', requiresAuth: false },
   { icon: Languages, label: 'Translator', href: '#', requiresAuth: true },
@@ -107,22 +109,21 @@ export default function DashboardPage() {
   const [showMore, setShowMore] = useState(false);
   const [showLoginDialog, setShowLoginDialog] = useState(false);
   const [showWelcomeDialog, setShowWelcomeDialog] = useState(false);
+  const [hasSeenWelcome, setHasSeenWelcome] = useState(true);
 
   useEffect(() => {
     if (isMaintenanceLoading) return;
-    
-    const showWelcomeSetting = localStorage.getItem('sutradhaar_show_welcome') !== 'false';
-    const hasSeenWelcome = localStorage.getItem('sutradhaar_has_seen_welcome') === 'true';
-
-    if (showWelcomeSetting && !hasSeenWelcome) {
-      setShowWelcomeDialog(true);
+    const welcomeSetting = localStorage.getItem('sutradhaar_show_welcome');
+    if (welcomeSetting === 'true') {
+        setHasSeenWelcome(false);
     }
   }, [isMaintenanceLoading]);
+
 
   const handleWelcomeConfirm = (dontShowAgain: boolean) => {
     setShowWelcomeDialog(false);
     if (dontShowAgain) {
-      localStorage.setItem('sutradhaar_has_seen_welcome', 'true');
+      localStorage.setItem('sutradhaar_show_welcome', 'false');
     }
   };
 
@@ -160,7 +161,7 @@ export default function DashboardPage() {
   const { appInfo, ownerInfo, updateItems, comingSoonItems, welcomeDialog } = maintenanceConfig;
   const { allTimeActivities = 0, todayActivities = 0, streak = 0 } = profile.stats || {};
 
-  const visibleQuickAccessItems = showMore ? quickAccessItems : quickAccessItems.slice(0, 6);
+  const visibleQuickAccessItems = showMore ? quickAccessItems : quickAccessItems.slice(0, 8);
   const whatsNewItems = (updateItems || []).slice(0, 2);
 
 
@@ -226,7 +227,7 @@ export default function DashboardPage() {
                 Manage
               </Button>
             </div>
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-4 gap-2">
               {visibleQuickAccessItems.map((item) => (
                 <Link 
                   href={item.href || '#'} 

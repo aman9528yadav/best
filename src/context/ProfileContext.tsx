@@ -7,7 +7,7 @@ import { rtdb } from '@/lib/firebase';
 import { useAuth } from './AuthContext';
 import { isToday, differenceInCalendarDays, startOfDay, isYesterday } from 'date-fns';
 
-export type ActivityType = 'conversion' | 'calculator' | 'date_calculation' | 'note';
+export type ActivityType = 'conversion' | 'calculator' | 'date_calculation' | 'note' | 'todo';
 
 export type ActivityLogItem = {
     timestamp: string;
@@ -33,6 +33,14 @@ export type NoteItem = {
     isTrashed: boolean;
 };
 
+export type TodoItem = {
+  id: string;
+  text: string;
+  completed: boolean;
+  createdAt: string;
+};
+
+
 export type UserProfile = {
   name: string;
   email: string;
@@ -48,6 +56,7 @@ export type UserProfile = {
   };
   stats: UserStats;
   notes: NoteItem[];
+  todos: TodoItem[];
   activityLog: ActivityLogItem[];
   photoUrl?: string;
   photoId?: string;
@@ -66,6 +75,10 @@ type ProfileContextType = {
   restoreNote: (id: string) => void;
   toggleFavoriteNote: (id: string) => void;
   getNoteById: (id: string) => NoteItem | undefined;
+  addTodo: (todo: Omit<TodoItem, 'id' | 'createdAt'>) => void;
+  updateTodo: (todo: TodoItem) => void;
+  toggleTodo: (id: string) => void;
+  deleteTodo: (id: string) => void;
   deleteAllUserData: () => void;
 };
 
@@ -96,6 +109,7 @@ const getInitialProfile = (): UserProfile => {
     },
     stats: defaultStats,
     notes: [],
+    todos: [],
     activityLog: [],
     photoUrl: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxtYW4lMjBwb3J0cmFpdHxlbnwwfHx8fDE3NTkwNzk5MTd8MA&ixlib=rb-4.1.0&q=80&w=1080",
     photoId: 'user-avatar-1',
@@ -117,6 +131,7 @@ const guestProfileDefault: UserProfile = {
     },
     stats: defaultStats,
     notes: [],
+    todos: [],
     activityLog: [],
     photoUrl: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxtYW4lMjBwb3J0cmFpdHxlbnwwfHx8fDE3NTkwNzk5MTd8MA&ixlib=rb-4.1.0&q=80&w=1080",
     photoId: 'user-avatar-1',
@@ -144,8 +159,9 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
             // Ensure stats and notes have default values if missing
             const stats = { ...defaultStats, ...(parsedProfile.stats || {}) };
             const notes = parsedProfile.notes || [];
+            const todos = parsedProfile.todos || [];
             const activityLog = parsedProfile.activityLog || [];
-            setProfileState({ ...guestProfileDefault, ...parsedProfile, stats, notes, activityLog });
+            setProfileState({ ...guestProfileDefault, ...parsedProfile, stats, notes, todos, activityLog });
           } else {
             setProfileState(guestProfileDefault);
           }
@@ -168,6 +184,7 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
           
           const stats = { ...defaultStats, ...(fetchedData.stats || {}) };
           const notes = fetchedData.notes || [];
+          const todos = fetchedData.todos || [];
           const activityLog = fetchedData.activityLog || [];
 
           const fullProfile = {
@@ -177,6 +194,7 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
             email: user.email || fetchedData.email || "",
             stats,
             notes,
+            todos,
             activityLog,
           };
           setProfileState(fullProfile);
@@ -188,6 +206,7 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
             name: user.displayName || 'New User',
             stats: defaultStats,
             notes: [],
+            todos: [],
             activityLog: [],
             photoUrl: user.photoURL || guestProfileDefault.photoUrl,
             photoId: guestProfileDefault.photoId
@@ -273,6 +292,33 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
   const getNoteById = (id: string): NoteItem | undefined => {
       return profile.notes.find(n => n.id === id);
   }
+  
+  const addTodo = (todo: Omit<TodoItem, 'id' | 'createdAt'>) => {
+    const newTodo: TodoItem = {
+        ...todo,
+        id: new Date().getTime().toString(),
+        createdAt: new Date().toISOString(),
+    };
+    setProfile(p => ({ ...p, todos: [newTodo, ...(p.todos || [])] }));
+    updateStats('todo');
+  };
+
+  const updateTodo = (todoToUpdate: TodoItem) => {
+    setProfile(p => ({ ...p, todos: (p.todos || []).map(t => t.id === todoToUpdate.id ? todoToUpdate : t) }));
+  };
+
+  const toggleTodo = (id: string) => {
+    setProfile(p => ({
+        ...p,
+        todos: (p.todos || []).map(t => t.id === id ? { ...t, completed: !t.completed } : t)
+    }));
+    updateStats('todo');
+  };
+
+  const deleteTodo = (id: string) => {
+    setProfile(p => ({ ...p, todos: (p.todos || []).filter(t => t.id !== id) }));
+  };
+
 
   const checkAndUpdateStreak = () => {
     if (!dataLoaded.current) return;
@@ -335,7 +381,7 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
     }
     // Clear all local storage keys used by the app
     Object.keys(localStorage).forEach(key => {
-        if(key.startsWith('unitwise_')) {
+        if(key.startsWith('unitwise_') || key.startsWith('sutradhaar_')) {
             localStorage.removeItem(key);
         }
     });
@@ -358,6 +404,10 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
         restoreNote,
         toggleFavoriteNote,
         getNoteById,
+        addTodo,
+        updateTodo,
+        toggleTodo,
+        deleteTodo,
         deleteAllUserData,
     }}>
       {children}

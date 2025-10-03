@@ -26,6 +26,7 @@ import {
   LogIn,
   LogOut,
   Settings,
+  CheckSquare,
 } from 'lucide-react';
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
@@ -59,6 +60,11 @@ const sidebarNavItems = [
     icon: BookText,
     label: 'Notes',
     href: '/notes',
+  },
+  {
+    icon: CheckSquare,
+    label: 'Todo',
+    href: '/todo',
   },
   {
     icon: Calendar,
