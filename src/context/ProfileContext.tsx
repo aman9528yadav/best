@@ -40,6 +40,8 @@ export type TodoItem = {
   completed: boolean;
   createdAt: string;
   priority: 'low' | 'medium' | 'high';
+  targetDate?: string;
+  recurring?: 'none' | 'daily' | 'weekly' | 'monthly';
 };
 
 
@@ -155,7 +157,7 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
     
     const loadGuestData = () => {
         try {
-          const savedProfile = localStorage.getItem('unitwise_profile');
+          const savedProfile = localStorage.getItem('sutradhaar_profile');
           if (savedProfile) {
             const parsedProfile = JSON.parse(savedProfile);
             // Ensure stats and notes have default values if missing
@@ -240,7 +242,7 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
             });
         } else {
             try {
-              localStorage.setItem('unitwise_profile', JSON.stringify(updatedProfile));
+              localStorage.setItem('sutradhaar_profile', JSON.stringify(updatedProfile));
             } catch (error) {
               console.error("Failed to save profile to localStorage", error);
             }
