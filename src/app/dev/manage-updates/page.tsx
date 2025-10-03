@@ -142,7 +142,7 @@ const UpdateForm = ({
           <Label htmlFor="tags" className="text-right">
             Tags
           </Label>
-          <Input id="tags" name="tags" value={formData.tags.join(', ')} onChange={handleTagsChange} className="col-span-3" placeholder="e.g. New Feature, Beta 1.3"/>
+          <Input id="tags" name="tags" value={(formData.tags || []).join(', ')} onChange={handleTagsChange} className="col-span-3" placeholder="e.g. New Feature, Beta 1.3"/>
         </div>
       </div>
       <DialogFooter>
