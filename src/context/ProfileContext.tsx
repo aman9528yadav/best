@@ -7,6 +7,7 @@ import { ref, onValue, set, remove } from "firebase/database";
 import { rtdb } from '@/lib/firebase';
 import { useAuth } from './AuthContext';
 import { isToday, differenceInCalendarDays, startOfDay, isYesterday } from 'date-fns';
+import { HistoryItem, useHistory } from './HistoryContext';
 
 export type ActivityType = 'conversion' | 'calculator' | 'date_calculation' | 'note' | 'todo';
 
@@ -69,7 +70,6 @@ export type UserProfile = {
 type ProfileContextType = {
   profile: UserProfile;
   setProfile: (profile: UserProfile | ((prevState: UserProfile) => UserProfile)) => void;
-  updateStats: (type: ActivityType) => void;
   checkAndUpdateStreak: () => void;
   isLoading: boolean;
   addNote: (note: Omit<NoteItem, 'id' | 'createdAt' | 'updatedAt'>) => NoteItem;
@@ -145,6 +145,7 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
   const [profile, setProfileState] = useState<UserProfile>(getInitialProfile());
   const [isLoading, setIsLoading] = useState(true);
   const { user, loading: authLoading, logout } = useAuth();
+  const { history } = useHistory();
   
   // Ref to track if initial data load is complete
   const dataLoaded = useRef(false);
@@ -250,6 +251,43 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
         return updatedProfile;
     });
   };
+
+  const updateStats = (type: ActivityType) => {
+    setProfile(prevProfile => {
+      const todayISO = new Date().toISOString();
+      const newStats = { ...prevProfile.stats };
+      const newActivityLog = [...prevProfile.activityLog, { timestamp: todayISO, type }];
+
+      newStats.allTimeActivities = (newStats.allTimeActivities || 0) + 1;
+
+      const lastActivityDate = newStats.lastActivityDate;
+      if (lastActivityDate && isToday(new Date(lastActivityDate))) {
+        newStats.todayActivities = (newStats.todayActivities || 0) + 1;
+      } else {
+        newStats.todayActivities = 1;
+      }
+      
+      newStats.lastActivityDate = todayISO;
+
+      return {
+        ...prevProfile,
+        stats: newStats,
+        activityLog: newActivityLog,
+      };
+    });
+  };
+
+  useEffect(() => {
+    if(!isLoading){
+        const newActivities = history.filter(h => !profile.activityLog.find(a => a.timestamp === h.timestamp));
+        if (newActivities.length > 0) {
+            newActivities.forEach(activity => {
+                updateStats(activity.type as ActivityType);
+            });
+        }
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [history, isLoading]);
   
   const addNote = (note: Omit<NoteItem, 'id' | 'createdAt' | 'updatedAt'>): NoteItem => {
     const newNote: NoteItem = {
@@ -352,31 +390,6 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
         return { ...prevProfile, stats: newStats };
     });
   };
-
-  const updateStats = (type: ActivityType) => {
-    setProfile(prevProfile => {
-      const todayISO = new Date().toISOString();
-      const newStats = { ...prevProfile.stats };
-      const newActivityLog = [...prevProfile.activityLog, { timestamp: todayISO, type }];
-
-      newStats.allTimeActivities = (newStats.allTimeActivities || 0) + 1;
-
-      const lastActivityDate = newStats.lastActivityDate;
-      if (lastActivityDate && isToday(new Date(lastActivityDate))) {
-        newStats.todayActivities = (newStats.todayActivities || 0) + 1;
-      } else {
-        newStats.todayActivities = 1;
-      }
-      
-      newStats.lastActivityDate = todayISO;
-
-      return {
-        ...prevProfile,
-        stats: newStats,
-        activityLog: newActivityLog,
-      };
-    });
-  };
   
   const deleteAllUserData = async () => {
     if (user) {
@@ -398,7 +411,6 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
     <ProfileContext.Provider value={{ 
         profile, 
         setProfile, 
-        updateStats, 
         checkAndUpdateStreak, 
         isLoading,
         addNote,

@@ -2,8 +2,6 @@
 "use client";
 
 import React, { createContext, useContext, useState, ReactNode, useEffect, useRef } from 'react';
-import { subDays } from 'date-fns';
-import { useProfile } from './ProfileContext';
 import { useAuth } from './AuthContext';
 import { ref, onValue, set, get, child, remove } from "firebase/database";
 import { rtdb } from '@/lib/firebase';
@@ -79,7 +77,6 @@ const getInitialFavorites = (): FavoriteItem[] => {
 };
 
 export const HistoryProvider = ({ children }: { children: ReactNode }) => {
-  const { updateStats } = useProfile();
   const { user, loading: authLoading } = useAuth();
   const [isLoading, setIsLoading] = useState(true);
   const [history, setHistory] = useState<HistoryItem[]>([]);
@@ -112,9 +109,11 @@ export const HistoryProvider = ({ children }: { children: ReactNode }) => {
                 const localFavorites = getInitialFavorites();
                 setHistory(localHistory);
                 setFavorites(localFavorites);
-                const historyAsObject = localHistory.reduce((acc, item) => ({...acc, [item.id]: item}), {});
-                const favoritesAsObject = localFavorites.reduce((acc, item) => ({...acc, [item.id]: item}), {});
-                set(dbRef, { history: historyAsObject, favorites: favoritesAsObject });
+                if (localHistory.length > 0 || localFavorites.length > 0) {
+                    const historyAsObject = localHistory.reduce((acc, item) => ({...acc, [item.id]: item}), {});
+                    const favoritesAsObject = localFavorites.reduce((acc, item) => ({...acc, [item.id]: item}), {});
+                    set(dbRef, { history: historyAsObject, favorites: favoritesAsObject });
+                }
             }
             dataLoaded.current = true;
             setIsLoading(false);
@@ -151,7 +150,6 @@ export const HistoryProvider = ({ children }: { children: ReactNode }) => {
     if (user) {
         set(ref(rtdb, `users/${user.uid}/history/${newItem.id}`), newItem);
     }
-    updateStats('conversion');
   };
 
   const addCalculatorToHistory = (item: Omit<CalculatorHistoryItem, 'id' | 'timestamp' | 'type'>) => {
@@ -160,7 +158,6 @@ export const HistoryProvider = ({ children }: { children: ReactNode }) => {
      if (user) {
         set(ref(rtdb, `users/${user.uid}/history/${newItem.id}`), newItem);
     }
-    updateStats('calculator');
   };
 
   const addDateCalculationToHistory = (item: Omit<DateCalculationHistoryItem, 'id' | 'timestamp' | 'type'>) => {
@@ -169,7 +166,6 @@ export const HistoryProvider = ({ children }: { children: ReactNode }) => {
     if (user) {
         set(ref(rtdb, `users/${user.uid}/history/${newItem.id}`), newItem);
     }
-    updateStats('date_calculation');
   };
 
   const addFavorite = (item: Omit<FavoriteItem, 'id' | 'type'>) => {
