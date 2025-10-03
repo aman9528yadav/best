@@ -50,16 +50,7 @@ export function Header() {
 
     if (newClickCount >= 5) {
       setDevMode(true);
-      toast({
-        title: "Developer Mode Enabled",
-        description: "You've unlocked developer options.",
-      });
       setClickCount(0); // Reset after activation
-    } else if (newClickCount > 2) {
-      const clicksRemaining = 5 - newClickCount;
-      toast({
-        description: `You are ${clicksRemaining} step${clicksRemaining > 1 ? 's' : ''} away from being a developer.`,
-      });
     }
 
     // Reset if time between clicks is too long
