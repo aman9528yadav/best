@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import React, { useState, useEffect } from 'react';
@@ -29,8 +30,8 @@ const calculateTimeLeft = (countdown: Countdown): Countdown => {
 };
 
 export function DashboardBanner() {
-  const { maintenanceConfig, setMaintenanceConfig } = useMaintenance();
-  const { show, category, manualCountdown } = maintenanceConfig.dashboardBanner || {};
+  const { maintenanceConfig } = useMaintenance();
+  const { show, manualCountdown, category } = maintenanceConfig.dashboardBanner || {};
   
   const [timeLeft, setTimeLeft] = useState<Countdown>(manualCountdown || { days: 0, hours: 0, minutes: 0, seconds: 0 });
 
@@ -56,20 +57,11 @@ export function DashboardBanner() {
     if (!isVisible || !isClient) return;
 
     const timer = setTimeout(() => {
-        const newTimeLeft = calculateTimeLeft(timeLeft);
-        setTimeLeft(newTimeLeft);
-        // Also update the context so it persists if the user is a dev
-        setMaintenanceConfig(prev => ({
-            ...prev,
-            dashboardBanner: {
-                ...prev.dashboardBanner,
-                manualCountdown: newTimeLeft
-            }
-        }));
+        setTimeLeft(calculateTimeLeft(timeLeft));
     }, 1000);
 
     return () => clearTimeout(timer);
-  }, [timeLeft, isVisible, isClient, setMaintenanceConfig]);
+  }, [timeLeft, isVisible, isClient]);
 
   if (!isVisible || !maintenanceConfig.dashboardBanner) {
     return null;

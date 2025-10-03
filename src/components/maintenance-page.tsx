@@ -43,7 +43,7 @@ const calculateTimeLeft = (countdown: Countdown): Countdown => {
 
 export function MaintenancePage() {
   const router = useRouter();
-  const { maintenanceConfig, setMaintenanceConfig, setDevMode } = useMaintenance();
+  const { maintenanceConfig, setDevMode } = useMaintenance();
   const { maintenanceCountdown, maintenanceMessage } = maintenanceConfig;
   const { toast } = useToast();
   
@@ -59,18 +59,11 @@ export function MaintenancePage() {
 
   useEffect(() => {
     const timer = setInterval(() => {
-      setTimeLeft(prevTime => {
-        const newTime = calculateTimeLeft(prevTime);
-         // Sync back to context if dev mode is on to persist changes for the dev
-        if(maintenanceConfig.isDevMode) {
-          setMaintenanceConfig(prev => ({ ...prev, maintenanceCountdown: newTime }));
-        }
-        return newTime;
-      });
+      setTimeLeft(prevTime => calculateTimeLeft(prevTime));
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [maintenanceConfig.isDevMode, setMaintenanceConfig]);
+  }, []);
 
 
   const handleIconClick = () => {
@@ -128,7 +121,7 @@ export function MaintenancePage() {
              <div className="flex justify-center gap-3">
                 <CountdownBox value={String(timeLeft.days)} label="DAYS" />
                 <CountdownBox value={String(timeLeft.hours).padStart(2, '0')} label="HOURS" />
-                <CountdownBox value={String(timeLeft.minutes).padStart(2, '0')} label="MINUTES" />
+                <CountdownBox value={String(timeLeft.minutes).padStart(2, '0')}/>
                 <CountdownBox value={String(timeLeft.seconds).padStart(2, '0')} label="SECONDS" />
             </div>
           )}
