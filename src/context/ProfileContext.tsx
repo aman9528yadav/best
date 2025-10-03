@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import React, { createContext, useContext, useState, ReactNode, useEffect, useRef } from 'react';
@@ -38,6 +39,7 @@ export type TodoItem = {
   text: string;
   completed: boolean;
   createdAt: string;
+  priority: 'low' | 'medium' | 'high';
 };
 
 

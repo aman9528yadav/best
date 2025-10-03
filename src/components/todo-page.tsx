@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import React, { useState, useMemo } from 'react';
@@ -6,10 +7,17 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Plus, Trash2, Edit, Save, X } from 'lucide-react';
+import { Plus, Trash2, Edit, Save, X, Flag } from 'lucide-react';
 import { useProfile, TodoItem } from '@/context/ProfileContext';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
 const StatCard = ({ title, count }: { title: string; count: number }) => (
   <Card>
@@ -20,11 +28,19 @@ const StatCard = ({ title, count }: { title: string; count: number }) => (
   </Card>
 );
 
+const priorityColors = {
+    high: 'text-red-500',
+    medium: 'text-yellow-500',
+    low: 'text-green-500',
+};
+
 export function TodoPage() {
   const { profile, addTodo, toggleTodo, deleteTodo, updateTodo } = useProfile();
   const [newTodoText, setNewTodoText] = useState('');
+  const [newTodoPriority, setNewTodoPriority] = useState<TodoItem['priority']>('medium');
   const [editingTodo, setEditingTodo] = useState<TodoItem | null>(null);
   const [editingText, setEditingText] = useState('');
+  
 
   const todos = profile.todos || [];
 
@@ -34,7 +50,7 @@ export function TodoPage() {
 
   const handleAddTodo = () => {
     if (newTodoText.trim()) {
-      addTodo({ text: newTodoText.trim(), completed: false });
+      addTodo({ text: newTodoText.trim(), completed: false, priority: newTodoPriority });
       setNewTodoText('');
     }
   };
@@ -51,6 +67,13 @@ export function TodoPage() {
       setEditingText('');
     }
   };
+  
+  const handlePriorityChange = (id: string, priority: TodoItem['priority']) => {
+    const todoToUpdate = todos.find(t => t.id === id);
+    if(todoToUpdate) {
+        updateTodo({ ...todoToUpdate, priority });
+    }
+  }
 
   const handleCancelEdit = () => {
     setEditingTodo(null);
@@ -77,6 +100,20 @@ export function TodoPage() {
           onChange={(e) => setNewTodoText(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && handleAddTodo()}
         />
+        <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+                 <Button variant="outline" size="icon">
+                    <Flag className={cn("h-4 w-4", priorityColors[newTodoPriority])} />
+                </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+                <DropdownMenuRadioGroup value={newTodoPriority} onValueChange={(p) => setNewTodoPriority(p as TodoItem['priority'])}>
+                    <DropdownMenuRadioItem value="high">High</DropdownMenuRadioItem>
+                    <DropdownMenuRadioItem value="medium">Medium</DropdownMenuRadioItem>
+                    <DropdownMenuRadioItem value="low">Low</DropdownMenuRadioItem>
+                </DropdownMenuRadioGroup>
+            </DropdownMenuContent>
+        </DropdownMenu>
         <Button onClick={handleAddTodo}><Plus className="h-4 w-4" /></Button>
       </div>
       
@@ -118,6 +155,20 @@ export function TodoPage() {
                      )}
                      
                     <div className="flex items-center ml-auto opacity-0 group-hover:opacity-100 transition-opacity">
+                       <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                 <Button variant="ghost" size="icon" className="h-8 w-8">
+                                    <Flag className={cn("h-4 w-4", priorityColors[todo.priority])} />
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent>
+                                <DropdownMenuRadioGroup value={todo.priority} onValueChange={(p) => handlePriorityChange(todo.id, p as TodoItem['priority'])}>
+                                    <DropdownMenuRadioItem value="high">High</DropdownMenuRadioItem>
+                                    <DropdownMenuRadioItem value="medium">Medium</DropdownMenuRadioItem>
+                                    <DropdownMenuRadioItem value="low">Low</DropdownMenuRadioItem>
+                                </DropdownMenuRadioGroup>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
                         {editingTodo?.id === todo.id ? (
                             <>
                                 <Button variant="ghost" size="icon" className="h-8 w-8" onClick={handleSaveEdit}><Save className="h-4 w-4 text-primary" /></Button>
