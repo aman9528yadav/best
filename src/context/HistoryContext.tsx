@@ -5,6 +5,7 @@ import React, { createContext, useContext, useState, ReactNode, useEffect, useRe
 import { useAuth } from './AuthContext';
 import { ref, onValue, set, get, child, remove } from "firebase/database";
 import { rtdb } from '@/lib/firebase';
+import type { ActivityType } from './ProfileContext';
 
 export type ConversionHistoryItem = {
   id: string;
@@ -58,6 +59,7 @@ type HistoryContextType = {
   clearAllHistory: (type: 'conversion' | 'calculator' | 'date_calculation' | 'all') => void;
   clearAllFavorites: () => void;
   isLoading: boolean;
+  updateStats: (type: ActivityType) => void;
 };
 
 const HistoryContext = createContext<HistoryContextType | undefined>(undefined);
@@ -76,7 +78,7 @@ const getInitialFavorites = (): FavoriteItem[] => {
     } catch(e) { return []; }
 };
 
-export const HistoryProvider = ({ children }: { children: ReactNode }) => {
+export const HistoryProvider = ({ children, updateStats }: { children: ReactNode, updateStats: (type: ActivityType) => void }) => {
   const { user, loading: authLoading } = useAuth();
   const [isLoading, setIsLoading] = useState(true);
   const [history, setHistory] = useState<HistoryItem[]>([]);
@@ -150,6 +152,7 @@ export const HistoryProvider = ({ children }: { children: ReactNode }) => {
     if (user) {
         set(ref(rtdb, `users/${user.uid}/history/${newItem.id}`), newItem);
     }
+    updateStats('conversion');
   };
 
   const addCalculatorToHistory = (item: Omit<CalculatorHistoryItem, 'id' | 'timestamp' | 'type'>) => {
@@ -158,6 +161,7 @@ export const HistoryProvider = ({ children }: { children: ReactNode }) => {
      if (user) {
         set(ref(rtdb, `users/${user.uid}/history/${newItem.id}`), newItem);
     }
+    updateStats('calculator');
   };
 
   const addDateCalculationToHistory = (item: Omit<DateCalculationHistoryItem, 'id' | 'timestamp' | 'type'>) => {
@@ -166,6 +170,7 @@ export const HistoryProvider = ({ children }: { children: ReactNode }) => {
     if (user) {
         set(ref(rtdb, `users/${user.uid}/history/${newItem.id}`), newItem);
     }
+    updateStats('date_calculation');
   };
 
   const addFavorite = (item: Omit<FavoriteItem, 'id' | 'type'>) => {
@@ -226,7 +231,8 @@ export const HistoryProvider = ({ children }: { children: ReactNode }) => {
         deleteFavorite,
         clearAllHistory,
         clearAllFavorites,
-        isLoading
+        isLoading,
+        updateStats,
     }}>
       {children}
     </HistoryContext.Provider>

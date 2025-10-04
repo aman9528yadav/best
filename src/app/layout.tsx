@@ -41,15 +41,15 @@ export default function RootLayout({
           <AuthProvider>
             <NotificationProvider>
               <MaintenanceProvider>
-                <HistoryProvider>
-                  <ProfileProvider>
+                <ProfileProvider>
+                  <HistoryProvider>
                     <MaintenanceWrapper>
                       {children}
                     </MaintenanceWrapper>
                     <Toaster />
                     <BroadcastListener />
-                  </ProfileProvider>
-                </HistoryProvider>
+                  </HistoryProvider>
+                </ProfileProvider>
               </MaintenanceProvider>
             </NotificationProvider>
           </AuthProvider>

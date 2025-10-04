@@ -7,7 +7,6 @@ import { ref, onValue, set, remove } from "firebase/database";
 import { rtdb } from '@/lib/firebase';
 import { useAuth } from './AuthContext';
 import { isToday, differenceInCalendarDays, startOfDay, isYesterday } from 'date-fns';
-import { HistoryItem, useHistory } from './HistoryContext';
 
 export type ActivityType = 'conversion' | 'calculator' | 'date_calculation' | 'note' | 'todo';
 
@@ -84,6 +83,7 @@ type ProfileContextType = {
   toggleTodo: (id: string) => void;
   deleteTodo: (id: string) => void;
   deleteAllUserData: () => void;
+  updateStats: (type: ActivityType) => void;
 };
 
 const ProfileContext = createContext<ProfileContextType | undefined>(undefined);
@@ -145,7 +145,6 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
   const [profile, setProfileState] = useState<UserProfile>(getInitialProfile());
   const [isLoading, setIsLoading] = useState(true);
   const { user, loading: authLoading, logout } = useAuth();
-  const { history } = useHistory();
   
   // Ref to track if initial data load is complete
   const dataLoaded = useRef(false);
@@ -276,18 +275,6 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
       };
     });
   };
-
-  useEffect(() => {
-    if(!isLoading){
-        const newActivities = history.filter(h => !profile.activityLog.find(a => a.timestamp === h.timestamp));
-        if (newActivities.length > 0) {
-            newActivities.forEach(activity => {
-                updateStats(activity.type as ActivityType);
-            });
-        }
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [history, isLoading]);
   
   const addNote = (note: Omit<NoteItem, 'id' | 'createdAt' | 'updatedAt'>): NoteItem => {
     const newNote: NoteItem = {
@@ -425,6 +412,7 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
         toggleTodo,
         deleteTodo,
         deleteAllUserData,
+        updateStats,
     }}>
       {children}
     </ProfileContext.Provider>
