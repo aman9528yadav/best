@@ -69,23 +69,24 @@ import {
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { WelcomeDialog } from '@/components/welcome-dialog';
 
-const quickAccessItems = [
+export const quickAccessItems = [
   {
+    id: 'converter',
     icon: ArrowRightLeft,
     label: 'Converter',
     href: '/converter',
     requiresAuth: false,
   },
-  { icon: Calculator, label: 'Calculator', href: '/calculator', requiresAuth: false },
-  { icon: BookText, label: 'Notes', href: '/notes', requiresAuth: true },
-  { icon: CheckSquare, label: 'Todo', href: '/todo', requiresAuth: true },
-  { icon: History, label: 'History', href: '/history', requiresAuth: true },
-  { icon: Newspaper, label: 'News', href: 'https://aman9528.wixstudio.com/my-site-3', requiresAuth: false },
-  { icon: Languages, label: 'Translator', href: '#', requiresAuth: true },
-  { icon: Calendar, label: 'Date Calc', href: '/date-calculator', requiresAuth: false },
-  { icon: Timer, label: 'Timer', href: '/timer', requiresAuth: false },
-  { icon: Hourglass, label: 'Stopwatch', href: '/stopwatch', requiresAuth: false },
-  { icon: Settings, label: 'Settings', href: '/settings', requiresAuth: true },
+  { id: 'calculator', icon: Calculator, label: 'Calculator', href: '/calculator', requiresAuth: false },
+  { id: 'notes', icon: BookText, label: 'Notes', href: '/notes', requiresAuth: true },
+  { id: 'todo', icon: CheckSquare, label: 'Todo', href: '/todo', requiresAuth: true },
+  { id: 'history', icon: History, label: 'History', href: '/history', requiresAuth: true },
+  { id: 'news', icon: Newspaper, label: 'News', href: 'https://aman9528.wixstudio.com/my-site-3', requiresAuth: false },
+  { id: 'translator', icon: Languages, label: 'Translator', href: '#', requiresAuth: true },
+  { id: 'date-calc', icon: Calendar, label: 'Date Calc', href: '/date-calculator', requiresAuth: false },
+  { id: 'timer', icon: Timer, label: 'Timer', href: '/timer', requiresAuth: false },
+  { id: 'stopwatch', icon: Hourglass, label: 'Stopwatch', href: '/stopwatch', requiresAuth: false },
+  { id: 'settings', icon: Settings, label: 'Settings', href: '/settings', requiresAuth: true },
 ];
 
 const iconMap: { [key: string]: LucideIcon } = {
@@ -142,6 +143,24 @@ export default function DashboardPage() {
   };
 
   const isPageLoading = isMaintenanceLoading || isProfileLoading;
+  
+  const userQuickAccessItems = useMemo(() => {
+    if (!profile.quickAccessOrder) return quickAccessItems;
+    
+    const itemMap = new Map(quickAccessItems.map(item => [item.id, item]));
+    const orderedItems = profile.quickAccessOrder
+      .map(orderItem => {
+        const item = itemMap.get(orderItem.id);
+        if (item && !orderItem.hidden) {
+          return item;
+        }
+        return null;
+      })
+      .filter((item): item is (typeof quickAccessItems)[0] => item !== null);
+
+    return orderedItems;
+  }, [profile.quickAccessOrder]);
+
 
   if (isPageLoading) {
     return (
@@ -161,7 +180,7 @@ export default function DashboardPage() {
   const { appInfo, ownerInfo, updateItems, comingSoonItems, welcomeDialog } = maintenanceConfig;
   const { allTimeActivities = 0, todayActivities = 0, streak = 0 } = profile.stats || {};
 
-  const visibleQuickAccessItems = showMore ? quickAccessItems : quickAccessItems.slice(0, 8);
+  const visibleQuickAccessItems = showMore ? userQuickAccessItems : userQuickAccessItems.slice(0, 8);
   const whatsNewItems = (updateItems || []).slice(0, 2);
 
 
@@ -223,8 +242,8 @@ export default function DashboardPage() {
           <section>
             <div className="flex justify-between items-center mb-2">
               <h2 className="font-semibold">Quick Access</h2>
-              <Button variant="link" size="sm" className="text-primary pr-0">
-                Manage
+              <Button asChild variant="link" size="sm" className="text-primary pr-0">
+                <Link href="/profile/manage-quick-access">Manage</Link>
               </Button>
             </div>
             <div className="grid grid-cols-4 gap-2">

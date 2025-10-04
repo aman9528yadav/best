@@ -44,6 +44,11 @@ export type TodoItem = {
   recurring?: 'none' | 'daily' | 'weekly' | 'monthly';
 };
 
+export type QuickAccessItemOrder = {
+  id: string;
+  hidden: boolean;
+};
+
 
 export type UserProfile = {
   name: string;
@@ -62,6 +67,7 @@ export type UserProfile = {
   notes: NoteItem[];
   todos: TodoItem[];
   activityLog: ActivityLogItem[];
+  quickAccessOrder?: QuickAccessItemOrder[];
   photoUrl?: string;
   photoId?: string;
 };
@@ -115,6 +121,7 @@ const getInitialProfile = (): UserProfile => {
     notes: [],
     todos: [],
     activityLog: [],
+    quickAccessOrder: [],
     photoUrl: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxtYW4lMjBwb3J0cmFpdHxlbnwwfHx8fDE3NTkwNzk5MTd8MA&ixlib=rb-4.1.0&q=80&w=1080",
     photoId: 'user-avatar-1',
   };
@@ -137,6 +144,7 @@ const guestProfileDefault: UserProfile = {
     notes: [],
     todos: [],
     activityLog: [],
+    quickAccessOrder: [],
     photoUrl: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxtYW4lMjBwb3J0cmFpdHxlbnwwfHx8fDE3NTkwNzk5MTd8MA&ixlib=rb-4.1.0&q=80&w=1080",
     photoId: 'user-avatar-1',
 }
@@ -212,6 +220,7 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
             notes: [],
             todos: [],
             activityLog: [],
+            quickAccessOrder: [],
             photoUrl: user.photoURL || guestProfileDefault.photoUrl,
             photoId: guestProfileDefault.photoId
           };
