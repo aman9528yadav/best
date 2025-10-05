@@ -58,7 +58,7 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
           id: `${notification.timestamp}-${Math.random().toString(36).substring(2, 9)}`,
           read: false,
         };
-        const audio = new Audio('/sounds/notification.mp3');
+        const audio = new Audio('/sound/new-notification-09-352705.mp3');
         audio.play().catch(e => console.error("Failed to play notification sound.", e));
         return [newNotification, ...prev].slice(0, 20); // Keep last 20
     });
