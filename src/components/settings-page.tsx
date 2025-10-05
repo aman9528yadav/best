@@ -50,13 +50,12 @@ import {
   Volume2,
   MessageSquare,
   Paintbrush,
-  Sliders,
 } from 'lucide-react';
 import { useMaintenance } from '@/context/MaintenanceContext';
 import { useRouter } from 'next/navigation';
 import { useTheme } from 'next-themes';
-import { useAuth } from '@/context/AuthContext';
 import { useProfile, HSLColor } from '@/context/ProfileContext';
+import { Slider } from './ui/slider';
 
 const themes = [
   { name: 'Sutradhaar', value: 'sutradhaar' },
@@ -156,6 +155,24 @@ export function SettingsPage() {
       };
       setCustomTheme(newCustomTheme);
        setProfile(p => ({
+        ...p,
+        settings: {
+            ...p.settings,
+            customTheme: newCustomTheme
+        }
+    }));
+  };
+  
+  const handleCustomThemeSliderChange = (colorName: keyof typeof customTheme, hslKey: 'h' | 's' | 'l', value: number) => {
+    const newCustomTheme = {
+        ...customTheme,
+        [colorName]: {
+            ...customTheme[colorName],
+            [hslKey]: value
+        }
+    };
+    setCustomTheme(newCustomTheme);
+    setProfile(p => ({
         ...p,
         settings: {
             ...p.settings,
@@ -380,6 +397,14 @@ export function SettingsPage() {
                                  value={hslToHex(customTheme[colorName].h, customTheme[colorName].s, customTheme[colorName].l)}
                                  onChange={(e) => handleCustomThemeChange(colorName, e.target.value)}
                                />
+                            </div>
+                            <div className="space-y-2">
+                                <Label className='text-xs'>Hue: {customTheme[colorName].h}</Label>
+                                <Slider value={[customTheme[colorName].h]} max={360} onValueChange={([v]) => handleCustomThemeSliderChange(colorName, 'h', v)} />
+                                <Label className='text-xs'>Saturation: {customTheme[colorName].s}%</Label>
+                                <Slider value={[customTheme[colorName].s]} max={100} onValueChange={([v]) => handleCustomThemeSliderChange(colorName, 's', v)} />
+                                <Label className='text-xs'>Lightness: {customTheme[colorName].l}%</Label>
+                                <Slider value={[customTheme[colorName].l]} max={100} onValueChange={([v]) => handleCustomThemeSliderChange(colorName, 'l', v)} />
                             </div>
                          </div>
                     ))}
