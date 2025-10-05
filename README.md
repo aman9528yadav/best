@@ -5,7 +5,8 @@ Sutradhaar is a modern, feature-rich web application that provides a seamless ex
 ## ✨ Features
 
 - **📊 Interactive Dashboard:** A central hub to view your usage statistics, including all-time conversions, today's conversions, and your activity streak.
-- **⚡ Quick Access:** Easily navigate to the app's main features like the Converter, Calculator, History, and more, right from the dashboard.
+- **⚡ Customizable Quick Access:** Easily navigate to the app's main features. You can reorder and hide items to personalize your dashboard.
+- **📝 Todo List:** A full-featured todo manager to keep track of your tasks. Add tasks with priorities, target dates, and recurring schedules.
 - **🔄 Smart Unit Converter:**
   - Convert between a wide variety of units across categories like Length, Weight, Temperature, Area, and more.
   - Support for both International and local Indian units.
@@ -13,6 +14,7 @@ Sutradhaar is a modern, feature-rich web application that provides a seamless ex
   - View conversion comparisons across all units in a category.
 - **🧮 Scientific Calculator:** A powerful calculator that supports basic arithmetic, scientific functions (sin, cos, tan, log), and keeps a record of your recent calculations.
 - **📜 Persistent History:** Your conversion and calculation history is automatically saved to your browser's local storage, so you never lose track of your work.
+- **📓 Notes:** A simple and elegant notes feature to jot down your thoughts and ideas with a rich text editor.
 - **👤 User Profile:** A dedicated profile page to view your stats, achievements, and manage personal information.
 - **🎨 Modern & Responsive UI:** Built with ShadCN UI and Tailwind CSS for a beautiful, consistent, and responsive experience on any device.
 - **🔐 Authentication:** Secure login and sign-up functionality using Firebase Authentication, including Google sign-in.
@@ -75,7 +77,7 @@ The project follows a standard Next.js App Router structure:
 
 -   `src/app/`: Contains all the pages and routes for the application.
 -   `src/components/`: Contains all the reusable React components, including UI components from ShadCN.
--   `src/context/`: Contains React context providers for managing global state (e.g., `HistoryContext`, `ProfileContext`, `AuthContext`).
+-   `src/context/`: Contains React context providers for managing global state (e.g., `ProfileContext`, `AuthContext`).
 -   `src/lib/`: Contains utility functions, constants, and library configurations (e.g., `units.ts`, `firebase.ts`).
 -   `src/ai/`: Contains AI-related logic, including Genkit flows.
 -   `public/`: Contains static assets like images and fonts.
