@@ -56,6 +56,7 @@ import { useRouter } from 'next/navigation';
 import { useTheme } from 'next-themes';
 import { useProfile, HSLColor } from '@/context/ProfileContext';
 import { Slider } from './ui/slider';
+import { useAuth } from '@/context/AuthContext';
 
 const themes = [
   { name: 'Sutradhaar', value: 'sutradhaar' },
@@ -457,3 +458,5 @@ export function SettingsPage() {
     </div>
   );
 }
+
+    
