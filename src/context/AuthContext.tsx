@@ -74,8 +74,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
         const userCredential = await signInWithEmailAndPassword(auth, email, pass);
         if (!userCredential.user.emailVerified) {
-            router.push(`/verify-email?email=${email}`);
-            return userCredential.user;
+            toast({
+                title: "Email Not Verified",
+                description: "Your email is not verified. You can resend the verification email.",
+            });
+            // We don't redirect here anymore for existing users.
+            // The login page will handle showing a resend button.
+            return userCredential.user; 
         }
         router.push('/auth-action?action=login');
         return userCredential.user;
@@ -115,9 +120,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }
   
   const resendVerificationEmail = async () => {
-    if (user) {
+    const currentUser = auth.currentUser;
+    if (currentUser) {
       try {
-        await sendEmailVerification(user);
+        await sendEmailVerification(currentUser);
         toast({
           title: "Verification Email Sent",
           description: "A new verification link has been sent to your email address.",
@@ -150,14 +156,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       toast({ title: "Password Updated", description: "Your password has been changed successfully." });
       return true;
     } catch (error: any) {
-      console.error("Error changing password", error);
-      let description = "An unknown error occurred.";
-      if (error.code === 'auth/wrong-password') {
-        description = "The current password you entered is incorrect. Please try again.";
-      }
-       toast({
+      toast({
         title: "Password Change Failed",
-        description: description,
+        description: error.message,
         variant: "destructive"
       });
       return false;

@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import React, { useState } from 'react';
@@ -13,7 +14,6 @@ import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { ResendVerification } from './resend-verification';
 import { useRouter } from 'next/navigation';
-import { getAuth, sendEmailVerification } from 'firebase/auth';
 
 const GoogleIcon = (props: React.SVGProps<SVGSVGElement>) => (
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="24px" height="24px" {...props}>
@@ -39,9 +39,8 @@ export function LoginPage() {
 
   const [showResend, setShowResend] = useState(false);
 
-  const { signInWithGoogle, signInWithEmail, signUpWithEmail } = useAuth();
+  const { signInWithGoogle, signInWithEmail, signUpWithEmail, resendVerificationEmail } = useAuth();
   const { toast } = useToast();
-  const router = useRouter();
 
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -52,7 +51,7 @@ export function LoginPage() {
         return;
     }
     const user = await signInWithEmail(loginEmail, loginPassword);
-    if (user === null) {
+    if (user && !user.emailVerified) {
       setShowResend(true);
     }
   }
@@ -76,16 +75,7 @@ export function LoginPage() {
   }
   
   const handleResendFromLogin = async () => {
-    try {
-        const auth = getAuth();
-        const currentUser = auth.currentUser;
-        if(currentUser && !currentUser.emailVerified) {
-            await sendEmailVerification(currentUser);
-            toast({ title: "Verification Sent", description: "A new verification email has been sent."});
-        }
-    } catch (error) {
-        router.push(`/verify-email?email=${loginEmail}`);
-    }
+    await resendVerificationEmail();
   };
 
 
