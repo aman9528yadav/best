@@ -33,8 +33,8 @@ export default function RootLayout({
       <body>
         <ThemeProvider
           attribute="class"
-          defaultTheme="theme-sutradhaar"
-          enableSystem={false}
+          defaultTheme="system"
+          enableSystem
           disableTransitionOnChange
           themes={['light', 'dark', 'theme-sutradhaar', 'theme-forest', 'theme-ocean', 'theme-sunset']}
         >
@@ -56,3 +56,5 @@ export default function RootLayout({
     </html>
   );
 }
+
+    
