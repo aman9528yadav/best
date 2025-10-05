@@ -8,7 +8,7 @@ import { eachDayOfInterval, format, subDays, isSameDay } from 'date-fns';
 
 export function WeeklySummaryChart() {
   const { profile } = useProfile();
-  const { history } = profile;
+  const { activityLog } = profile;
 
   const weeklySummaryData = useMemo(() => {
     const today = new Date();
@@ -17,14 +17,12 @@ export function WeeklySummaryChart() {
       end: today,
     });
 
-    const conversionHistory = history.filter(item => item.type === 'conversion');
-
     return last7Days.map(day => {
       const dayStr = format(day, 'EEE');
-      const value = conversionHistory.filter(item => isSameDay(new Date(item.timestamp), day)).length;
+      const value = activityLog.filter(item => isSameDay(new Date(item.timestamp), day)).length;
       return { day: dayStr, value };
     });
-  }, [history]);
+  }, [activityLog]);
 
   return (
     <ResponsiveContainer width="100%" height={100}>
