@@ -93,7 +93,7 @@ export function AnalyticsPage() {
     const [usageTrendPeriod, setUsageTrendPeriod] = useState('weekly');
     
     const getCountForDay = (items: any[], dateFn: (d: Date) => boolean) => {
-        return items.filter(c => dateFn(new Date(c.timestamp))).length;
+        return items.filter((c: { timestamp: string | number | Date; }) => dateFn(new Date(c.timestamp))).length;
     }
 
     const analyticsData = useMemo(() => {

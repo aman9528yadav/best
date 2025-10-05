@@ -23,8 +23,8 @@ export function UsageTrendChart({ type = 'bar', period = 'weekly' }: { type: 'ba
   const { activityLog } = profile;
 
   const data = useMemo(() => {
-    const conversions = activityLog.filter(item => item.type === 'conversion');
-    const calculations = activityLog.filter(item => item.type === 'calculator' || item.type === 'date_calculation');
+    const conversions = (activityLog || []).filter(item => item.type === 'conversion');
+    const calculations = (activityLog || []).filter(item => item.type === 'calculator' || item.type === 'date_calculation');
     const today = new Date();
 
     if (period === 'weekly') {
@@ -113,6 +113,14 @@ export function UsageTrendChart({ type = 'bar', period = 'weekly' }: { type: 'ba
         );
     }
   }, [type]);
+
+  if (!activityLog || activityLog.length === 0) {
+    return (
+      <div className="flex items-center justify-center h-full">
+        <p className="text-muted-foreground">No data to display.</p>
+      </div>
+    );
+  }
 
   return (
     <ChartContainer config={chartConfig} className="w-full h-full">
