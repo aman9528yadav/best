@@ -6,10 +6,10 @@ import { Header } from '@/components/header';
 import { AdMobBanner } from '@/components/admob-banner';
 import { Timer } from '@/components/timer';
 import { TimerSkeleton } from '@/components/timer-skeleton';
-import { useHistory } from '@/context/HistoryContext';
+import { useProfile } from '@/context/ProfileContext';
 
 export default function TimerPage() {
-  const { isLoading } = useHistory();
+  const { isLoading } = useProfile();
 
   return (
     <div className="flex flex-col items-center w-full min-h-screen bg-background text-foreground">
