@@ -1,10 +1,11 @@
 
+
 "use client";
 
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { ChevronUp, Divide, Equal, Minus, Plus, X, Percent, Baseline, History, Undo2, Trash2 } from 'lucide-react';
+import { ChevronUp, Divide, Equal, Minus, Plus, X, Percent, Baseline, History, Undo2, Trash2, Volume2, VolumeX } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useProfile, CalculatorHistoryItem } from '@/context/ProfileContext';
 import Link from 'next/link';
@@ -25,6 +26,13 @@ const CalculatorButton = ({
     useEffect(() => {
         const soundsEnabled = localStorage.getItem('sutradhaar_calculator_sounds') === 'true';
         setCalculatorSounds(soundsEnabled);
+        
+        const handleStorageChange = () => {
+            const soundsEnabled = localStorage.getItem('sutradhaar_calculator_sounds') === 'true';
+            setCalculatorSounds(soundsEnabled);
+        }
+        window.addEventListener('storage', handleStorageChange);
+        return () => window.removeEventListener('storage', handleStorageChange);
     }, []);
 
     const playSound = () => {
@@ -56,6 +64,20 @@ export function Calculator() {
   const [isSci, setIsSci] = useState(false);
   const { profile, addCalculatorToHistory, deleteHistoryItem } = useProfile();
   const { history } = profile;
+  const [calculatorSounds, setCalculatorSounds] = useState(false);
+  
+  useEffect(() => {
+    const soundsEnabled = localStorage.getItem('sutradhaar_calculator_sounds') === 'true';
+    setCalculatorSounds(soundsEnabled);
+  }, []);
+
+  const toggleSounds = () => {
+    const newSoundsState = !calculatorSounds;
+    setCalculatorSounds(newSoundsState);
+    localStorage.setItem('sutradhaar_calculator_sounds', String(newSoundsState));
+     // This is to notify other components that might be listening to this value
+    window.dispatchEvent(new Event('storage'));
+  };
 
   const handleInput = (value: string) => {
     if (display === 'Error') {
@@ -262,7 +284,10 @@ export function Calculator() {
     <div className="w-full space-y-4">
       <Card>
         <CardContent className="p-4 space-y-4">
-          <div className="bg-muted p-4 rounded-lg text-right">
+          <div className="bg-muted p-4 rounded-lg text-right relative">
+            <Button variant="ghost" size="icon" className="absolute top-2 left-2 h-8 w-8 text-muted-foreground" onClick={toggleSounds}>
+              {calculatorSounds ? <Volume2 className="h-5 w-5"/> : <VolumeX className="h-5 w-5"/>}
+            </Button>
             <div className="text-muted-foreground text-xl h-8 truncate">{expression || '0'}</div>
             <div className="text-foreground text-5xl font-bold h-[60px] flex items-end justify-end truncate">{display}</div>
           </div>
@@ -336,5 +361,3 @@ export function Calculator() {
     </div>
   );
 }
-
-    
