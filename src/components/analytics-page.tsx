@@ -32,7 +32,6 @@ import {
 } from 'lucide-react';
 import { useProfile } from '@/context/ProfileContext';
 import { isToday, isYesterday, formatDistanceToNow } from 'date-fns';
-import { UsageTrendChart } from './usage-trend-chart';
 import { ActivityBreakdownChart } from '@/components/activity-breakdown-chart';
 
 const StatCard = ({
@@ -89,8 +88,6 @@ export function AnalyticsPage() {
     const { profile } = useProfile();
     const { history, favorites } = profile;
     const [showMoreStats, setShowMoreStats] = useState(false);
-    const [usageTrendType, setUsageTrendType] = useState('bar');
-    const [usageTrendPeriod, setUsageTrendPeriod] = useState('weekly');
     
     const getCountForDay = (items: any[], dateFn: (d: Date) => boolean) => {
         return items.filter((c: { timestamp: string | number | Date; }) => dateFn(new Date(c.timestamp))).length;
@@ -183,34 +180,6 @@ export function AnalyticsPage() {
                 {showMoreStats ? 'Show Less' : 'Show More'}
             </Button>
             
-            <Card>
-                <CardHeader>
-                    <div className="flex justify-between items-center">
-                        <CardTitle>Usage Trend</CardTitle>
-                        <Select value={usageTrendPeriod} onValueChange={setUsageTrendPeriod}>
-                            <SelectTrigger className="w-[120px]"><SelectValue /></SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="weekly">Weekly</SelectItem>
-                                <SelectItem value="monthly">Monthly</SelectItem>
-                                <SelectItem value="yearly">Yearly</SelectItem>
-                            </SelectContent>
-                        </Select>
-                    </div>
-                </CardHeader>
-                <CardContent className="h-[250px] flex flex-col gap-4">
-                    <Tabs value={usageTrendType} onValueChange={setUsageTrendType} className="w-full">
-                        <TabsList className="grid w-full grid-cols-3 bg-accent/50 h-auto p-1">
-                            <TabsTrigger value="bar">Bar</TabsTrigger>
-                            <TabsTrigger value="line">Line</TabsTrigger>
-                            <TabsTrigger value="area">Area</TabsTrigger>
-                        </TabsList>
-                    </Tabs>
-                    <div className="flex-1">
-                        <UsageTrendChart type={usageTrendType as any} period={usageTrendPeriod} />
-                    </div>
-                </CardContent>
-            </Card>
-
             <Card>
                 <CardHeader>
                     <CardTitle>Activity Breakdown</CardTitle>
