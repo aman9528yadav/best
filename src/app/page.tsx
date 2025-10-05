@@ -145,7 +145,9 @@ export default function DashboardPage() {
   const isPageLoading = isMaintenanceLoading || isProfileLoading;
   
   const userQuickAccessItems = useMemo(() => {
-    if (!profile.quickAccessOrder) return quickAccessItems;
+    if (!profile.quickAccessOrder || profile.quickAccessOrder.length === 0) {
+      return quickAccessItems;
+    }
     
     const itemMap = new Map(quickAccessItems.map(item => [item.id, item]));
     const orderedItems = profile.quickAccessOrder
