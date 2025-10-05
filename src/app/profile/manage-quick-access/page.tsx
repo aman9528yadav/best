@@ -16,12 +16,19 @@ export default function ManageQuickAccessPage() {
   const { profile, setProfile } = useProfile();
   
   const [managedItems, setManagedItems] = useState(
-    profile.quickAccessOrder || quickAccessItems.map(item => ({ id: item.id, hidden: false }))
+    (profile.quickAccessOrder && profile.quickAccessOrder.length > 0)
+      ? profile.quickAccessOrder
+      : quickAccessItems.map(item => ({ id: item.id, hidden: false }))
   );
 
   useEffect(() => {
-    // Sync with profile context if it changes
-    setManagedItems(profile.quickAccessOrder || quickAccessItems.map(item => ({ id: item.id, hidden: false })));
+    // Sync with profile context if it changes, but only if it's not empty
+     if (profile.quickAccessOrder && profile.quickAccessOrder.length > 0) {
+      setManagedItems(profile.quickAccessOrder);
+    } else {
+      // If the profile has no order, initialize with default
+      setManagedItems(quickAccessItems.map(item => ({ id: item.id, hidden: false })));
+    }
   }, [profile.quickAccessOrder]);
   
 
