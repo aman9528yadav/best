@@ -57,8 +57,6 @@ import { useRouter } from 'next/navigation';
 import { useTheme } from 'next-themes';
 import { useAuth } from '@/context/AuthContext';
 import { useProfile, HSLColor } from '@/context/ProfileContext';
-import { Slider } from './ui/slider';
-
 
 const themes = [
   { name: 'Sutradhaar', value: 'sutradhaar' },
@@ -73,6 +71,46 @@ const appearanceModes = [
   { name: 'Dark', value: 'dark', icon: Moon },
   { name: 'System', value: 'system', icon: Laptop },
 ];
+
+// Helper function to convert HSL to HEX
+const hslToHex = (h: number, s: number, l: number) => {
+  l /= 100;
+  const a = s * Math.min(l, 1 - l) / 100;
+  const f = (n: number) => {
+    const k = (n + h / 30) % 12;
+    const color = l - a * Math.max(Math.min(k - 3, 9 - k, 1), -1);
+    return Math.round(255 * color).toString(16).padStart(2, '0');
+  };
+  return `#${f(0)}${f(8)}${f(4)}`;
+};
+
+// Helper function to convert HEX to HSL
+const hexToHsl = (hex: string): HSLColor => {
+  let r = 0, g = 0, b = 0;
+  if (hex.length == 4) {
+    r = parseInt(hex[1] + hex[1], 16);
+    g = parseInt(hex[2] + hex[2], 16);
+    b = parseInt(hex[3] + hex[3], 16);
+  } else if (hex.length == 7) {
+    r = parseInt(hex.substring(1, 3), 16);
+    g = parseInt(hex.substring(3, 5), 16);
+    b = parseInt(hex.substring(5, 7), 16);
+  }
+  r /= 255; g /= 255; b /= 255;
+  let cmin = Math.min(r,g,b), cmax = Math.max(r,g,b), delta = cmax - cmin, h = 0, s = 0, l = 0;
+  if (delta == 0) h = 0;
+  else if (cmax == r) h = ((g - b) / delta) % 6;
+  else if (cmax == g) h = (b - r) / delta + 2;
+  else h = (r - g) / delta + 4;
+  h = Math.round(h * 60);
+  if (h < 0) h += 360;
+  l = (cmax + cmin) / 2;
+  s = delta == 0 ? 0 : delta / (1 - Math.abs(2 * l - 1));
+  s = +(s * 100).toFixed(1);
+  l = +(l * 100).toFixed(1);
+  return { h: Math.round(h), s: Math.round(s), l: Math.round(l) };
+}
+
 
 export function SettingsPage() {
   const { toast } = useToast();
@@ -110,13 +148,11 @@ export function SettingsPage() {
     }
   }, [settings.customTheme]);
 
-  const handleCustomThemeChange = (colorName: keyof typeof customTheme, property: keyof HSLColor, value: number) => {
+  const handleCustomThemeChange = (colorName: keyof typeof customTheme, hexValue: string) => {
+      const newHsl = hexToHsl(hexValue);
       const newCustomTheme = {
         ...customTheme,
-        [colorName]: {
-            ...customTheme[colorName],
-            [property]: value
-        }
+        [colorName]: newHsl,
       };
       setCustomTheme(newCustomTheme);
        setProfile(p => ({
@@ -304,7 +340,7 @@ export function SettingsPage() {
                 ))}
               </div>
               <SettingRow label="Theme" icon={Palette}>
-                <Select value={theme?.startsWith('theme-') ? theme.substring(6) : 'sutradhaar'} onValueChange={(v) => setTheme(v === 'custom' ? 'custom' : `theme-${v}`)}>
+                <Select value={theme?.includes('theme-') ? theme.substring(6) : (theme === 'custom' ? 'custom' : 'sutradhaar')} onValueChange={(v) => setTheme(v === 'custom' ? 'custom' : `theme-${v}`)}>
                   <SelectTrigger className="w-[150px]">
                     <SelectValue />
                   </SelectTrigger>
@@ -328,22 +364,22 @@ export function SettingsPage() {
                 </CardHeader>
                  <CardContent className="space-y-6">
                     {(Object.keys(customTheme) as Array<keyof typeof customTheme>).map(colorName => (
-                         <div key={colorName} className="space-y-4 p-4 rounded-lg bg-accent/50">
-                            <h4 className="font-medium capitalize flex items-center gap-2">
-                                <div className="w-4 h-4 rounded-full border" style={{ backgroundColor: `hsl(${customTheme[colorName].h}, ${customTheme[colorName].s}%, ${customTheme[colorName].l}%)`}} />
+                         <div key={colorName} className="space-y-3 p-4 rounded-lg bg-accent/50">
+                            <Label className="font-medium capitalize flex items-center gap-2">
                                 {colorName}
-                            </h4>
-                            <div className="space-y-2">
-                                <Label>Hue ({customTheme[colorName].h})</Label>
-                                <Slider value={[customTheme[colorName].h]} onValueChange={([v]) => handleCustomThemeChange(colorName, 'h', v)} max={360} step={1} />
-                            </div>
-                            <div className="space-y-2">
-                                <Label>Saturation ({customTheme[colorName].s}%)</Label>
-                                <Slider value={[customTheme[colorName].s]} onValueChange={([v]) => handleCustomThemeChange(colorName, 's', v)} max={100} step={1} />
-                            </div>
-                            <div className="space-y-2">
-                                <Label>Lightness ({customTheme[colorName].l}%)</Label>
-                                <Slider value={[customTheme[colorName].l]} onValueChange={([v]) => handleCustomThemeChange(colorName, 'l', v)} max={100} step={1} />
+                            </Label>
+                            <div className="flex items-center gap-2">
+                               <Input 
+                                 type="color" 
+                                 className="h-10 w-12 p-1"
+                                 value={hslToHex(customTheme[colorName].h, customTheme[colorName].s, customTheme[colorName].l)}
+                                 onChange={(e) => handleCustomThemeChange(colorName, e.target.value)}
+                               />
+                               <Input 
+                                 className="flex-1"
+                                 value={hslToHex(customTheme[colorName].h, customTheme[colorName].s, customTheme[colorName].l)}
+                                 onChange={(e) => handleCustomThemeChange(colorName, e.target.value)}
+                               />
                             </div>
                          </div>
                     ))}
