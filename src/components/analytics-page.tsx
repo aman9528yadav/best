@@ -18,6 +18,7 @@ import {
 import { useProfile } from '@/context/ProfileContext';
 import { isToday, isYesterday, formatDistanceToNow } from 'date-fns';
 import { ActivityBreakdownChart } from '@/components/activity-breakdown-chart';
+import { WeeklySummaryChart } from './weekly-summary-chart';
 
 const StatCard = ({
   title,
@@ -164,6 +165,15 @@ export function AnalyticsPage() {
                 {showMoreStats ? <ChevronUp className="mr-2 h-4 w-4" /> : <ChevronDown className="mr-2 h-4 w-4" />}
                 {showMoreStats ? 'Show Less' : 'Show More'}
             </Button>
+
+            <Card>
+                <CardHeader>
+                    <CardTitle>Weekly Summary</CardTitle>
+                </CardHeader>
+                <CardContent className="h-[150px]">
+                    <WeeklySummaryChart />
+                </CardContent>
+            </Card>
             
             <Card>
                 <CardHeader>
@@ -202,4 +212,3 @@ export function AnalyticsPage() {
         </div>
     );
 }
-
