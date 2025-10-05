@@ -30,13 +30,14 @@ import { CATEGORIES, convert, Unit } from '@/lib/units';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { AdMobBanner } from '@/components/admob-banner';
-import { useHistory, ConversionHistoryItem, FavoriteItem } from '@/context/HistoryContext';
+import { useProfile, ConversionHistoryItem, FavoriteItem } from '@/context/ProfileContext';
 import Link from 'next/link';
 import { ConversionComparisonDialog } from './conversion-comparison-dialog';
 
 export function UnitConverter() {
   const { toast } = useToast();
-  const { history, favorites, addConversionToHistory, addFavorite, deleteFavorite, deleteHistoryItem } = useHistory();
+  const { profile, addConversionToHistory, addFavorite, deleteFavorite, deleteHistoryItem } = useProfile();
+  const { history, favorites } = profile;
 
   const [region, setRegion] = useState('International');
   const [category, setCategory] = useState(CATEGORIES[0].name);

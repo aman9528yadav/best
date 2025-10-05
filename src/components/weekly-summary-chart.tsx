@@ -1,12 +1,14 @@
+
 "use client";
 
 import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis } from 'recharts';
-import { useHistory } from '@/context/HistoryContext';
+import { useProfile } from '@/context/ProfileContext';
 import { useMemo } from 'react';
 import { eachDayOfInterval, format, subDays, isSameDay } from 'date-fns';
 
 export function WeeklySummaryChart() {
-  const { history } = useHistory();
+  const { profile } = useProfile();
+  const { history } = profile;
 
   const weeklySummaryData = useMemo(() => {
     const today = new Date();

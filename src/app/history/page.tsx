@@ -18,11 +18,11 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { useHistory } from '@/context/HistoryContext';
+import { useProfile } from '@/context/ProfileContext';
 
 export default function History() {
   const { user, loading: authLoading } = useAuth();
-  const { isLoading: historyLoading } = useHistory();
+  const { isLoading: historyLoading } = useProfile();
   const router = useRouter();
   const [showLoginDialog, setShowLoginDialog] = useState(false);
 
@@ -94,5 +94,3 @@ export default function History() {
     </div>
   );
 }
-
-    

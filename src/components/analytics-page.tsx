@@ -30,7 +30,6 @@ import {
   ChevronUp,
   ChevronDown,
 } from 'lucide-react';
-import { useHistory } from '@/context/HistoryContext';
 import { useProfile } from '@/context/ProfileContext';
 import { isToday, isYesterday, formatDistanceToNow } from 'date-fns';
 import { UsageTrendChart } from './usage-trend-chart';
@@ -87,8 +86,8 @@ const DayOverDayComparison = ({ label, value }: { label: string, value: number }
 
 
 export function AnalyticsPage() {
-    const { history, favorites } = useHistory();
     const { profile } = useProfile();
+    const { history, favorites } = profile;
     const [showMoreStats, setShowMoreStats] = useState(false);
     const [usageTrendType, setUsageTrendType] = useState('bar');
     const [usageTrendPeriod, setUsageTrendPeriod] = useState('weekly');

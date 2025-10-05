@@ -19,7 +19,7 @@ import {
 } from '@/components/ui/select';
 import { Trash2, Filter, Link as LinkIcon, RotateCw } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
-import { useHistory, HistoryItem, FavoriteItem, ConversionHistoryItem, CalculatorHistoryItem } from '@/context/HistoryContext';
+import { useProfile, HistoryItem, FavoriteItem, ConversionHistoryItem, CalculatorHistoryItem } from '@/context/ProfileContext';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -34,7 +34,8 @@ import {
 
 
 export function HistoryPage() {
-  const { history, favorites, clearAllHistory, clearAllFavorites, deleteHistoryItem, deleteFavorite } = useHistory();
+  const { profile, clearAllHistory, clearAllFavorites, deleteHistoryItem, deleteFavorite } = useProfile();
+  const { history, favorites } = profile;
   const [activeTab, setActiveTab] = useState('conversions');
   const [filter, setFilter] = useState('All');
   

@@ -17,7 +17,7 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart"
-import { useHistory } from "@/context/HistoryContext"
+import { useProfile } from "@/context/ProfileContext"
 
 const chartConfig = {
   conversions: {
@@ -39,7 +39,8 @@ const chartConfig = {
 }
 
 export function ActivityBreakdownChart() {
-    const { history } = useHistory();
+    const { profile } = useProfile();
+    const { history } = profile;
   const chartData = React.useMemo(() => {
     const conversions = history.filter((h) => h.type === "conversion").length
     const calculator = history.filter((h) => h.type === "calculator").length

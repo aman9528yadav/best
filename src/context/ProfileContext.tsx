@@ -15,6 +15,45 @@ export type ActivityLogItem = {
     type: ActivityType;
 };
 
+export type ConversionHistoryItem = {
+  id: string;
+  type: 'conversion';
+  fromValue: string;
+  fromUnit: string;
+  toValue: string;
+  toUnit: string;
+  category: string;
+  timestamp: string; // Use ISO string for serialization
+};
+
+export type CalculatorHistoryItem = {
+  id: string;
+  type: 'calculator';
+  expression: string;
+  result: string;
+  timestamp: string; // Use ISO string for serialization
+};
+
+export type DateCalculationHistoryItem = {
+  id: string;
+  type: 'date_calculation';
+  calculationType: string;
+  details: any;
+  timestamp: string;
+};
+
+export type FavoriteItem = {
+  id: string;
+  type: 'favorite';
+  fromValue: string;
+  fromUnit: string;
+  toValue: string;
+  toUnit: string;
+  category: string;
+};
+
+export type HistoryItem = ConversionHistoryItem | CalculatorHistoryItem | DateCalculationHistoryItem;
+
 export type UserStats = {
   allTimeActivities: number;
   todayActivities: number;
@@ -70,6 +109,8 @@ export type UserProfile = {
   quickAccessOrder?: QuickAccessItemOrder[];
   photoUrl?: string;
   photoId?: string;
+  history: HistoryItem[];
+  favorites: FavoriteItem[];
 };
 
 type ProfileContextType = {
@@ -90,6 +131,17 @@ type ProfileContextType = {
   deleteTodo: (id: string) => void;
   deleteAllUserData: () => void;
   updateStats: (type: ActivityType) => void;
+  // History methods
+  history: HistoryItem[];
+  favorites: FavoriteItem[];
+  addConversionToHistory: (item: Omit<ConversionHistoryItem, 'id' | 'timestamp' | 'type'>) => void;
+  addCalculatorToHistory: (item: Omit<CalculatorHistoryItem, 'id' | 'timestamp' | 'type'>) => void;
+  addDateCalculationToHistory: (item: Omit<DateCalculationHistoryItem, 'id' | 'timestamp' | 'type'>) => void;
+  addFavorite: (item: Omit<FavoriteItem, 'id' | 'type'>) => void;
+  deleteHistoryItem: (id: string) => void;
+  deleteFavorite: (id: string) => void;
+  clearAllHistory: (type: 'conversion' | 'calculator' | 'date_calculation' | 'all') => void;
+  clearAllFavorites: () => void;
 };
 
 const ProfileContext = createContext<ProfileContextType | undefined>(undefined);
@@ -124,6 +176,8 @@ const getInitialProfile = (): UserProfile => {
     quickAccessOrder: [],
     photoUrl: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxtYW4lMjBwb3J0cmFpdHxlbnwwfHx8fDE3NTkwNzk5MTd8MA&ixlib=rb-4.1.0&q=80&w=1080",
     photoId: 'user-avatar-1',
+    history: [],
+    favorites: [],
   };
 };
 
@@ -147,6 +201,8 @@ const guestProfileDefault: UserProfile = {
     quickAccessOrder: [],
     photoUrl: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxtYW4lMjBwb3J0cmFpdHxlbnwwfHx8fDE3NTkwNzk5MTd8MA&ixlib=rb-4.1.0&q=80&w=1080",
     photoId: 'user-avatar-1',
+    history: [],
+    favorites: [],
 }
 
 export const ProfileProvider = ({ children }: { children: ReactNode }) => {
@@ -154,10 +210,8 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
   const [isLoading, setIsLoading] = useState(true);
   const { user, loading: authLoading, logout } = useAuth();
   
-  // Ref to track if initial data load is complete
   const dataLoaded = useRef(false);
 
-  // Effect to load and sync profile data
   useEffect(() => {
     if (authLoading) return;
     
@@ -168,12 +222,13 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
           const savedProfile = localStorage.getItem('sutradhaar_profile');
           if (savedProfile) {
             const parsedProfile = JSON.parse(savedProfile);
-            // Ensure stats and notes have default values if missing
             const stats = { ...defaultStats, ...(parsedProfile.stats || {}) };
             const notes = parsedProfile.notes || [];
             const todos = parsedProfile.todos || [];
             const activityLog = parsedProfile.activityLog || [];
-            setProfileState({ ...guestProfileDefault, ...parsedProfile, stats, notes, todos, activityLog });
+            const history = parsedProfile.history || [];
+            const favorites = parsedProfile.favorites || [];
+            setProfileState({ ...guestProfileDefault, ...parsedProfile, stats, notes, todos, activityLog, history, favorites });
           } else {
             setProfileState(guestProfileDefault);
           }
@@ -198,6 +253,9 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
           const notes = fetchedData.notes || [];
           const todos = fetchedData.todos || [];
           const activityLog = fetchedData.activityLog || [];
+          const history = fetchedData.history ? Object.values(fetchedData.history).sort((a: any, b: any) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()) as HistoryItem[] : [];
+          const favorites = fetchedData.favorites ? Object.values(fetchedData.favorites) as FavoriteItem[] : [];
+
 
           const fullProfile = {
             ...getInitialProfile(),
@@ -208,6 +266,8 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
             notes,
             todos,
             activityLog,
+            history,
+            favorites,
           };
           setProfileState(fullProfile);
 
@@ -222,7 +282,9 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
             activityLog: [],
             quickAccessOrder: [],
             photoUrl: user.photoURL || guestProfileDefault.photoUrl,
-            photoId: guestProfileDefault.photoId
+            photoId: guestProfileDefault.photoId,
+            history: [],
+            favorites: [],
           };
           await set(userRef, newProfile);
           setProfileState(newProfile);
@@ -231,7 +293,7 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
         dataLoaded.current = true;
       }, (error) => {
         console.error("Error listening to profile changes:", error);
-        loadGuestData(); // Fallback to guest data on error
+        loadGuestData();
       });
 
       return () => unsubscribe();
@@ -246,7 +308,12 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
         
         if (user) {
             const userRef = ref(rtdb, `users/${user.uid}/profile`);
-            set(userRef, updatedProfile).catch(error => {
+            const dbProfile = {...updatedProfile};
+            // @ts-ignore
+            dbProfile.history = (dbProfile.history || []).reduce((acc, item) => ({...acc, [item.id]: item}), {});
+            // @ts-ignore
+            dbProfile.favorites = (dbProfile.favorites || []).reduce((acc, item) => ({...acc, [item.id]: item}), {});
+            set(userRef, dbProfile).catch(error => {
                  console.error("Failed to save profile to Realtime DB", error);
             });
         } else {
@@ -392,15 +459,56 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
         const userRef = ref(rtdb, `users/${user.uid}`);
         await remove(userRef);
     }
-    // Clear all local storage keys used by the app
     Object.keys(localStorage).forEach(key => {
         if(key.startsWith('unitwise_') || key.startsWith('sutradhaar_')) {
             localStorage.removeItem(key);
         }
     });
-    // Reset state to default and log out
     setProfileState(getInitialProfile());
     logout();
+  };
+  
+  const addConversionToHistory = (item: Omit<ConversionHistoryItem, 'id' | 'timestamp' | 'type'>) => {
+    const newItem: ConversionHistoryItem = { ...item, id: new Date().getTime().toString(), timestamp: new Date().toISOString(), type: 'conversion' };
+    setProfile(p => ({...p, history: [newItem, ...p.history]}));
+    updateStats('conversion');
+  };
+
+  const addCalculatorToHistory = (item: Omit<CalculatorHistoryItem, 'id' | 'timestamp' | 'type'>) => {
+    const newItem: CalculatorHistoryItem = { ...item, id: new Date().getTime().toString(), timestamp: new Date().toISOString(), type: 'calculator' };
+    setProfile(p => ({...p, history: [newItem, ...p.history]}));
+    updateStats('calculator');
+  };
+  
+  const addDateCalculationToHistory = (item: Omit<DateCalculationHistoryItem, 'id' | 'timestamp' | 'type'>) => {
+    const newItem: DateCalculationHistoryItem = { ...item, id: new Date().getTime().toString(), timestamp: new Date().toISOString(), type: 'date_calculation' };
+    setProfile(p => ({...p, history: [newItem, ...p.history]}));
+    updateStats('date_calculation');
+  };
+
+  const addFavorite = (item: Omit<FavoriteItem, 'id' | 'type'>) => {
+    const newItem: FavoriteItem = { ...item, id: new Date().getTime().toString(), type: 'favorite' };
+    setProfile(p => ({...p, favorites: [newItem, ...p.favorites]}));
+  };
+
+  const deleteHistoryItem = (id: string) => {
+    setProfile(p => ({...p, history: p.history.filter(item => item.id !== id)}));
+  };
+
+  const deleteFavorite = (id: string) => {
+    setProfile(p => ({...p, favorites: p.favorites.filter(item => item.id !== id)}));
+  };
+  
+  const clearAllHistory = (type: 'conversion' | 'calculator' | 'date_calculation' | 'all') => {
+    if (type === 'all') {
+      setProfile(p => ({...p, history: []}));
+      return;
+    }
+    setProfile(p => ({...p, history: p.history.filter(item => item.type !== type)}));
+  };
+
+  const clearAllFavorites = () => {
+    setProfile(p => ({...p, favorites: []}));
   };
 
   return (
@@ -422,6 +530,16 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
         deleteTodo,
         deleteAllUserData,
         updateStats,
+        history: profile.history,
+        favorites: profile.favorites,
+        addConversionToHistory,
+        addCalculatorToHistory,
+        addDateCalculationToHistory,
+        addFavorite,
+        deleteHistoryItem,
+        deleteFavorite,
+        clearAllHistory,
+        clearAllFavorites,
     }}>
       {children}
     </ProfileContext.Provider>

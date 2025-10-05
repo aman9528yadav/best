@@ -35,7 +35,6 @@ import { Badge } from '@/components/ui/badge';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useProfile } from '@/context/ProfileContext';
-import { useHistory } from '@/context/HistoryContext';
 import { useAuth } from '@/context/AuthContext';
 
 const DetailItem = ({ icon: Icon, label, value }: { icon: React.ElementType, label: string, value: string }) => (
@@ -60,7 +59,6 @@ const QuickActionButton = ({ icon: Icon, label, href }: { icon: React.ElementTyp
 
 export function ProfilePage() {
     const { profile } = useProfile();
-    const { history } = useHistory();
     const { user, logout } = useAuth();
     
     const { allTimeActivities = 0, daysActive = 0 } = profile.stats || {};

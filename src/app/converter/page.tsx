@@ -6,10 +6,10 @@ import { Header } from '@/components/header';
 import { UnitConverter } from '@/components/unit-converter';
 import { AdMobBanner } from '@/components/admob-banner';
 import { UnitConverterSkeleton } from '@/components/unit-converter-skeleton';
-import { useHistory } from '@/context/HistoryContext';
+import { useProfile } from '@/context/ProfileContext';
 
 export default function ConverterPage() {
-    const { isLoading } = useHistory();
+    const { isLoading } = useProfile();
 
   return (
     <div className="flex flex-col items-center w-full min-h-screen bg-background text-foreground">
@@ -27,5 +27,3 @@ export default function ConverterPage() {
     </div>
   );
 }
-
-    

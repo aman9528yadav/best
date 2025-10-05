@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { ChevronUp, Divide, Equal, Minus, Plus, X, Percent, Baseline, History, Undo2, Trash2 } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { useHistory, CalculatorHistoryItem } from '@/context/HistoryContext';
+import { useProfile, CalculatorHistoryItem } from '@/context/ProfileContext';
 import Link from 'next/link';
 
 const CalculatorButton = ({
@@ -54,7 +54,8 @@ export function Calculator() {
   const [display, setDisplay] = useState('0');
   const [expression, setExpression] = useState('');
   const [isSci, setIsSci] = useState(false);
-  const { history, addCalculatorToHistory, deleteHistoryItem } = useHistory();
+  const { profile, addCalculatorToHistory, deleteHistoryItem } = useProfile();
+  const { history } = profile;
 
   const handleInput = (value: string) => {
     if (display === 'Error') {

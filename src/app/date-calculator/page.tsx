@@ -6,10 +6,10 @@ import { Header } from '@/components/header';
 import { AdMobBanner } from '@/components/admob-banner';
 import { DateCalculator } from '@/components/date-calculator';
 import { DateCalculatorSkeleton } from '@/components/date-calculator-skeleton';
-import { useHistory } from '@/context/HistoryContext';
+import { useProfile } from '@/context/ProfileContext';
 
 export default function DateCalculatorPage() {
-  const { isLoading } = useHistory();
+  const { isLoading } = useProfile();
 
   return (
     <div className="flex flex-col items-center w-full min-h-screen bg-background text-foreground">
@@ -27,5 +27,3 @@ export default function DateCalculatorPage() {
     </div>
   );
 }
-
-    

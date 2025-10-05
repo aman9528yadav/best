@@ -39,7 +39,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
-import { useHistory } from '@/context/HistoryContext';
+import { useProfile } from '@/context/ProfileContext';
 
 
 export function DevPanel() {
@@ -52,7 +52,7 @@ export function DevPanel() {
   } = useMaintenance();
   const { globalMaintenance, dashboardBanner, maintenanceMessage, devPassword, welcomeDialog, maintenanceCountdown } = maintenanceConfig;
   const [broadcastMessage, setBroadcastMessage] = useState('');
-  const { clearAllHistory } = useHistory();
+  const { clearAllHistory } = useProfile();
   const [passwordState, setPasswordState] = useState({ currentPassword: '', newPassword: '', confirmNewPassword: '' });
 
   useEffect(() => {

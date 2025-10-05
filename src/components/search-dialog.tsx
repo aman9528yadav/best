@@ -11,8 +11,7 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Search, BookText, Settings, ArrowRightLeft, Sigma, Loader2 } from 'lucide-react';
-import { useProfile, NoteItem } from '@/context/ProfileContext';
-import { useHistory, ConversionHistoryItem, CalculatorHistoryItem } from '@/context/HistoryContext';
+import { useProfile, NoteItem, ConversionHistoryItem, CalculatorHistoryItem } from '@/context/ProfileContext';
 import { useRouter } from 'next/navigation';
 import { convertFromNaturalLanguage, NaturalLanguageConversionOutput } from '@/ai/flows/natural-language-converter';
 import { useDebounce } from 'use-debounce';
@@ -38,7 +37,7 @@ export function SearchDialog({ open, onOpenChange }: { open: boolean, onOpenChan
   const [query, setQuery] = useState('');
   const router = useRouter();
   const { profile } = useProfile();
-  const { history } = useHistory();
+  const { history } = profile;
   const [isConverting, setIsConverting] = useState(false);
   const [conversionResult, setConversionResult] = useState<NaturalLanguageConversionOutput | null>(null);
   const [debouncedQuery] = useDebounce(query, 500);

@@ -2,7 +2,6 @@
 import type { Metadata } from 'next';
 import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
-import { HistoryProvider } from '@/context/HistoryContext';
 import { ProfileProvider } from '@/context/ProfileContext';
 import { MaintenanceProvider, MaintenanceWrapper } from '@/context/MaintenanceContext';
 import { AuthProvider } from '@/context/AuthContext';
@@ -42,13 +41,11 @@ export default function RootLayout({
             <NotificationProvider>
               <MaintenanceProvider>
                 <ProfileProvider>
-                  <HistoryProvider>
-                    <MaintenanceWrapper>
-                      {children}
-                    </MaintenanceWrapper>
-                    <Toaster />
-                    <BroadcastListener />
-                  </HistoryProvider>
+                  <MaintenanceWrapper>
+                    {children}
+                  </MaintenanceWrapper>
+                  <Toaster />
+                  <BroadcastListener />
                 </ProfileProvider>
               </MaintenanceProvider>
             </NotificationProvider>

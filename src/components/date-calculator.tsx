@@ -35,7 +35,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Input } from './ui/input';
 import { ScrollArea } from './ui/scroll-area';
 import { Label } from './ui/label';
-import { useHistory } from '@/context/HistoryContext';
+import { useProfile } from '@/context/ProfileContext';
 
 const ResultBox = ({ value, label }: { value: string | number; label: string }) => (
   <div className="flex flex-col items-center">
@@ -46,7 +46,7 @@ const ResultBox = ({ value, label }: { value: string | number; label: string }) 
 
 function DateDifferenceCalculator() {
   const { toast } = useToast();
-  const { addDateCalculationToHistory } = useHistory();
+  const { addDateCalculationToHistory } = useProfile();
   const [startDate, setStartDate] = useState<Date | undefined>(new Date());
   const [endDate, setEndDate] = useState<Date | undefined>(new Date());
   const [result, setResult] = useState({
@@ -214,7 +214,7 @@ function DateDifferenceCalculator() {
 
 function AddSubtractCalculator() {
   const { toast } = useToast();
-  const { addDateCalculationToHistory } = useHistory();
+  const { addDateCalculationToHistory } = useProfile();
   const [startDate, setStartDate] = useState<Date>(new Date());
   const [resultDate, setResultDate] = useState<Date>(new Date());
   const [operation, setOperation] = useState<'add' | 'sub'>('add');
@@ -299,7 +299,7 @@ function AddSubtractCalculator() {
 }
 
 function AgeCalculator() {
-    const { addDateCalculationToHistory } = useHistory();
+    const { addDateCalculationToHistory } = useProfile();
     const [birthDate, setBirthDate] = useState<Date | undefined>(new Date(2000, 0, 1));
     const [age, setAge] = useState({ years: 0, months: 0, days: 0 });
     const [summary, setSummary] = useState({ totalMonths: 0, totalWeeks: 0, totalDays: 0 });
@@ -372,7 +372,7 @@ function AgeCalculator() {
 
 function WorkDaysCalculator() {
     const { toast } = useToast();
-    const { addDateCalculationToHistory } = useHistory();
+    const { addDateCalculationToHistory } = useProfile();
     const [startDate, setStartDate] = useState<Date | undefined>(new Date());
     const [endDate, setEndDate] = useState<Date | undefined>(add(new Date(), {days: 7}));
     const [workDays, setWorkDays] = useState(0);
@@ -430,7 +430,7 @@ function WorkDaysCalculator() {
 }
 
 function CountdownCalculator() {
-    const { addDateCalculationToHistory } = useHistory();
+    const { addDateCalculationToHistory } = useProfile();
     const [targetDate, setTargetDate] = useState<Date>(add(new Date(), {days: 30}));
     const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
 
