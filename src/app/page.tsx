@@ -113,18 +113,19 @@ export default function DashboardPage() {
   const [hasSeenWelcome, setHasSeenWelcome] = useState(true);
 
   useEffect(() => {
-    if (isMaintenanceLoading) return;
     const welcomeSetting = localStorage.getItem('sutradhaar_show_welcome');
-    if (welcomeSetting === 'true') {
-        setHasSeenWelcome(false);
+    if (welcomeSetting === null || welcomeSetting === 'true') {
+        setShowWelcomeDialog(true);
     }
-  }, [isMaintenanceLoading]);
+  }, []);
 
 
   const handleWelcomeConfirm = (dontShowAgain: boolean) => {
     setShowWelcomeDialog(false);
     if (dontShowAgain) {
       localStorage.setItem('sutradhaar_show_welcome', 'false');
+    } else {
+       localStorage.setItem('sutradhaar_show_welcome', 'true');
     }
   };
 
