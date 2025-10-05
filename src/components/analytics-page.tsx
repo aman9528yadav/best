@@ -11,21 +11,6 @@ import {
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import {
-  Tabs,
-  TabsList,
-  TabsTrigger,
-} from '@/components/ui/tabs';
-import {
-  TrendingUp,
-  TrendingDown,
-  ArrowRight,
   MoreVertical,
   ChevronUp,
   ChevronDown,
@@ -59,7 +44,7 @@ const StatCard = ({
                 <div className="flex items-center text-xs text-muted-foreground">
                     {change !== undefined && (
                         <div className={ `flex items-center mr-2 ${isPositive ? 'text-green-500' : 'text-red-500'}`}>
-                           {isPositive ? <TrendingUp className="h-3 w-3 mr-1"/> : <TrendingDown className="h-3 w-3 mr-1"/>}
+                           {isPositive ? <ChevronUp className="h-3 w-3 mr-1"/> : <ChevronDown className="h-3 w-3 mr-1"/>}
                            {Math.abs(change)}%
                         </div>
                     )}
@@ -217,3 +202,4 @@ export function AnalyticsPage() {
         </div>
     );
 }
+
