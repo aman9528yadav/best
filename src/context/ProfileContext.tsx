@@ -88,6 +88,9 @@ export type QuickAccessItemOrder = {
   hidden: boolean;
 };
 
+export type UserSettings = {
+    saveHistory: boolean;
+};
 
 export type UserProfile = {
   name: string;
@@ -102,6 +105,7 @@ export type UserProfile = {
     github: string;
     instagram: string;
   };
+  settings: UserSettings;
   stats: UserStats;
   notes: NoteItem[];
   todos: TodoItem[];
@@ -155,6 +159,10 @@ const defaultStats: UserStats = {
     daysActive: 0,
 };
 
+const defaultSettings: UserSettings = {
+    saveHistory: true,
+};
+
 const getInitialProfile = (): UserProfile => {
   return {
     name: "",
@@ -169,6 +177,7 @@ const getInitialProfile = (): UserProfile => {
       github: "",
       instagram: "",
     },
+    settings: defaultSettings,
     stats: defaultStats,
     notes: [],
     todos: [],
@@ -194,6 +203,7 @@ const guestProfileDefault: UserProfile = {
         github: "",
         instagram: "",
     },
+    settings: defaultSettings,
     stats: defaultStats,
     notes: [],
     todos: [],
@@ -223,12 +233,13 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
           if (savedProfile) {
             const parsedProfile = JSON.parse(savedProfile);
             const stats = { ...defaultStats, ...(parsedProfile.stats || {}) };
+            const settings = { ...defaultSettings, ...(parsedProfile.settings || {}) };
             const notes = parsedProfile.notes || [];
             const todos = parsedProfile.todos || [];
             const activityLog = parsedProfile.activityLog || [];
             const history = parsedProfile.history || [];
             const favorites = parsedProfile.favorites || [];
-            setProfileState({ ...guestProfileDefault, ...parsedProfile, stats, notes, todos, activityLog, history, favorites });
+            setProfileState({ ...guestProfileDefault, ...parsedProfile, settings, stats, notes, todos, activityLog, history, favorites });
           } else {
             setProfileState(guestProfileDefault);
           }
@@ -250,6 +261,7 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
           const fetchedData = snapshot.val() as Partial<UserProfile>;
           
           const stats = { ...defaultStats, ...(fetchedData.stats || {}) };
+          const settings = { ...defaultSettings, ...(fetchedData.settings || {}) };
           const notes = fetchedData.notes || [];
           const todos = fetchedData.todos || [];
           const activityLog = fetchedData.activityLog || [];
@@ -262,6 +274,7 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
             ...fetchedData,
             name: fetchedData.name || user.displayName || "New User",
             email: user.email || fetchedData.email || "",
+            settings,
             stats,
             notes,
             todos,
@@ -276,6 +289,7 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
             ...guestProfileDefault,
             email: user.email || '',
             name: user.displayName || 'New User',
+            settings: defaultSettings,
             stats: defaultStats,
             notes: [],
             todos: [],
@@ -469,18 +483,21 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
   };
   
   const addConversionToHistory = (item: Omit<ConversionHistoryItem, 'id' | 'timestamp' | 'type'>) => {
+    if (!profile.settings.saveHistory) return;
     const newItem: ConversionHistoryItem = { ...item, id: new Date().getTime().toString(), timestamp: new Date().toISOString(), type: 'conversion' };
     setProfile(p => ({...p, history: [newItem, ...p.history]}));
     updateStats('conversion');
   };
 
   const addCalculatorToHistory = (item: Omit<CalculatorHistoryItem, 'id' | 'timestamp' | 'type'>) => {
+    if (!profile.settings.saveHistory) return;
     const newItem: CalculatorHistoryItem = { ...item, id: new Date().getTime().toString(), timestamp: new Date().toISOString(), type: 'calculator' };
     setProfile(p => ({...p, history: [newItem, ...p.history]}));
     updateStats('calculator');
   };
   
   const addDateCalculationToHistory = (item: Omit<DateCalculationHistoryItem, 'id' | 'timestamp' | 'type'>) => {
+    if (!profile.settings.saveHistory) return;
     const newItem: DateCalculationHistoryItem = { ...item, id: new Date().getTime().toString(), timestamp: new Date().toISOString(), type: 'date_calculation' };
     setProfile(p => ({...p, history: [newItem, ...p.history]}));
     updateStats('date_calculation');

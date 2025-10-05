@@ -54,6 +54,7 @@ import { useMaintenance } from '@/context/MaintenanceContext';
 import { useRouter } from 'next/navigation';
 import { useTheme } from 'next-themes';
 import { useAuth } from '@/context/AuthContext';
+import { useProfile } from '@/context/ProfileContext';
 
 
 const themes = [
@@ -71,7 +72,9 @@ const appearanceModes = [
 
 export function SettingsPage() {
   const { toast } = useToast();
-  const [saveHistory, setSaveHistory] = useState(true);
+  const { profile, setProfile } = useProfile();
+  const { settings } = profile;
+  const [saveHistory, setSaveHistory] = useState(settings.saveHistory);
   const [calculatorSounds, setCalculatorSounds] = useState(false);
   const [showWelcome, setShowWelcome] = useState(false);
   const { theme, setTheme } = useTheme();
@@ -104,6 +107,20 @@ export function SettingsPage() {
       title: `Welcome screen on startup ${checked ? 'enabled' : 'disabled'}`,
     });
   };
+
+  const handleSaveHistoryChange = (checked: boolean) => {
+    setSaveHistory(checked);
+    setProfile(p => ({
+        ...p,
+        settings: {
+            ...p.settings,
+            saveHistory: checked
+        }
+    }));
+    toast({
+      title: `History saving ${checked ? 'enabled' : 'disabled'}`,
+    });
+  }
 
   const isOwner = user?.email === 'amanyadavyadav9458@gmail.com';
 
@@ -184,7 +201,7 @@ export function SettingsPage() {
               <SettingRow label="Save History" icon={Info}>
                 <Switch
                   checked={saveHistory}
-                  onCheckedChange={setSaveHistory}
+                  onCheckedChange={handleSaveHistoryChange}
                 />
               </SettingRow>
               <SettingRow label="Calculator Sounds" icon={Volume2}>
@@ -250,7 +267,7 @@ export function SettingsPage() {
                 ))}
               </div>
               <SettingRow label="Theme" icon={Palette}>
-                <Select value={theme?.replace('theme-','') || 'sutradhaar'} onValueChange={(v) => setTheme(`theme-${v}`)}>
+                <Select value={themes.find(t => `theme-${t.value}` === theme)?.value || 'sutradhaar'} onValueChange={(v) => setTheme(`theme-${v}`)}>
                   <SelectTrigger className="w-[150px]">
                     <SelectValue />
                   </SelectTrigger>
@@ -310,5 +327,3 @@ export function SettingsPage() {
     </div>
   );
 }
-
-    
