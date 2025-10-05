@@ -32,8 +32,7 @@ import {
 } from 'lucide-react';
 import { useProfile } from '@/context/ProfileContext';
 import { isToday, isYesterday, formatDistanceToNow } from 'date-fns';
-import { UsageTrendChart } from './usage-trend-chart';
-import { ActivityBreakdownChart } from './activity-breakdown-chart';
+import { ActivityBreakdownChart } from '@/components/activity-breakdown-chart';
 
 const StatCard = ({
   title,
