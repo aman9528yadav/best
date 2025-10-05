@@ -9,7 +9,7 @@ body {
 
 @layer base {
   /* Default Light Theme */
-  :root, html.light {
+  :root {
     --background: 0 0% 100%;
     --foreground: 240 10% 3.9%;
     --card: 0 0% 100%;
@@ -66,7 +66,7 @@ body {
   }
 
   /* Sutradhaar Theme */
-  html.theme-sutradhaar {
+  .theme-sutradhaar {
     --background: 240 10% 97.5%;
     --foreground: 240 5% 15%;
     --card: 0 0% 100%;
@@ -87,7 +87,7 @@ body {
     --input: 240 5.9% 90%;
     --ring: 259 87% 60%;
   }
-  html.dark.theme-sutradhaar {
+  .dark.theme-sutradhaar {
     --background: 240 5% 10%;
     --foreground: 0 0% 98%;
     --card: 240 5% 10%;
@@ -110,7 +110,7 @@ body {
   }
 
   /* Forest Theme */
-  html.theme-forest {
+  .theme-forest {
     --background: 120 15% 96%;
     --foreground: 120 25% 10%;
     --card: 120 10% 100%;
@@ -131,7 +131,7 @@ body {
     --input: 130 10% 88%;
     --ring: 130 60% 40%;
   }
-  html.dark.theme-forest {
+  .dark.theme-forest {
     --background: 120 25% 8%;
     --foreground: 120 10% 96%;
     --card: 120 25% 8%;
@@ -154,7 +154,7 @@ body {
   }
 
   /* Ocean Theme */
-  html.theme-ocean {
+  .theme-ocean {
     --background: 205 20% 95%;
     --foreground: 215 30% 15%;
     --card: 210 10% 100%;
@@ -175,7 +175,7 @@ body {
     --input: 210 20% 88%;
     --ring: 210 70% 50%;
   }
-  html.dark.theme-ocean {
+  .dark.theme-ocean {
     --background: 215 30% 10%;
     --foreground: 210 15% 95%;
     --card: 215 30% 10%;
@@ -198,7 +198,7 @@ body {
   }
   
   /* Sunset Theme */
-  html.theme-sunset {
+  .theme-sunset {
     --background: 20 20% 96%;
     --foreground: 25 30% 12%;
     --card: 15 10% 100%;
@@ -219,7 +219,7 @@ body {
     --input: 25 15% 88%;
     --ring: 30 80% 55%;
   }
-  html.dark.theme-sunset {
+  .dark.theme-sunset {
     --background: 25 30% 9%;
     --foreground: 20 15% 96%;
     --card: 25 30% 9%;
@@ -265,5 +265,3 @@ body {
     @apply w-4 h-4 align-middle mr-2;
   }
 }
-
-    
