@@ -1,3 +1,4 @@
+
 import React from 'react';
 import {
   Ruler,
@@ -34,10 +35,13 @@ export const CATEGORIES: Category[] = [
       { name: 'Kilometers', symbol: 'km' },
       { name: 'Centimeters', symbol: 'cm' },
       { name: 'Millimeters', symbol: 'mm' },
+      { name: 'Micrometers', symbol: 'μm' },
+      { name: 'Nanometers', symbol: 'nm' },
       { name: 'Feet', symbol: 'ft' },
       { name: 'Inches', symbol: 'in' },
       { name: 'Yards', symbol: 'yd' },
       { name: 'Miles', symbol: 'mi' },
+      { name: 'Nautical Miles', symbol: 'nmi' },
       { name: 'Gaj', symbol: 'gaj', region: 'Indian' },
     ],
   },
@@ -48,8 +52,10 @@ export const CATEGORIES: Category[] = [
       { name: 'Grams', symbol: 'g', isStandard: true },
       { name: 'Kilograms', symbol: 'kg' },
       { name: 'Milligrams', symbol: 'mg' },
+      { name: 'Metric Tonnes', symbol: 't' },
       { name: 'Pounds', symbol: 'lb' },
       { name: 'Ounces', symbol: 'oz' },
+      { name: 'Stone', symbol: 'st' },
       { name: 'Tola', symbol: 'tola', region: 'Indian' },
       { name: 'Sher', symbol: 'sher', region: 'Indian' },
       { name: 'Maund', symbol: 'maund', region: 'Indian' },
@@ -70,11 +76,14 @@ export const CATEGORIES: Category[] = [
     units: [
       { name: 'Square Meters', symbol: 'm²', isStandard: true },
       { name: 'Square Kilometers', symbol: 'km²' },
+      { name: 'Square Feet', symbol: 'ft²' },
+      { name: 'Square Miles', symbol: 'mi²' },
       { name: 'Acres', symbol: 'ac' },
       { name: 'Hectares', symbol: 'ha' },
       { name: 'Square Gaj', symbol: 'sq gaj', region: 'Indian' },
       { name: 'Bigha', symbol: 'bigha', region: 'Indian' },
       { name: 'Kanal', symbol: 'kanal', region: 'Indian' },
+      { name: 'Killa', symbol: 'killa', region: 'Indian' },
     ],
   },
   {
@@ -83,7 +92,9 @@ export const CATEGORIES: Category[] = [
     units: [
       { name: 'Liters', symbol: 'L', isStandard: true },
       { name: 'Milliliters', symbol: 'mL' },
+      { name: 'Cubic Meters', symbol: 'm³' },
       { name: 'Gallons (US)', symbol: 'gal' },
+      { name: 'Pints (US)', symbol: 'pt' },
     ],
   },
   {
@@ -93,6 +104,7 @@ export const CATEGORIES: Category[] = [
       { name: 'Meters per second', symbol: 'm/s', isStandard: true },
       { name: 'Kilometers per hour', symbol: 'km/h' },
       { name: 'Miles per hour', symbol: 'mph' },
+      { name: 'Knots', symbol: 'kn' },
     ],
   },
   {
@@ -146,36 +158,47 @@ const conversionFactors: Record<string, Record<string, number>> = {
   Kilometers: 1000,
   Centimeters: 0.01,
   Millimeters: 0.001,
+  Micrometers: 1e-6,
+  Nanometers: 1e-9,
   Feet: 0.3048,
   Inches: 0.0254,
   Yards: 0.9144,
   Miles: 1609.34,
+  'Nautical Miles': 1852,
   Gaj: 0.9144, // Same as Yard
   // Weight to base (Grams)
   Grams: 1,
   Kilograms: 1000,
   Milligrams: 0.001,
+  'Metric Tonnes': 1000000,
   Pounds: 453.592,
   Ounces: 28.3495,
+  Stone: 6350.29,
   Tola: 11.6638,
   Sher: 933.1, // 1 Sher = 80 Tola
   Maund: 37324, // 1 Maund = 40 Sher
   // Area to base (Square Meters)
   'Square Meters': 1,
   'Square Kilometers': 1000000,
+  'Square Feet': 0.092903,
+  'Square Miles': 2589988.11,
   Acres: 4046.86,
   Hectares: 10000,
   'Square Gaj': 0.836127,
   Bigha: 2529.29, // Varies, using a common value for UP/Rajasthan
   Kanal: 505.857,
+  Killa: 4046.86, // Equivalent to one Acre
   // Volume to base (Liters)
   Liters: 1,
   Milliliters: 0.001,
+  'Cubic Meters': 1000,
   'Gallons (US)': 3.78541,
+  'Pints (US)': 0.473176,
   // Speed to base (Meters per second)
   'Meters per second': 1,
   'Kilometers per hour': 0.277778,
   'Miles per hour': 0.44704,
+  Knots: 0.514444,
   // Time to base (Seconds)
   Seconds: 1,
   Minutes: 60,
