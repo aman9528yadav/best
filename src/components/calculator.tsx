@@ -29,7 +29,7 @@ const CalculatorButton = ({
 
     const playSound = () => {
         if (calculatorSounds) {
-            const audio = new Audio('/sounds/keyboard-click.mp3');
+            const audio = new Audio('/sound/keyboard-click-327728.mp3');
             audio.play().catch(e => console.error("Failed to play sound", e));
         }
     };
@@ -336,3 +336,5 @@ export function Calculator() {
     </div>
   );
 }
+
+    
