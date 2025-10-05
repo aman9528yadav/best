@@ -88,8 +88,22 @@ export type QuickAccessItemOrder = {
   hidden: boolean;
 };
 
+export type HSLColor = {
+    h: number;
+    s: number;
+    l: number;
+};
+
+export type CustomTheme = {
+    background: HSLColor;
+    foreground: HSLColor;
+    primary: HSLColor;
+    accent: HSLColor;
+};
+
 export type UserSettings = {
     saveHistory: boolean;
+    customTheme?: CustomTheme;
 };
 
 export type UserProfile = {
@@ -161,6 +175,12 @@ const defaultStats: UserStats = {
 
 const defaultSettings: UserSettings = {
     saveHistory: true,
+    customTheme: {
+        background: { h: 0, s: 0, l: 100 },
+        foreground: { h: 240, s: 10, l: 3.9 },
+        primary: { h: 240, s: 5.9, l: 10 },
+        accent: { h: 240, s: 4.8, l: 95.9 },
+    }
 };
 
 const getInitialProfile = (): UserProfile => {
@@ -233,7 +253,7 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
           if (savedProfile) {
             const parsedProfile = JSON.parse(savedProfile);
             const stats = { ...defaultStats, ...(parsedProfile.stats || {}) };
-            const settings = { ...defaultSettings, ...(parsedProfile.settings || {}) };
+            const settings = { ...defaultSettings, ...(parsedProfile.settings || {}), customTheme: { ...defaultSettings.customTheme, ...(parsedProfile.settings?.customTheme || {}) } };
             const notes = parsedProfile.notes || [];
             const todos = parsedProfile.todos || [];
             const activityLog = parsedProfile.activityLog || [];
@@ -261,7 +281,7 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
           const fetchedData = snapshot.val() as Partial<UserProfile>;
           
           const stats = { ...defaultStats, ...(fetchedData.stats || {}) };
-          const settings = { ...defaultSettings, ...(fetchedData.settings || {}) };
+          const settings = { ...defaultSettings, ...(fetchedData.settings || {}), customTheme: { ...defaultSettings.customTheme, ...(fetchedData.settings?.customTheme || {}) } };
           const notes = fetchedData.notes || [];
           const todos = fetchedData.todos || [];
           const activityLog = fetchedData.activityLog || [];

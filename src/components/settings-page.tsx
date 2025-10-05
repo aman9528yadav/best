@@ -49,12 +49,15 @@ import {
   Code,
   Volume2,
   MessageSquare,
+  Paintbrush,
+  Sliders,
 } from 'lucide-react';
 import { useMaintenance } from '@/context/MaintenanceContext';
 import { useRouter } from 'next/navigation';
 import { useTheme } from 'next-themes';
 import { useAuth } from '@/context/AuthContext';
-import { useProfile } from '@/context/ProfileContext';
+import { useProfile, HSLColor } from '@/context/ProfileContext';
+import { Slider } from './ui/slider';
 
 
 const themes = [
@@ -62,6 +65,7 @@ const themes = [
   { name: 'Forest', value: 'forest' },
   { name: 'Ocean', value: 'ocean' },
   { name: 'Sunset', value: 'sunset' },
+  { name: 'Custom', value: 'custom' },
 ];
 
 const appearanceModes = [
@@ -85,12 +89,45 @@ export function SettingsPage() {
   const router = useRouter();
   const { user } = useAuth();
   
+  const [customTheme, setCustomTheme] = useState(settings.customTheme || {
+      background: { h: 0, s: 0, l: 100 },
+      foreground: { h: 240, s: 10, l: 3.9 },
+      primary: { h: 240, s: 5.9, l: 10 },
+      accent: { h: 240, s: 4.8, l: 95.9 },
+  });
+
+
   useEffect(() => {
     const soundsEnabled = localStorage.getItem('sutradhaar_calculator_sounds') === 'true';
     setCalculatorSounds(soundsEnabled);
     const welcomeEnabled = localStorage.getItem('sutradhaar_show_welcome') === 'true';
     setShowWelcome(welcomeEnabled);
   }, []);
+  
+  useEffect(() => {
+    if (settings.customTheme) {
+        setCustomTheme(settings.customTheme);
+    }
+  }, [settings.customTheme]);
+
+  const handleCustomThemeChange = (colorName: keyof typeof customTheme, property: keyof HSLColor, value: number) => {
+      const newCustomTheme = {
+        ...customTheme,
+        [colorName]: {
+            ...customTheme[colorName],
+            [property]: value
+        }
+      };
+      setCustomTheme(newCustomTheme);
+       setProfile(p => ({
+        ...p,
+        settings: {
+            ...p.settings,
+            customTheme: newCustomTheme
+        }
+    }));
+  };
+
 
   const handleCalculatorSoundsChange = (checked: boolean) => {
     setCalculatorSounds(checked);
@@ -267,7 +304,7 @@ export function SettingsPage() {
                 ))}
               </div>
               <SettingRow label="Theme" icon={Palette}>
-                <Select value={themes.find(t => `theme-${t.value}` === theme)?.value || 'sutradhaar'} onValueChange={(v) => setTheme(`theme-${v}`)}>
+                <Select value={theme?.startsWith('theme-') ? theme.substring(6) : 'sutradhaar'} onValueChange={(v) => setTheme(v === 'custom' ? 'custom' : `theme-${v}`)}>
                   <SelectTrigger className="w-[150px]">
                     <SelectValue />
                   </SelectTrigger>
@@ -282,6 +319,38 @@ export function SettingsPage() {
               </SettingRow>
             </CardContent>
           </Card>
+
+           {theme === 'custom' && (
+            <Card className="mt-6">
+                <CardHeader>
+                    <CardTitle className="flex items-center gap-2"><Paintbrush className="h-5 w-5"/>Custom Theme Editor</CardTitle>
+                    <CardDescription>Fine-tune the colors for your custom theme.</CardDescription>
+                </CardHeader>
+                 <CardContent className="space-y-6">
+                    {(Object.keys(customTheme) as Array<keyof typeof customTheme>).map(colorName => (
+                         <div key={colorName} className="space-y-4 p-4 rounded-lg bg-accent/50">
+                            <h4 className="font-medium capitalize flex items-center gap-2">
+                                <div className="w-4 h-4 rounded-full border" style={{ backgroundColor: `hsl(${customTheme[colorName].h}, ${customTheme[colorName].s}%, ${customTheme[colorName].l}%)`}} />
+                                {colorName}
+                            </h4>
+                            <div className="space-y-2">
+                                <Label>Hue ({customTheme[colorName].h})</Label>
+                                <Slider value={[customTheme[colorName].h]} onValueChange={([v]) => handleCustomThemeChange(colorName, 'h', v)} max={360} step={1} />
+                            </div>
+                            <div className="space-y-2">
+                                <Label>Saturation ({customTheme[colorName].s}%)</Label>
+                                <Slider value={[customTheme[colorName].s]} onValueChange={([v]) => handleCustomThemeChange(colorName, 's', v)} max={100} step={1} />
+                            </div>
+                            <div className="space-y-2">
+                                <Label>Lightness ({customTheme[colorName].l}%)</Label>
+                                <Slider value={[customTheme[colorName].l]} onValueChange={([v]) => handleCustomThemeChange(colorName, 'l', v)} max={100} step={1} />
+                            </div>
+                         </div>
+                    ))}
+                </CardContent>
+            </Card>
+           )}
+
         </TabsContent>
 
         <TabsContent value="about" className="pt-6">

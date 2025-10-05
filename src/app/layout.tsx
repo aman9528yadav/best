@@ -8,6 +8,7 @@ import { AuthProvider } from '@/context/AuthContext';
 import { ThemeProvider } from '@/components/theme-provider';
 import { BroadcastListener } from '@/components/broadcast-listener';
 import { NotificationProvider } from '@/context/NotificationContext';
+import { CustomThemeHandler } from '@/components/custom-theme-handler';
 
 
 export const metadata: Metadata = {
@@ -36,12 +37,13 @@ export default function RootLayout({
           defaultTheme="system"
           enableSystem
           disableTransitionOnChange
-          themes={['light', 'dark', 'theme-sutradhaar', 'theme-forest', 'theme-ocean', 'theme-sunset']}
+          themes={['light', 'dark', 'theme-sutradhaar', 'theme-forest', 'theme-ocean', 'theme-sunset', 'custom']}
         >
           <AuthProvider>
             <NotificationProvider>
               <MaintenanceProvider>
                 <ProfileProvider>
+                  <CustomThemeHandler />
                   <MaintenanceWrapper>
                     {children}
                   </MaintenanceWrapper>
@@ -56,5 +58,3 @@ export default function RootLayout({
     </html>
   );
 }
-
-    
