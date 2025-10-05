@@ -36,6 +36,7 @@ export default function RootLayout({
           defaultTheme="theme-sutradhaar"
           enableSystem={false}
           disableTransitionOnChange
+          themes={['theme-sutradhaar', 'theme-forest', 'theme-ocean', 'theme-sunset']}
         >
           <AuthProvider>
             <NotificationProvider>
