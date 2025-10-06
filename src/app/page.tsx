@@ -148,18 +148,10 @@ export default function DashboardPage() {
       return quickAccessItems;
     }
     
-    const itemMap = new Map(quickAccessItems.map(item => [item.id, item]));
-    const orderedItems = profile.quickAccessOrder
-      .map(orderItem => {
-        const item = itemMap.get(orderItem.id);
-        if (item && !orderItem.hidden) {
-          return item;
-        }
-        return null;
-      })
-      .filter((item): item is (typeof quickAccessItems)[0] => item !== null);
-
-    return orderedItems;
+    return quickAccessItems.filter(item => {
+      const userItem = profile.quickAccessOrder.find(orderItem => orderItem.id === item.id);
+      return !userItem || !userItem.hidden;
+    });
   }, [profile.quickAccessOrder]);
 
 
