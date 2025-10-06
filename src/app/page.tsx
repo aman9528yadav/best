@@ -68,7 +68,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { WelcomeDialog } from '@/components/welcome-dialog';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 
 export const quickAccessItems = [
@@ -85,8 +85,13 @@ export const quickAccessItems = [
   { id: 'history', icon: History, label: 'History', href: '/history', requiresAuth: true },
   { id: 'news', icon: Newspaper, label: 'News', href: 'https://aman9528.wixstudio.com/my-site-3', requiresAuth: false },
   { id: 'translator', icon: Languages, label: 'Translator', href: '#', requiresAuth: true },
-  { id: 'more', icon: Sparkles, label: 'More', href: '#', requiresAuth: false },
+];
 
+export const moreAccessItems = [
+    { id: 'date-calculator', icon: Calendar, label: 'Date Calc', href: '/date-calculator', requiresAuth: false },
+    { id: 'timer', icon: Timer, label: 'Timer', href: '/timer', requiresAuth: false },
+    { id: 'stopwatch', icon: Hourglass, label: 'Stopwatch', href: '/stopwatch', requiresAuth: false },
+    { id: 'settings', icon: Settings, label: 'Settings', href: '/settings', requiresAuth: true },
 ];
 
 const iconMap: { [key: string]: LucideIcon } = {
@@ -109,6 +114,7 @@ export default function DashboardPage() {
 
   const [showLoginDialog, setShowLoginDialog] = useState(false);
   const [showWelcomeDialog, setShowWelcomeDialog] = useState(false);
+  const [showMore, setShowMore] = useState(false);
 
   useEffect(() => {
     const welcomeSetting = localStorage.getItem('sutradhaar_show_welcome');
@@ -134,7 +140,7 @@ export default function DashboardPage() {
     }
   }, [isProfileLoading, checkAndUpdateStreak]);
 
-  const handleQuickAccessClick = (e: React.MouseEvent<HTMLAnchorElement>, item: (typeof quickAccessItems)[0]) => {
+  const handleQuickAccessClick = (e: React.MouseEvent, item: { requiresAuth: boolean }) => {
     if (item.requiresAuth && !user) {
       e.preventDefault();
       setShowLoginDialog(true);
@@ -238,13 +244,45 @@ export default function DashboardPage() {
                   onClick={(e) => handleQuickAccessClick(e, item)}
                   className="flex flex-col items-center gap-2"
                 >
-                    <div className={cn("p-4 rounded-full flex items-center justify-center", item.id === 'more' ? 'bg-pink-100' : 'bg-accent')}>
+                    <div className="p-4 rounded-full flex items-center justify-center bg-accent">
                         <item.icon className="h-5 w-5 text-primary" />
                     </div>
                     <span className="text-xs font-medium text-muted-foreground">{item.label}</span>
                 </Link>
               ))}
+               <div className="flex flex-col items-center gap-2" onClick={() => setShowMore(!showMore)}>
+                  <div className={cn("p-4 rounded-full flex items-center justify-center cursor-pointer", showMore ? "bg-primary text-primary-foreground" : "bg-accent text-primary")}>
+                      {showMore ? <ChevronUp className="h-5 w-5"/> : <Sparkles className="h-5 w-5"/>}
+                  </div>
+                  <span className="text-xs font-medium text-muted-foreground">More</span>
+              </div>
             </div>
+             <AnimatePresence>
+                {showMore && (
+                    <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: 'auto', opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        className="overflow-hidden"
+                    >
+                        <div className="grid grid-cols-4 gap-4 text-center pt-4">
+                            {moreAccessItems.map(item => (
+                                <Link 
+                                    href={item.href || '#'} 
+                                    key={item.label}
+                                    onClick={(e) => handleQuickAccessClick(e, item)}
+                                    className="flex flex-col items-center gap-2"
+                                >
+                                    <div className="p-4 rounded-full flex items-center justify-center bg-accent">
+                                        <item.icon className="h-5 w-5 text-primary" />
+                                    </div>
+                                    <span className="text-xs font-medium text-muted-foreground">{item.label}</span>
+                                </Link>
+                            ))}
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
           </section>
 
            <section>
