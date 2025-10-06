@@ -21,6 +21,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 import { Input } from "@/components/ui/input"
+import { format } from 'date-fns';
 
 const CountdownBox = ({ value, label }: { value: string; label: string }) => (
   <div className="bg-card rounded-lg p-3 w-20 flex flex-col items-center shadow-inner">
@@ -124,12 +125,17 @@ export function MaintenancePage() {
                 <span>We're back online! Thanks for your patience.</span>
             </div>
           ) : (
-             <div className="flex justify-center gap-3">
-                <CountdownBox value={String(timeLeft.days)} label="DAYS" />
-                <CountdownBox value={String(timeLeft.hours).padStart(2, '0')} label="HOURS" />
-                <CountdownBox value={String(timeLeft.minutes).padStart(2, '0')} label="MINUTES"/>
-                <CountdownBox value={String(timeLeft.seconds).padStart(2, '0')} label="SECONDS" />
-            </div>
+             <div className="space-y-3">
+                <div className="flex justify-center gap-3">
+                    <CountdownBox value={String(timeLeft.days)} label="DAYS" />
+                    <CountdownBox value={String(timeLeft.hours).padStart(2, '0')} label="HOURS" />
+                    <CountdownBox value={String(timeLeft.minutes).padStart(2, '0')} label="MINUTES"/>
+                    <CountdownBox value={String(timeLeft.seconds).padStart(2, '0')} label="SECONDS" />
+                </div>
+                <p className="text-sm text-muted-foreground">
+                    (Estimated: {format(new Date(maintenanceTargetDate), 'PPP p')})
+                </p>
+             </div>
           )}
 
           <Card>
