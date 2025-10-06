@@ -33,6 +33,14 @@ const calculateTimeLeft = (targetDate: string): Countdown => {
     return timeLeft;
 };
 
+const getFullUrl = (url: string) => {
+    if (!url) return '#';
+    if (url.startsWith('http://') || url.startsWith('https://')) {
+        return url;
+    }
+    return `https://${url}`;
+};
+
 export function DashboardBanner() {
   const { maintenanceConfig } = useMaintenance();
   const { appUpdate } = maintenanceConfig;
@@ -63,6 +71,8 @@ export function DashboardBanner() {
   }, [timeLeft, isVisible, isClient, targetDate]);
 
   const isTimerFinished = timeLeft.days <= 0 && timeLeft.hours <= 0 && timeLeft.minutes <= 0 && timeLeft.seconds <= 0;
+  
+  const downloadUrl = getFullUrl(appUpdate.url);
 
   return (
     <>
@@ -77,7 +87,7 @@ export function DashboardBanner() {
                 <h3 className="font-bold">New App Update Available!</h3>
                 <p className="text-xs text-muted-foreground">Version {appUpdate.version} is ready to download. {appUpdate.releaseNotes}</p>
                 <Button asChild size="sm" className="bg-blue-500 hover:bg-blue-600 text-white">
-                  <a href={appUpdate.url || '#'} target="_blank" rel="noopener noreferrer">Download APK</a>
+                  <a href={downloadUrl} target="_blank" rel="noopener noreferrer">Download APK</a>
                 </Button>
               </div>
             </div>
