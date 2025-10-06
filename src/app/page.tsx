@@ -154,10 +154,31 @@ export default function DashboardPage() {
       return quickAccessItems;
     }
     
-    return quickAccessItems.filter(item => {
-      const userItem = profile.quickAccessOrder.find(orderItem => orderItem.id === item.id);
-      return !userItem || !userItem.hidden;
-    });
+    // Start with a map of the default items for quick lookup
+    const defaultItemsMap = new Map(quickAccessItems.map(item => [item.id, item]));
+    
+    // Create a Set of all default item IDs
+    const defaultItemIds = new Set(quickAccessItems.map(item => item.id));
+
+    // Get the user's ordered and filtered items
+    const orderedUserItems = profile.quickAccessOrder
+      .map(orderItem => {
+        const itemDetails = defaultItemsMap.get(orderItem.id);
+        if (itemDetails && !orderItem.hidden) {
+          return itemDetails;
+        }
+        return null;
+      })
+      .filter(item => item !== null) as (typeof quickAccessItems);
+      
+    const orderedUserItemIds = new Set(orderedUserItems.map(item => item.id));
+
+    // Get any default items that are not in the user's order list
+    const remainingDefaultItems = quickAccessItems.filter(item => !orderedUserItemIds.has(item.id));
+
+    // Combine them, so user's order is first, then any new default items are added at the end
+    return [...orderedUserItems, ...remainingDefaultItems];
+
   }, [profile.quickAccessOrder]);
 
 
@@ -180,7 +201,7 @@ export default function DashboardPage() {
   const { allTimeActivities = 0, todayActivities = 0, streak = 0 } = profile.stats || {};
 
   const whatsNewItems = (updateItems || []).slice(0, 3);
-  const displayedComingSoonItems = (comingSoonItems || []).slice(0, 2);
+  const displayedComingSoonItems = (comingSoonItems || []);
 
 
   return (
@@ -318,28 +339,37 @@ export default function DashboardPage() {
 
           <section>
             <h2 className="font-semibold mb-2">Coming Soon</h2>
-            <div className="grid grid-cols-2 gap-3">
-              {displayedComingSoonItems.map((item) => {
-                const ItemIcon = iconMap[item.icon] || Sparkles;
-                return (
-                  <motion.div key={item.id} whileHover={{ y: -2, scale: 1.02 }}>
-                    <Card className="h-full">
-                      <CardContent className="p-3 flex items-start gap-3">
-                        <div className="p-2 bg-accent rounded-lg">
-                          <ItemIcon className="h-5 w-5 text-primary" />
-                        </div>
-                        <div className="flex-1">
-                          <div className="font-medium text-sm">{item.title}</div>
-                          <p className="text-xs text-muted-foreground">
-                            {item.description}
-                          </p>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </motion.div>
-                );
-              })}
-            </div>
+            <ScrollArea className="w-full">
+              <div className="flex space-x-3 pb-4">
+                {displayedComingSoonItems.map((item) => {
+                  const ItemIcon = iconMap[item.icon] || Sparkles;
+                  return (
+                    <motion.div
+                      key={item.id}
+                      whileHover={{ y: -2, scale: 1.02 }}
+                      className="w-48 shrink-0"
+                    >
+                      <Card className="h-full">
+                        <CardContent className="p-3 flex items-start gap-3">
+                          <div className="p-2 bg-accent rounded-lg">
+                            <ItemIcon className="h-5 w-5 text-primary" />
+                          </div>
+                          <div className="flex-1">
+                            <div className="font-medium text-sm">
+                              {item.title}
+                            </div>
+                            <p className="text-xs text-muted-foreground">
+                              {item.description}
+                            </p>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </motion.div>
+                  );
+                })}
+              </div>
+              <ScrollBar orientation="horizontal" />
+            </ScrollArea>
           </section>
 
           <section>
