@@ -7,7 +7,7 @@ import { BottomNavigation } from './bottom-navigation';
 export function ConditionalBottomNavigation() {
   const pathname = usePathname();
 
-  const hideOnRoutes = ['/login', '/notes/new', '/notes/', '/forgot-password', '/verify-email', '/auth-action'];
+  const hideOnRoutes = ['/login', '/notes/new', '/notes/', '/forgot-password', '/verify-email', '/auth-action', '/maintenance'];
 
   const shouldHide = hideOnRoutes.some(route => {
     if (route.endsWith('/')) {
