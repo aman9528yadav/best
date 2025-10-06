@@ -63,6 +63,9 @@ const themes = [
   { name: 'Forest', value: 'forest' },
   { name: 'Ocean', value: 'ocean' },
   { name: 'Sunset', value: 'sunset' },
+  { name: 'Sunrise', value: 'sunrise' },
+  { name: 'Twilight', value: 'twilight' },
+  { name: 'Aurora', value: 'aurora' },
   { name: 'Custom', value: 'custom' },
 ];
 

@@ -91,6 +91,39 @@ body {
     --accent: 20 80% 94%;
     --accent-foreground: 20 80% 45%;
   }
+
+  .theme-sunrise {
+    --background: 25 100% 97%;
+    --foreground: 20 60% 20%;
+    --card: 0 0% 100%;
+    --card-foreground: 20 60% 20%;
+    --primary: 15 90% 60%;
+    --primary-foreground: 15 90% 98%;
+    --accent: 35 100% 95%;
+    --accent-foreground: 30 90% 35%;
+  }
+
+  .theme-twilight {
+    --background: 250 40% 10%;
+    --foreground: 250 20% 95%;
+    --card: 250 30% 15%;
+    --card-foreground: 250 20% 95%;
+    --primary: 260 80% 75%;
+    --primary-foreground: 260 80% 10%;
+    --accent: 260 40% 25%;
+    --accent-foreground: 260 40% 80%;
+  }
+
+  .theme-aurora {
+    --background: 180 5% 96%;
+    --foreground: 200 10% 15%;
+    --card: 0 0% 100%;
+    --card-foreground: 200 10% 15%;
+    --primary: 170 80% 40%;
+    --primary-foreground: 170 80% 95%;
+    --accent: 170 80% 94%;
+    --accent-foreground: 170 80% 30%;
+  }
 }
 
 @layer base {

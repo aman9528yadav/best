@@ -39,7 +39,7 @@ export default function RootLayout({
           defaultTheme="light"
           enableSystem={false}
           disableTransitionOnChange
-          themes={['light', 'dark', 'theme-sutradhaar', 'theme-forest', 'theme-ocean', 'theme-sunset', 'custom']}
+          themes={['light', 'dark', 'theme-sutradhaar', 'theme-forest', 'theme-ocean', 'theme-sunset', 'theme-sunrise', 'theme-twilight', 'theme-aurora', 'custom']}
         >
           <AuthProvider>
             <NotificationProvider>
