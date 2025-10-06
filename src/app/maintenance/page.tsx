@@ -45,7 +45,7 @@ const calculateTimeLeft = (targetDate: string): Countdown => {
     return timeLeft;
 };
 
-export function MaintenancePage() {
+export default function MaintenancePage() {
   const router = useRouter();
   const { maintenanceConfig, setDevMode } = useMaintenance();
   const { maintenanceTargetDate, maintenanceMessage, maintenanceCards } = maintenanceConfig;
