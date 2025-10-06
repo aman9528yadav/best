@@ -40,6 +40,7 @@ import Link from 'next/link';
 import { useProfile } from '@/context/ProfileContext';
 import { useAuth } from '@/context/AuthContext';
 import { Progress } from '@/components/ui/progress';
+import { useMaintenance } from '@/context/MaintenanceContext';
 
 const DetailItem = ({ icon: Icon, label, value }: { icon: React.ElementType, label: string, value: string }) => (
     <div className="flex justify-between items-center text-sm py-3 border-b border-border/50">
@@ -77,6 +78,7 @@ const ProgressItem = ({ label, value, goal }: { label: string, value: number, go
 export function ProfilePage() {
     const { profile } = useProfile();
     const { user, logout } = useAuth();
+    const { maintenanceConfig } = useMaintenance();
     
     const { allTimeActivities = 0, daysActive = 0, streak = 0 } = profile.stats || {};
     const totalNotes = profile.notes.filter(n => !n.isTrashed).length;
@@ -89,8 +91,7 @@ export function ProfilePage() {
     const isOwner = displayEmail === 'amanyadavyadav9458@gmail.com';
     const isPremium = profile.membership === 'premium' || profile.membership === 'owner';
     
-    const PREMIUM_ACTIVITIES_GOAL = 3000;
-    const PREMIUM_STREAK_GOAL = 15;
+    const { activities: premiumActivitiesGoal, streak: premiumStreakGoal } = maintenanceConfig.premiumCriteria;
 
 
     return (
@@ -157,8 +158,8 @@ export function ProfilePage() {
                         </div>
                     </CardHeader>
                     <CardContent className="space-y-4">
-                       <ProgressItem label="All-Time Activities" value={allTimeActivities} goal={PREMIUM_ACTIVITIES_GOAL} />
-                       <ProgressItem label="Login Streak" value={streak} goal={PREMIUM_STREAK_GOAL} />
+                       <ProgressItem label="All-Time Activities" value={allTimeActivities} goal={premiumActivitiesGoal} />
+                       <ProgressItem label="Login Streak" value={streak} goal={premiumStreakGoal} />
                     </CardContent>
                 </Card>
             )}

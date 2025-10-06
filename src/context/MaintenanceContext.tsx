@@ -91,6 +91,10 @@ export type MaintenanceConfig = {
     comingSoonItems: ComingSoonItem[];
     welcomeDialog: WelcomeDialogContent;
     membershipFeatures: MembershipFeature[];
+    premiumCriteria: {
+        activities: number;
+        streak: number;
+    };
 };
 
 
@@ -188,7 +192,11 @@ const defaultMaintenanceConfig: MaintenanceConfig = {
         { id: 'feat-5', feature: 'Premium Unit Categories', member: false, premium: true },
         { id: 'feat-6', feature: 'Cloud Sync', member: true, premium: true },
         { id: 'feat-7', feature: 'Ad-Free Experience', member: false, premium: true },
-    ]
+    ],
+    premiumCriteria: {
+        activities: 3000,
+        streak: 15,
+    },
 };
 
 export const MaintenanceProvider = ({ children }: { children: ReactNode }) => {
@@ -227,6 +235,7 @@ export const MaintenanceProvider = ({ children }: { children: ReactNode }) => {
                 comingSoonItems: dbConfig.comingSoonItems || defaultMaintenanceConfig.comingSoonItems,
                 welcomeDialog: { ...defaultMaintenanceConfig.welcomeDialog, ...(dbConfig.welcomeDialog || {}) },
                 membershipFeatures: dbConfig.membershipFeatures || defaultMaintenanceConfig.membershipFeatures,
+                premiumCriteria: { ...defaultMaintenanceConfig.premiumCriteria, ...(dbConfig.premiumCriteria || {}) },
             };
             setMaintenanceConfigState(mergedConfig);
         } else {

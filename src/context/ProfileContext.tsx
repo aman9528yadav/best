@@ -7,6 +7,7 @@ import { ref, onValue, set, remove } from "firebase/database";
 import { rtdb } from '@/lib/firebase';
 import { useAuth } from './AuthContext';
 import { isToday, differenceInCalendarDays, startOfDay, isYesterday } from 'date-fns';
+import { useMaintenance } from './MaintenanceContext';
 
 export type ActivityType = 'conversion' | 'calculator' | 'date_calculation' | 'note' | 'todo';
 
@@ -167,9 +168,6 @@ type ProfileContextType = {
 
 const ProfileContext = createContext<ProfileContextType | undefined>(undefined);
 
-const PREMIUM_ACTIVITIES_GOAL = 3000;
-const PREMIUM_STREAK_GOAL = 15;
-
 const defaultStats: UserStats = {
     allTimeActivities: 0,
     todayActivities: 0,
@@ -247,6 +245,7 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
   const [profile, setProfileState] = useState<UserProfile>(getInitialProfile());
   const [isLoading, setIsLoading] = useState(true);
   const { user, loading: authLoading, logout } = useAuth();
+  const { maintenanceConfig } = useMaintenance();
   
   const dataLoaded = useRef(false);
 
@@ -298,7 +297,8 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
 
           let membership = user.email === 'amanyadavyadav9458@gmail.com' ? 'owner' : (fetchedData.membership || 'member');
           // Check for premium upgrade
-          if (membership === 'member' && stats.allTimeActivities >= PREMIUM_ACTIVITIES_GOAL && stats.streak >= PREMIUM_STREAK_GOAL) {
+          const { activities, streak } = maintenanceConfig.premiumCriteria;
+          if (membership === 'member' && stats.allTimeActivities >= activities && stats.streak >= streak) {
             membership = 'premium';
           }
 
@@ -351,14 +351,15 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
     } else {
         loadGuestData();
     }
-  }, [user, authLoading]);
+  }, [user, authLoading, maintenanceConfig.premiumCriteria]);
 
   const setProfile = (newProfileData: UserProfile | ((prevState: UserProfile) => UserProfile)) => {
     setProfileState(currentProfile => {
         let updatedProfile = typeof newProfileData === 'function' ? newProfileData(currentProfile) : newProfileData;
         
         // Premium check logic
-        if (updatedProfile.membership === 'member' && updatedProfile.stats.allTimeActivities >= PREMIUM_ACTIVITIES_GOAL && updatedProfile.stats.streak >= PREMIUM_STREAK_GOAL) {
+        const { activities, streak } = maintenanceConfig.premiumCriteria;
+        if (updatedProfile.membership === 'member' && updatedProfile.stats.allTimeActivities >= activities && updatedProfile.stats.streak >= streak) {
             updatedProfile = { ...updatedProfile, membership: 'premium' };
         }
         

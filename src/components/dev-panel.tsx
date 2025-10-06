@@ -50,7 +50,7 @@ export function DevPanel() {
     setMaintenanceConfig,
     isLoading,
   } = useMaintenance();
-  const { globalMaintenance, dashboardBanner, maintenanceMessage, devPassword, welcomeDialog, maintenanceCountdown } = maintenanceConfig;
+  const { globalMaintenance, dashboardBanner, maintenanceMessage, devPassword, welcomeDialog, maintenanceCountdown, premiumCriteria } = maintenanceConfig;
   const [broadcastMessage, setBroadcastMessage] = useState('');
   const { clearAllHistory } = useProfile();
   const [passwordState, setPasswordState] = useState({ currentPassword: '', newPassword: '', confirmNewPassword: '' });
@@ -195,6 +195,16 @@ export function DevPanel() {
         }
     }));
   }
+  
+  const handlePremiumCriteriaChange = (field: 'activities' | 'streak', value: string) => {
+    setMaintenanceConfig(prev => ({
+        ...prev,
+        premiumCriteria: {
+            ...prev.premiumCriteria,
+            [field]: parseInt(value) || 0
+        }
+    }));
+  };
 
 
   return (
@@ -380,6 +390,34 @@ export function DevPanel() {
                    <div className="bg-accent/50 p-4 rounded-lg space-y-2">
                       <Label htmlFor="welcome-description">Description</Label>
                       <Textarea id="welcome-description" value={welcomeDialog.description} onChange={e => handleWelcomeDialogChange('description', e.target.value)} />
+                   </div>
+                </AccordionContent>
+              </Card>
+            </AccordionItem>
+            
+             <AccordionItem value="item-7" asChild>
+              <Card>
+                 <CardHeader className="p-4">
+                  <AccordionTrigger className="p-0 hover:no-underline">
+                    <div className="flex items-center gap-3">
+                      <Gem className="h-5 w-5" />
+                      <div>
+                        <CardTitle className="text-lg">Premium Criteria</CardTitle>
+                        <CardDescription>
+                          Set goals for premium membership upgrade.
+                        </CardDescription>
+                      </div>
+                    </div>
+                  </AccordionTrigger>
+                </CardHeader>
+                <AccordionContent className="px-4 pb-4 space-y-4">
+                     <div className="bg-accent/50 p-4 rounded-lg space-y-2">
+                      <Label htmlFor="premium-activities">All-Time Activities Goal</Label>
+                      <Input id="premium-activities" type="number" value={premiumCriteria.activities} onChange={e => handlePremiumCriteriaChange('activities', e.target.value)} />
+                   </div>
+                   <div className="bg-accent/50 p-4 rounded-lg space-y-2">
+                      <Label htmlFor="premium-streak">Streak Goal (days)</Label>
+                      <Input id="premium-streak" type="number" value={premiumCriteria.streak} onChange={e => handlePremiumCriteriaChange('streak', e.target.value)} />
                    </div>
                 </AccordionContent>
               </Card>
