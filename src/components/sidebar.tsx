@@ -28,6 +28,7 @@ import {
   LogOut,
   Settings,
   CheckSquare,
+  Gem,
 } from 'lucide-react';
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
@@ -82,7 +83,12 @@ const sidebarNavItems = [
     label: 'Stopwatch',
     href: '/stopwatch',
   },
-    {
+  {
+    icon: Gem,
+    label: 'Membership',
+    href: '/membership',
+  },
+  {
     icon: Settings,
     label: 'Settings',
     href: '/settings',
