@@ -77,7 +77,7 @@ export function DashboardBanner() {
                 <h3 className="font-bold">New App Update Available!</h3>
                 <p className="text-xs text-muted-foreground">Version {appUpdate.version} is ready to download. {appUpdate.releaseNotes}</p>
                 <Button asChild size="sm" className="bg-blue-500 hover:bg-blue-600 text-white">
-                  <a href={appUpdate.url} target="_blank" rel="noopener noreferrer">Download APK</a>
+                  <a href={appUpdate.url || '#'} target="_blank" rel="noopener noreferrer">Download APK</a>
                 </Button>
               </div>
             </div>
