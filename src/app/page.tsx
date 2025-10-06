@@ -190,6 +190,7 @@ export default function DashboardPage() {
           <Header />
         </div>
         <main className="flex-1 overflow-y-auto p-4 pt-0 space-y-6">
+          <DashboardBanner />
         
           <div className="grid grid-cols-3 gap-3 text-center">
             <Card>
