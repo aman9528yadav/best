@@ -43,7 +43,8 @@ import {
     Share2,
     Bot,
     CheckSquare,
-    ChevronDown
+    ChevronDown,
+    Info,
 } from 'lucide-react';
 import Link from 'next/link';
 import { AdMobBanner } from '@/components/admob-banner';
@@ -181,6 +182,7 @@ export default function DashboardPage() {
   const { allTimeActivities = 0, todayActivities = 0, streak = 0 } = profile.stats || {};
 
   const whatsNewItems = (updateItems || []).slice(0, 1);
+  const displayedComingSoonItems = (comingSoonItems || []).slice(0, 2);
 
 
   return (
@@ -281,6 +283,56 @@ export default function DashboardPage() {
                 </motion.div>
               )})}
             </div>
+          </section>
+
+          <section>
+            <h2 className="font-semibold mb-2">Coming Soon</h2>
+            <div className="grid grid-cols-2 gap-3">
+              {displayedComingSoonItems.map((item) => {
+                const ItemIcon = iconMap[item.icon] || Sparkles;
+                return (
+                  <motion.div key={item.id} whileHover={{ y: -2, scale: 1.02 }}>
+                    <Card className="h-full">
+                      <CardContent className="p-3 flex items-start gap-3">
+                        <div className="p-2 bg-accent rounded-lg">
+                          <ItemIcon className="h-5 w-5 text-primary" />
+                        </div>
+                        <div className="flex-1">
+                          <div className="font-medium text-sm">{item.title}</div>
+                          <p className="text-xs text-muted-foreground">
+                            {item.description}
+                          </p>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </motion.div>
+                );
+              })}
+            </div>
+          </section>
+
+          <section>
+            <h2 className="font-semibold mb-2">About Sutradhaar</h2>
+            <motion.div whileHover={{ y: -2, scale: 1.02 }}>
+              <Card>
+                <CardContent className="p-4 flex justify-between items-center">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2.5 bg-accent rounded-lg">
+                      <Info className="h-5 w-5 text-primary" />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold">Version {appInfo.version}</h3>
+                      <p className="text-sm text-muted-foreground">
+                        Built by {ownerInfo.name}
+                      </p>
+                    </div>
+                  </div>
+                  <Button asChild variant="link" size="sm" className="text-primary">
+                    <Link href="/about">Learn More</Link>
+                  </Button>
+                </CardContent>
+              </Card>
+            </motion.div>
           </section>
         </main>
       <AlertDialog open={showLoginDialog} onOpenChange={setShowLoginDialog}>
