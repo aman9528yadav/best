@@ -79,6 +79,13 @@ export type MaintenanceCard = {
     description: string;
 };
 
+export type AppUpdateConfig = {
+    showBanner: boolean;
+    version: string;
+    url: string;
+    releaseNotes: string;
+};
+
 export type MaintenanceConfig = {
     globalMaintenance: boolean;
     isDevMode: boolean;
@@ -101,6 +108,7 @@ export type MaintenanceConfig = {
         activities: number;
         streak: number;
     };
+    appUpdate: AppUpdateConfig;
 };
 
 
@@ -207,6 +215,12 @@ const defaultMaintenanceConfig: MaintenanceConfig = {
         activities: 3000,
         streak: 15,
     },
+    appUpdate: {
+        showBanner: false,
+        version: "1.5.1",
+        url: "",
+        releaseNotes: "New bug fixes and performance improvements.",
+    },
 };
 
 export const MaintenanceProvider = ({ children }: { children: ReactNode }) => {
@@ -247,6 +261,7 @@ export const MaintenanceProvider = ({ children }: { children: ReactNode }) => {
                 welcomeDialog: { ...defaultMaintenanceConfig.welcomeDialog, ...(dbConfig.welcomeDialog || {}) },
                 membershipFeatures: dbConfig.membershipFeatures || defaultMaintenanceConfig.membershipFeatures,
                 premiumCriteria: { ...defaultMaintenanceConfig.premiumCriteria, ...(dbConfig.premiumCriteria || {}) },
+                appUpdate: { ...defaultMaintenanceConfig.appUpdate, ...(dbConfig.appUpdate || {}) },
             };
             setMaintenanceConfigState(mergedConfig);
         } else {

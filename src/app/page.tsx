@@ -45,6 +45,7 @@ import {
     CheckSquare,
     ChevronDown,
     Info,
+    Download,
 } from 'lucide-react';
 import Link from 'next/link';
 import { AdMobBanner } from '@/components/admob-banner';
@@ -197,7 +198,7 @@ export default function DashboardPage() {
     )
   }
 
-  const { appInfo, ownerInfo, updateItems, comingSoonItems, welcomeDialog } = maintenanceConfig;
+  const { appInfo, ownerInfo, updateItems, comingSoonItems, welcomeDialog, appUpdate } = maintenanceConfig;
   const { allTimeActivities = 0, todayActivities = 0, streak = 0 } = profile.stats || {};
 
   const whatsNewItems = (updateItems || []).slice(0, 3);
@@ -213,6 +214,25 @@ export default function DashboardPage() {
         <main className="flex-1 overflow-y-auto p-4 pt-0 space-y-6">
           <DashboardBanner />
         
+          {appUpdate?.showBanner && (
+            <Card className="bg-blue-500/10 border-blue-500/20">
+              <CardContent className="p-4">
+                <div className="flex items-start gap-4">
+                  <div className="p-3 bg-blue-500/10 rounded-full mt-1">
+                    <Download className="h-6 w-6 text-blue-500" />
+                  </div>
+                  <div className="flex-1 space-y-2">
+                    <h3 className="font-bold">New App Update Available!</h3>
+                    <p className="text-xs text-muted-foreground">Version {appUpdate.version} is ready to download. {appUpdate.releaseNotes}</p>
+                    <Button asChild size="sm" className="bg-blue-500 hover:bg-blue-600 text-white">
+                      <a href={appUpdate.url} target="_blank" rel="noopener noreferrer">Download APK</a>
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
           <div className="grid grid-cols-3 gap-3 text-center">
             <Card>
               <CardContent className="p-3 space-y-1">

@@ -19,7 +19,7 @@ import {
 } from '@/components/ui/accordion';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import { ArrowLeft, Clock, Shield, Trash, Megaphone, Pencil, ChevronRight, Send, KeyRound, MessageSquare, Timer, Calendar, Gem } from 'lucide-react';
+import { ArrowLeft, Clock, Shield, Trash, Megaphone, Pencil, ChevronRight, Send, KeyRound, MessageSquare, Timer, Calendar, Gem, Download } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useMaintenance, Countdown } from '@/context/MaintenanceContext';
 import { useToast } from '@/hooks/use-toast';
@@ -51,7 +51,7 @@ export function DevPanel() {
     setMaintenanceConfig,
     isLoading,
   } = useMaintenance();
-  const { globalMaintenance, dashboardBanner, maintenanceMessage, devPassword, welcomeDialog, maintenanceTargetDate, premiumCriteria, maintenanceCards } = maintenanceConfig;
+  const { globalMaintenance, dashboardBanner, maintenanceMessage, devPassword, welcomeDialog, maintenanceTargetDate, premiumCriteria, maintenanceCards, appUpdate } = maintenanceConfig;
   const [broadcastMessage, setBroadcastMessage] = useState('');
   const { clearAllHistory } = useProfile();
   const [passwordState, setPasswordState] = useState({ currentPassword: '', newPassword: '', confirmNewPassword: '' });
@@ -204,6 +204,16 @@ export function DevPanel() {
         return { ...prev, maintenanceCards: newCards };
     });
   };
+  
+   const handleAppUpdateChange = (field: keyof typeof appUpdate, value: any) => {
+     setMaintenanceConfig(prev => ({
+        ...prev,
+        appUpdate: {
+            ...prev.appUpdate,
+            [field]: value
+        }
+    }));
+  };
 
 
   const formatDateTimeForInput = (isoString: string) => {
@@ -333,6 +343,42 @@ export function DevPanel() {
                    <div className="bg-accent/50 p-4 rounded-lg space-y-2">
                       <Label htmlFor="banner-details">Upcoming Feature Details</Label>
                       <Textarea id="banner-details" value={dashboardBanner.upcomingFeatureDetails} onChange={e => handleBannerChange('upcomingFeatureDetails', e.target.value)} />
+                   </div>
+                </AccordionContent>
+              </Card>
+            </AccordionItem>
+
+            <AccordionItem value="item-8" asChild>
+              <Card>
+                <CardHeader className="p-4">
+                  <AccordionTrigger className="p-0 hover:no-underline">
+                    <div className="flex items-center gap-3">
+                      <Download className="h-5 w-5" />
+                      <div>
+                        <CardTitle className="text-lg">App Update</CardTitle>
+                        <CardDescription>
+                          Manage APK download banner.
+                        </CardDescription>
+                      </div>
+                    </div>
+                  </AccordionTrigger>
+                </CardHeader>
+                <AccordionContent className="px-4 pb-4 space-y-4">
+                    <div className="bg-accent/50 p-4 rounded-lg flex items-center justify-between">
+                        <Label htmlFor="show-app-update">Show Download Banner</Label>
+                        <Switch id="show-app-update" checked={appUpdate.showBanner} onCheckedChange={(c) => handleAppUpdateChange('showBanner', c)} />
+                    </div>
+                    <div className="bg-accent/50 p-4 rounded-lg space-y-2">
+                      <Label htmlFor="app-version">App Version</Label>
+                      <Input id="app-version" value={appUpdate.version} onChange={e => handleAppUpdateChange('version', e.target.value)} placeholder="e.g., 1.5.1" />
+                   </div>
+                   <div className="bg-accent/50 p-4 rounded-lg space-y-2">
+                      <Label htmlFor="app-url">Download URL</Label>
+                      <Input id="app-url" value={appUpdate.url} onChange={e => handleAppUpdateChange('url', e.target.value)} placeholder="https://example.com/app.apk" />
+                   </div>
+                   <div className="bg-accent/50 p-4 rounded-lg space-y-2">
+                      <Label htmlFor="app-release-notes">Release Notes</Label>
+                      <Textarea id="app-release-notes" value={appUpdate.releaseNotes} onChange={e => handleAppUpdateChange('releaseNotes', e.target.value)} />
                    </div>
                 </AccordionContent>
               </Card>
