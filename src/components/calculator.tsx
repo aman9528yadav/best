@@ -28,7 +28,7 @@ const CalculatorButton = ({
         setCalculatorSounds(soundsEnabled);
         
         const handleStorageChange = () => {
-            const soundsEnabled = localStorage.getItem('sutradhaar_calculator_sounds') === 'true';
+            const soundsEnabled = localStorage.getItem('sutradhaar_calculator_sounds-page.tsx') === 'true';
             setCalculatorSounds(soundsEnabled);
         }
         window.addEventListener('storage', handleStorageChange);
@@ -67,14 +67,14 @@ export function Calculator() {
   const [calculatorSounds, setCalculatorSounds] = useState(false);
   
   useEffect(() => {
-    const soundsEnabled = localStorage.getItem('sutradhaar_calculator_sounds') === 'true';
+    const soundsEnabled = localStorage.getItem('sutradhaar_calculator_sounds-page.tsx') === 'true';
     setCalculatorSounds(soundsEnabled);
   }, []);
 
   const toggleSounds = () => {
     const newSoundsState = !calculatorSounds;
     setCalculatorSounds(newSoundsState);
-    localStorage.setItem('sutradhaar_calculator_sounds', String(newSoundsState));
+    localStorage.setItem('sutradhaar_calculator_sounds-page.tsx', String(newSoundsState));
      // This is to notify other components that might be listening to this value
     window.dispatchEvent(new Event('storage'));
   };
