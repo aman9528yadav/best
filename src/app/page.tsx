@@ -68,6 +68,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { WelcomeDialog } from '@/components/welcome-dialog';
+import { motion } from 'framer-motion';
 
 export const quickAccessItems = [
   {
@@ -197,48 +198,56 @@ export default function DashboardPage() {
         <div className="space-y-6 pb-8">
            <DashboardBanner />
           <div className="grid grid-cols-3 gap-2 text-center">
-            <Card className="bg-accent/50">
-              <CardContent className="p-3">
-                <div className="flex items-center justify-center gap-2 text-sm text-accent-foreground/80">
-                  <Star className="h-4 w-4" />
-                  All time
-                </div>
-                <div className="text-2xl font-bold">{allTimeActivities}</div>
-              </CardContent>
-            </Card>
-            <Card className="bg-accent/50">
-              <CardContent className="p-3">
-                <div className="flex items-center justify-center gap-2 text-sm text-accent-foreground/80">
-                  <Clock className="h-4 w-4" />
-                  Today
-                </div>
-                <div className="text-2xl font-bold">{todayActivities}</div>
-              </CardContent>
-            </Card>
-            <Card className="bg-accent/50">
-              <CardContent className="p-3">
-                <div className="flex items-center justify-center gap-2 text-sm text-accent-foreground/80">
-                  <TrendingUp className="h-4 w-4" />
-                  Streak
-                </div>
-                <div className="text-2xl font-bold">{streak}</div>
-              </CardContent>
-            </Card>
+            <motion.div whileHover={{ y: -5, scale: 1.05 }}>
+                <Card className="bg-accent/50">
+                <CardContent className="p-3">
+                    <div className="flex items-center justify-center gap-2 text-sm text-accent-foreground/80">
+                    <Star className="h-4 w-4" />
+                    All time
+                    </div>
+                    <div className="text-2xl font-bold">{allTimeActivities}</div>
+                </CardContent>
+                </Card>
+            </motion.div>
+            <motion.div whileHover={{ y: -5, scale: 1.05 }}>
+                <Card className="bg-accent/50">
+                <CardContent className="p-3">
+                    <div className="flex items-center justify-center gap-2 text-sm text-accent-foreground/80">
+                    <Clock className="h-4 w-4" />
+                    Today
+                    </div>
+                    <div className="text-2xl font-bold">{todayActivities}</div>
+                </CardContent>
+                </Card>
+            </motion.div>
+            <motion.div whileHover={{ y: -5, scale: 1.05 }}>
+                <Card className="bg-accent/50">
+                <CardContent className="p-3">
+                    <div className="flex items-center justify-center gap-2 text-sm text-accent-foreground/80">
+                    <TrendingUp className="h-4 w-4" />
+                    Streak
+                    </div>
+                    <div className="text-2xl font-bold">{streak}</div>
+                </CardContent>
+                </Card>
+            </motion.div>
           </div>
 
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-base font-medium">
-                Weekly Summary
-              </CardTitle>
-              <Button asChild variant="link" size="sm" className="text-primary pr-0">
-                <Link href="/analytics">View Analytics</Link>
-              </Button>
-            </CardHeader>
-            <CardContent>
-              <WeeklySummaryChart />
-            </CardContent>
-          </Card>
+            <motion.div whileHover={{ y: -2, scale: 1.02 }}>
+                <Card>
+                    <CardHeader className="flex flex-row items-center justify-between pb-2">
+                    <CardTitle className="text-base font-medium">
+                        Weekly Summary
+                    </CardTitle>
+                    <Button asChild variant="link" size="sm" className="text-primary pr-0">
+                        <Link href="/analytics">View Analytics</Link>
+                    </Button>
+                    </CardHeader>
+                    <CardContent>
+                    <WeeklySummaryChart />
+                    </CardContent>
+                </Card>
+            </motion.div>
           
           <AdMobBanner className="w-full" />
 
@@ -256,14 +265,16 @@ export default function DashboardPage() {
                   key={item.label}
                   onClick={(e) => handleQuickAccessClick(e, item)}
                 >
-                  <Card className="h-full hover:bg-accent transition-colors">
-                    <CardContent className="p-3 flex flex-col items-center justify-center text-center gap-2">
-                      <div className="p-3 bg-accent rounded-lg">
-                        <item.icon className="h-5 w-5 text-primary" />
-                      </div>
-                      <span className="text-xs font-medium">{item.label}</span>
-                    </CardContent>
-                  </Card>
+                    <motion.div whileHover={{ y: -5, scale: 1.05 }} className="h-full">
+                        <Card className="h-full hover:bg-accent transition-colors">
+                            <CardContent className="p-3 flex flex-col items-center justify-center text-center gap-2">
+                            <div className="p-3 bg-accent rounded-lg">
+                                <item.icon className="h-5 w-5 text-primary" />
+                            </div>
+                            <span className="text-xs font-medium">{item.label}</span>
+                            </CardContent>
+                        </Card>
+                  </motion.div>
                 </Link>
               ))}
             </div>
@@ -285,24 +296,26 @@ export default function DashboardPage() {
                   {comingSoonItems.map((item) => {
                     const ItemIcon = iconMap[item.icon] || Sparkles;
                     return (
-                        <Card key={item.id} className="bg-accent/50 w-60">
-                            <CardContent className="p-3">
-                                <div className="flex items-start gap-2">
-                                <ItemIcon className="h-4 w-4 text-primary mt-1" />
-                                <div>
-                                    <div className="font-medium text-sm flex items-center gap-2">
-                                    {item.title}{' '}
-                                    <Badge variant="secondary" className="text-primary bg-primary/10">
-                                        Soon
-                                    </Badge>
+                        <motion.div key={item.id} whileHover={{ y: -5, scale: 1.05 }}>
+                            <Card className="bg-accent/50 w-60">
+                                <CardContent className="p-3">
+                                    <div className="flex items-start gap-2">
+                                    <ItemIcon className="h-4 w-4 text-primary mt-1" />
+                                    <div>
+                                        <div className="font-medium text-sm flex items-center gap-2">
+                                        {item.title}{' '}
+                                        <Badge variant="secondary" className="text-primary bg-primary/10">
+                                            Soon
+                                        </Badge>
+                                        </div>
+                                        <p className="text-xs text-muted-foreground whitespace-normal">
+                                        {item.description}
+                                        </p>
                                     </div>
-                                    <p className="text-xs text-muted-foreground whitespace-normal">
-                                    {item.description}
-                                    </p>
-                                </div>
-                                </div>
-                            </CardContent>
-                        </Card>
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        </motion.div>
                     )})}
                 </div>
                  <ScrollBar orientation="horizontal" />
@@ -322,19 +335,21 @@ export default function DashboardPage() {
               {whatsNewItems.map((item) => {
                 const ItemIcon = iconMap[item.icon] || Bug;
                 return (
-                <Card key={item.id}>
-                  <CardContent className="p-3 flex items-start gap-3">
-                    <div className="p-2.5 bg-accent rounded-lg">
-                      <ItemIcon className="h-5 w-5 text-primary" />
-                    </div>
-                    <div>
-                      <div className="font-medium">{item.title}</div>
-                      <p className="text-sm text-muted-foreground">
-                        {item.description}
-                      </p>
-                    </div>
-                  </CardContent>
-                </Card>
+                <motion.div key={item.id} whileHover={{ y: -2, scale: 1.02 }}>
+                    <Card>
+                    <CardContent className="p-3 flex items-start gap-3">
+                        <div className="p-2.5 bg-accent rounded-lg">
+                        <ItemIcon className="h-5 w-5 text-primary" />
+                        </div>
+                        <div>
+                        <div className="font-medium">{item.title}</div>
+                        <p className="text-sm text-muted-foreground">
+                            {item.description}
+                        </p>
+                        </div>
+                    </CardContent>
+                    </Card>
+                </motion.div>
               )})}
             </div>
           </section>
