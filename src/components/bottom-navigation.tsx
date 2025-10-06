@@ -1,26 +1,25 @@
 
 "use client";
 
-import React, { useState } from 'react';
+import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, FileText, BarChart2, Settings, Menu, X } from 'lucide-react';
+import { Home, BarChart2, Settings, Menu, Calculator } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from './ui/button';
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
-import { ScrollArea } from './ui/scroll-area';
+import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { SidebarContent } from './sidebar';
 
 const navItems = [
   { href: '/', icon: Home, label: 'Home' },
-  { href: '/notes', icon: FileText, label: 'Files' },
+  { href: '/calculator', icon: Calculator, label: 'Calc' },
   { href: '/analytics', icon: BarChart2, label: 'Stats' },
   { href: '/settings', icon: Settings, label: 'Settings' },
 ];
 
 export function BottomNavigation() {
   const pathname = usePathname();
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = React.useState(false);
 
   return (
     <Sheet open={isSidebarOpen} onOpenChange={setIsSidebarOpen}>
