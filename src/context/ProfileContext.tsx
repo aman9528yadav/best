@@ -106,6 +106,8 @@ export type UserSettings = {
     customTheme?: CustomTheme;
 };
 
+export type Membership = 'guest' | 'member' | 'premium' | 'owner';
+
 export type UserProfile = {
   name: string;
   email: string;
@@ -119,6 +121,7 @@ export type UserProfile = {
     github: string;
     instagram: string;
   };
+  membership: Membership;
   settings: UserSettings;
   stats: UserStats;
   notes: NoteItem[];
@@ -197,6 +200,7 @@ const getInitialProfile = (): UserProfile => {
       github: "",
       instagram: "",
     },
+    membership: 'guest',
     settings: defaultSettings,
     stats: defaultStats,
     notes: [],
@@ -223,6 +227,7 @@ const guestProfileDefault: UserProfile = {
         github: "",
         instagram: "",
     },
+    membership: 'guest',
     settings: defaultSettings,
     stats: defaultStats,
     notes: [],
@@ -288,12 +293,14 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
           const history = fetchedData.history ? Object.values(fetchedData.history).sort((a: any, b: any) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()) as HistoryItem[] : [];
           const favorites = fetchedData.favorites ? Object.values(fetchedData.favorites) as FavoriteItem[] : [];
 
+          const membership = user.email === 'amanyadavyadav9458@gmail.com' ? 'owner' : (fetchedData.membership || 'member');
 
           const fullProfile = {
             ...getInitialProfile(),
             ...fetchedData,
             name: fetchedData.name || user.displayName || "New User",
             email: user.email || fetchedData.email || "",
+            membership,
             settings,
             stats,
             notes,
@@ -305,10 +312,12 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
           setProfileState(fullProfile);
 
         } else {
+           const membership = user.email === 'amanyadavyadav9458@gmail.com' ? 'owner' : 'member';
           const newProfile: UserProfile = {
             ...guestProfileDefault,
             email: user.email || '',
             name: user.displayName || 'New User',
+            membership,
             settings: defaultSettings,
             stats: defaultStats,
             notes: [],

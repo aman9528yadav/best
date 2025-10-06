@@ -50,6 +50,7 @@ import {
   Volume2,
   MessageSquare,
   Paintbrush,
+  Lock,
 } from 'lucide-react';
 import { useMaintenance } from '@/context/MaintenanceContext';
 import { useRouter } from 'next/navigation';
@@ -59,14 +60,14 @@ import { Slider } from './ui/slider';
 import { useAuth } from '@/context/AuthContext';
 
 const themes = [
-  { name: 'Sutradhaar', value: 'sutradhaar' },
-  { name: 'Forest', value: 'forest' },
-  { name: 'Ocean', value: 'ocean' },
-  { name: 'Sunset', value: 'sunset' },
-  { name: 'Sunrise', value: 'sunrise' },
-  { name: 'Twilight', value: 'twilight' },
-  { name: 'Aurora', value: 'aurora' },
-  { name: 'Custom', value: 'custom' },
+  { name: 'Sutradhaar', value: 'sutradhaar', isPremium: false },
+  { name: 'Forest', value: 'forest', isPremium: true },
+  { name: 'Ocean', value: 'ocean', isPremium: true },
+  { name: 'Sunset', value: 'sunset', isPremium: true },
+  { name: 'Sunrise', value: 'sunrise', isPremium: true },
+  { name: 'Twilight', value: 'twilight', isPremium: true },
+  { name: 'Aurora', value: 'aurora', isPremium: true },
+  { name: 'Custom', value: 'custom', isPremium: true },
 ];
 
 const appearanceModes = [
@@ -118,7 +119,7 @@ const hexToHsl = (hex: string): HSLColor => {
 export function SettingsPage() {
   const { toast } = useToast();
   const { profile, setProfile } = useProfile();
-  const { settings } = profile;
+  const { settings, membership } = profile;
   const [saveHistory, setSaveHistory] = useState(settings.saveHistory);
   const [calculatorSounds, setCalculatorSounds] = useState(false);
   const [showWelcome, setShowWelcome] = useState(false);
@@ -217,7 +218,7 @@ export function SettingsPage() {
   }
 
   const isOwner = user?.email === 'amanyadavyadav9458@gmail.com';
-
+  const isPremium = membership === 'premium' || membership === 'owner';
 
   const SettingRow = ({
     label,
@@ -361,14 +362,31 @@ export function SettingsPage() {
                 ))}
               </div>
               <SettingRow label="Theme" icon={Palette}>
-                <Select value={theme?.includes('theme-') ? theme.substring(6) : (theme === 'custom' ? 'custom' : 'sutradhaar')} onValueChange={(v) => setTheme(v === 'custom' ? 'custom' : `theme-${v}`)}>
+                <Select
+                  value={theme?.includes('theme-') ? theme.substring(6) : (theme === 'custom' ? 'custom' : 'sutradhaar')}
+                  onValueChange={(v) => {
+                    const selectedTheme = themes.find(t => t.value === v);
+                    if (selectedTheme?.isPremium && !isPremium) {
+                      toast({ title: "Premium Theme", description: "Upgrade to unlock this theme." });
+                      return;
+                    }
+                    setTheme(v === 'custom' ? 'custom' : `theme-${v}`);
+                  }}
+                >
                   <SelectTrigger className="w-[150px]">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
                     {themes.map((themeItem) => (
-                      <SelectItem key={themeItem.value} value={themeItem.value}>
-                        {themeItem.name}
+                      <SelectItem
+                        key={themeItem.value}
+                        value={themeItem.value}
+                        disabled={themeItem.isPremium && !isPremium}
+                      >
+                        <div className="flex items-center justify-between w-full">
+                          <span>{themeItem.name}</span>
+                          {themeItem.isPremium && !isPremium && <Lock className="h-4 w-4 text-muted-foreground ml-2" />}
+                        </div>
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -461,5 +479,3 @@ export function SettingsPage() {
     </div>
   );
 }
-
-    

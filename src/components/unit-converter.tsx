@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
@@ -14,6 +15,7 @@ import {
   Power,
   Undo2,
   Trash2,
+  Lock,
 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
@@ -34,10 +36,12 @@ import { useProfile, ConversionHistoryItem, FavoriteItem } from '@/context/Profi
 import Link from 'next/link';
 import { ConversionComparisonDialog } from './conversion-comparison-dialog';
 
+const premiumCategories = ['Pressure', 'Currency'];
+
 export function UnitConverter() {
   const { toast } = useToast();
   const { profile, addConversionToHistory, addFavorite, deleteFavorite, deleteHistoryItem } = useProfile();
-  const { history, favorites } = profile;
+  const { history, favorites, membership } = profile;
 
   const [region, setRegion] = useState('International');
   const [category, setCategory] = useState(CATEGORIES[0].name);
@@ -46,6 +50,8 @@ export function UnitConverter() {
   const [toUnit, setToUnit] = useState(CATEGORIES[0].units[1].name);
   const [result, setResult] = useState('');
   const [isCompareDialogOpen, setIsCompareDialogOpen] = useState(false);
+
+  const isPremium = membership === 'premium' || membership === 'owner';
 
   const activeCategory = useMemo(
     () => CATEGORIES.find((c) => c.name === category)!,
@@ -115,6 +121,12 @@ export function UnitConverter() {
 
 
   const handleCategoryChange = (newCategory: string) => {
+    const isPremiumCategory = premiumCategories.includes(newCategory);
+    if (isPremiumCategory && !isPremium) {
+      toast({ title: 'Premium Feature', description: 'Upgrade to unlock this category.' });
+      return;
+    }
+
     setCategory(newCategory);
     const newCategoryData = CATEGORIES.find((c) => c.name === newCategory);
     if (newCategoryData) {
@@ -253,14 +265,20 @@ export function UnitConverter() {
                     </div>
                   </SelectTrigger>
                   <SelectContent>
-                    {CATEGORIES.map((cat) => (
-                      <SelectItem key={cat.name} value={cat.name}>
-                        <div className="flex items-center gap-2">
-                          <cat.icon className="h-4 w-4" />
-                          <span>{cat.name}</span>
-                        </div>
-                      </SelectItem>
-                    ))}
+                    {CATEGORIES.map((cat) => {
+                      const isPremiumCategory = premiumCategories.includes(cat.name);
+                      return (
+                        <SelectItem key={cat.name} value={cat.name} disabled={isPremiumCategory && !isPremium}>
+                          <div className="flex items-center justify-between w-full">
+                            <div className="flex items-center gap-2">
+                                <cat.icon className="h-4 w-4" />
+                                <span>{cat.name}</span>
+                            </div>
+                            {isPremiumCategory && !isPremium && <Lock className="h-4 w-4 text-muted-foreground ml-2" />}
+                          </div>
+                        </SelectItem>
+                      )
+                    })}
                   </SelectContent>
                 </Select>
              </div>
