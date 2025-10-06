@@ -108,12 +108,12 @@ export function NoteEditor({ note, onSave, onDelete, onDeletePermanently, onRest
 
   // Set initial content for the editor but only when the note ID changes
   useEffect(() => {
-    if (editorRef.current && note?.content !== editorRef.current.innerHTML) {
+    if (note && editorRef.current && note.content !== editorRef.current.innerHTML) {
       editorRef.current.innerHTML = note.content;
       setContent(note.content);
     }
-    if (note?.title !== title) {
-        setTitle(note?.title || '');
+    if (note && note.title !== title) {
+        setTitle(note.title || '');
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [note?.id]);
