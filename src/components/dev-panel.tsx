@@ -40,6 +40,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 import { useProfile } from '@/context/ProfileContext';
+import { format, parseISO } from 'date-fns';
 
 
 export function DevPanel() {
@@ -104,13 +105,6 @@ export function DevPanel() {
             [field]: value
         }
     }));
-  }
-
-  const handleManualCountdownChange = (field: keyof Countdown, value: string) => {
-    handleBannerChange('manualCountdown', {
-        ...dashboardBanner.manualCountdown,
-        [field]: parseInt(value) || 0
-    });
   }
   
   const handleMaintenanceCountdownChange = (field: keyof Countdown, value: string) => {
@@ -206,6 +200,14 @@ export function DevPanel() {
     }));
   };
 
+  const formatDateTimeForInput = (isoString: string) => {
+    try {
+      const date = parseISO(isoString);
+      return format(date, "yyyy-MM-dd'T'HH:mm");
+    } catch (e) {
+      return '';
+    }
+  };
 
   return (
     <div className="flex flex-col items-center w-full min-h-screen bg-background text-foreground p-4">
@@ -303,13 +305,13 @@ export function DevPanel() {
                     <Switch id="show-banner" checked={dashboardBanner.show} onCheckedChange={(c) => handleBannerChange('show', c)} />
                   </div>
                    <div className="bg-accent/50 p-4 rounded-lg space-y-4">
-                      <Label>Banner Countdown Timer</Label>
-                       <div className='grid grid-cols-4 gap-2'>
-                          <div><Label>Days</Label><Input type="number" value={dashboardBanner.manualCountdown.days} onChange={(e) => handleManualCountdownChange('days', e.target.value)} /></div>
-                          <div><Label>Hours</Label><Input type="number" value={dashboardBanner.manualCountdown.hours} onChange={(e) => handleManualCountdownChange('hours', e.target.value)} /></div>
-                          <div><Label>Mins</Label><Input type="number" value={dashboardBanner.manualCountdown.minutes} onChange={(e) => handleManualCountdownChange('minutes', e.target.value)} /></div>
-                          <div><Label>Secs</Label><Input type="number" value={dashboardBanner.manualCountdown.seconds} onChange={(e) => handleManualCountdownChange('seconds', e.target.value)} /></div>
-                      </div>
+                        <Label htmlFor="banner-target-date">Banner Countdown Target</Label>
+                        <Input
+                            id="banner-target-date"
+                            type="datetime-local"
+                            value={formatDateTimeForInput(dashboardBanner.targetDate)}
+                            onChange={(e) => handleBannerChange('targetDate', new Date(e.target.value).toISOString())}
+                        />
                    </div>
                    <div className="bg-accent/50 p-4 rounded-lg space-y-2">
                       <Label htmlFor="banner-category">Category</Label>

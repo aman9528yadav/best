@@ -17,24 +17,27 @@ const CountdownBox = ({ value, label }: { value: string; label: string }) => (
   </div>
 );
 
-const calculateTimeLeft = (countdown: Countdown): Countdown => {
-    let { days, hours, minutes, seconds } = countdown;
+const calculateTimeLeft = (targetDate: string): Countdown => {
+    const difference = +new Date(targetDate) - +new Date();
+    let timeLeft: Countdown = { days: 0, hours: 0, minutes: 0, seconds: 0 };
 
-    if (seconds > 0) seconds--;
-    else if (minutes > 0) { seconds = 59; minutes--; }
-    else if (hours > 0) { seconds = 59; minutes = 59; hours--; }
-    else if (days > 0) { seconds = 59; minutes = 59; hours = 23; days--; }
-    else { return { days: 0, hours: 0, minutes: 0, seconds: 0 }; }
+    if (difference > 0) {
+        timeLeft = {
+            days: Math.floor(difference / (1000 * 60 * 60 * 24)),
+            hours: Math.floor((difference / (1000 * 60 * 60)) % 24),
+            minutes: Math.floor((difference / 1000 / 60) % 60),
+            seconds: Math.floor((difference / 1000) % 60)
+        };
+    }
 
-    return { days, hours, minutes, seconds };
+    return timeLeft;
 };
 
 export function DashboardBanner() {
   const { maintenanceConfig } = useMaintenance();
-  const { show, manualCountdown, category } = maintenanceConfig.dashboardBanner || {};
+  const { show, targetDate, category } = maintenanceConfig.dashboardBanner || {};
   
-  const [timeLeft, setTimeLeft] = useState<Countdown>(manualCountdown || { days: 0, hours: 0, minutes: 0, seconds: 0 });
-
+  const [timeLeft, setTimeLeft] = useState<Countdown>(calculateTimeLeft(targetDate));
   const [isVisible, setIsVisible] = useState(show || false);
   const [isClient, setIsClient] = useState(false);
 
@@ -49,26 +52,20 @@ export function DashboardBanner() {
   }, [maintenanceConfig.dashboardBanner]);
 
   useEffect(() => {
-    setTimeLeft(manualCountdown);
-  }, [manualCountdown]);
-
-
-  useEffect(() => {
-    if (!isVisible || !isClient) return;
+    if (!isVisible || !isClient || !targetDate) return;
 
     const timer = setTimeout(() => {
-        setTimeLeft(calculateTimeLeft(timeLeft));
+        setTimeLeft(calculateTimeLeft(targetDate));
     }, 1000);
 
     return () => clearTimeout(timer);
-  }, [timeLeft, isVisible, isClient]);
+  }, [timeLeft, isVisible, isClient, targetDate]);
 
   if (!isVisible || !maintenanceConfig.dashboardBanner) {
     return null;
   }
   
   const isTimerFinished = timeLeft.days <= 0 && timeLeft.hours <= 0 && timeLeft.minutes <= 0 && timeLeft.seconds <= 0;
-
 
   return (
     <Card className="bg-gradient-to-br from-primary/10 to-accent/20 border-primary/20">

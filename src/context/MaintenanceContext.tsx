@@ -4,7 +4,7 @@
 
 import React, { createContext, useContext, useState, ReactNode, useEffect, useRef } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
-import { ref, onValue, set } from 'firebase/database';
+import { ref, onValue, set, remove } from 'firebase/database';
 import { rtdb } from '@/lib/firebase';
 import type { Icon as LucideIcon } from 'lucide-react';
 
@@ -80,7 +80,7 @@ export type MaintenanceConfig = {
     devPassword?: string;
     dashboardBanner: {
         show: boolean;
-        manualCountdown: Countdown;
+        targetDate: string;
         category: string;
         upcomingFeatureDetails: string;
     };
@@ -114,7 +114,7 @@ const defaultMaintenanceConfig: MaintenanceConfig = {
     devPassword: 'aman',
     dashboardBanner: {
         show: true,
-        manualCountdown: { days: 5, hours: 10, minutes: 30, seconds: 0 },
+        targetDate: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString(),
         category: 'Bug Fix',
         upcomingFeatureDetails: '1. bug fix\n2. may be some feature not working',
     },
