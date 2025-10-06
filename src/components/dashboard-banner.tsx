@@ -6,9 +6,10 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Rocket, Info, PartyPopper, Download } from 'lucide-react';
+import { Rocket, Info, PartyPopper } from 'lucide-react';
 import { useMaintenance, Countdown } from '@/context/MaintenanceContext';
 import Link from 'next/link';
+import { AppUpdateBanner } from './app-update-banner';
 
 const CountdownBox = ({ value, label }: { value: string; label: string }) => (
   <div className="bg-accent/70 rounded-md p-1.5 w-12 flex flex-col items-center">
@@ -33,17 +34,8 @@ const calculateTimeLeft = (targetDate: string): Countdown => {
     return timeLeft;
 };
 
-const getFullUrl = (url: string) => {
-    if (!url) return '#';
-    if (url.startsWith('http://') || url.startsWith('https://')) {
-        return url;
-    }
-    return `https://${url}`;
-};
-
 export function DashboardBanner() {
   const { maintenanceConfig } = useMaintenance();
-  const { appUpdate } = maintenanceConfig;
   const { show, targetDate, category } = maintenanceConfig.dashboardBanner || {};
   
   const [timeLeft, setTimeLeft] = useState<Countdown>(calculateTimeLeft(targetDate));
@@ -72,28 +64,9 @@ export function DashboardBanner() {
 
   const isTimerFinished = timeLeft.days <= 0 && timeLeft.hours <= 0 && timeLeft.minutes <= 0 && timeLeft.seconds <= 0;
   
-  const downloadUrl = getFullUrl(appUpdate.url);
-
   return (
     <>
-      {appUpdate?.showBanner && (
-        <Card className="bg-blue-500/10 border-blue-500/20">
-          <CardContent className="p-4">
-            <div className="flex items-start gap-4">
-              <div className="p-3 bg-blue-500/10 rounded-full mt-1">
-                <Download className="h-6 w-6 text-blue-500" />
-              </div>
-              <div className="flex-1 space-y-2">
-                <h3 className="font-bold">New App Update Available!</h3>
-                <p className="text-xs text-muted-foreground">Version {appUpdate.version} is ready to download. {appUpdate.releaseNotes}</p>
-                <Button asChild size="sm" className="bg-blue-500 hover:bg-blue-600 text-white">
-                  <a href={downloadUrl} target="_blank" rel="noopener noreferrer">Download APK</a>
-                </Button>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
+      <AppUpdateBanner />
       {isVisible && maintenanceConfig.dashboardBanner && (
         <Card className="bg-gradient-to-br from-primary/10 to-accent/20 border-primary/20">
           <CardContent className="p-4 relative">

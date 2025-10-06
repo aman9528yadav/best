@@ -14,6 +14,7 @@ import {
   Icon,
 } from 'lucide-react';
 import { useMaintenance, UpdateItem } from '@/context/MaintenanceContext';
+import { AppUpdateBanner } from './app-update-banner';
 
 
 const CountdownBox = ({ value, label }: { value: string; label: string }) => (
@@ -71,6 +72,7 @@ export function WhatsNewPage() {
 
   return (
     <div className="w-full space-y-6 pb-12">
+        <AppUpdateBanner />
         {showBanner && timeLeft && (
           <>
             <Card>
