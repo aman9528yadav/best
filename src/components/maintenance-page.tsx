@@ -29,41 +29,47 @@ const CountdownBox = ({ value, label }: { value: string; label: string }) => (
   </div>
 );
 
-const calculateTimeLeft = (countdown: Countdown): Countdown => {
-    let { days, hours, minutes, seconds } = countdown;
+const calculateTimeLeft = (targetDate: string): Countdown => {
+    const difference = +new Date(targetDate) - +new Date();
+    let timeLeft: Countdown = { days: 0, hours: 0, minutes: 0, seconds: 0 };
 
-    if (seconds > 0) seconds--;
-    else if (minutes > 0) { seconds = 59; minutes--; }
-    else if (hours > 0) { seconds = 59; minutes = 59; hours--; }
-    else if (days > 0) { seconds = 59; minutes = 59; hours = 23; days--; }
-    else { return { days: 0, hours: 0, minutes: 0, seconds: 0 }; }
+    if (difference > 0) {
+        timeLeft = {
+            days: Math.floor(difference / (1000 * 60 * 60 * 24)),
+            hours: Math.floor((difference / (1000 * 60 * 60)) % 24),
+            minutes: Math.floor((difference / 1000 / 60) % 60),
+            seconds: Math.floor((difference / 1000) % 60)
+        };
+    }
 
-    return { days, hours, minutes, seconds };
+    return timeLeft;
 };
 
 export function MaintenancePage() {
   const router = useRouter();
   const { maintenanceConfig, setDevMode } = useMaintenance();
-  const { maintenanceCountdown, maintenanceMessage } = maintenanceConfig;
+  const { maintenanceTargetDate, maintenanceMessage } = maintenanceConfig;
   const { toast } = useToast();
   
   const [clickCount, setClickCount] = useState(0);
   const [isPasswordDialogOpen, setIsPasswordDialogOpen] = useState(false);
   const [password, setPassword] = useState('');
-  const [timeLeft, setTimeLeft] = useState<Countdown>(maintenanceCountdown);
+  const [timeLeft, setTimeLeft] = useState<Countdown>(calculateTimeLeft(maintenanceTargetDate));
   
   useEffect(() => {
-    setTimeLeft(maintenanceCountdown);
-  }, [maintenanceCountdown]);
+    if (maintenanceTargetDate) {
+        setTimeLeft(calculateTimeLeft(maintenanceTargetDate));
+    }
+  }, [maintenanceTargetDate]);
 
 
   useEffect(() => {
     const timer = setInterval(() => {
-      setTimeLeft(prevTime => calculateTimeLeft(prevTime));
+      setTimeLeft(calculateTimeLeft(maintenanceTargetDate));
     }, 1000);
 
     return () => clearInterval(timer);
-  }, []);
+  }, [maintenanceTargetDate]);
 
 
   const handleIconClick = () => {
@@ -121,7 +127,7 @@ export function MaintenancePage() {
              <div className="flex justify-center gap-3">
                 <CountdownBox value={String(timeLeft.days)} label="DAYS" />
                 <CountdownBox value={String(timeLeft.hours).padStart(2, '0')} label="HOURS" />
-                <CountdownBox value={String(timeLeft.minutes).padStart(2, '0')}/>
+                <CountdownBox value={String(timeLeft.minutes).padStart(2, '0')} label="MINUTES"/>
                 <CountdownBox value={String(timeLeft.seconds).padStart(2, '0')} label="SECONDS" />
             </div>
           )}

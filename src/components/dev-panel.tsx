@@ -51,7 +51,7 @@ export function DevPanel() {
     setMaintenanceConfig,
     isLoading,
   } = useMaintenance();
-  const { globalMaintenance, dashboardBanner, maintenanceMessage, devPassword, welcomeDialog, maintenanceCountdown, premiumCriteria } = maintenanceConfig;
+  const { globalMaintenance, dashboardBanner, maintenanceMessage, devPassword, welcomeDialog, maintenanceTargetDate, premiumCriteria } = maintenanceConfig;
   const [broadcastMessage, setBroadcastMessage] = useState('');
   const { clearAllHistory } = useProfile();
   const [passwordState, setPasswordState] = useState({ currentPassword: '', newPassword: '', confirmNewPassword: '' });
@@ -107,13 +107,10 @@ export function DevPanel() {
     }));
   }
   
-  const handleMaintenanceCountdownChange = (field: keyof Countdown, value: string) => {
+  const handleMaintenanceTargetDateChange = (value: string) => {
      setMaintenanceConfig(prev => ({
         ...prev,
-        maintenanceCountdown: {
-            ...prev.maintenanceCountdown,
-            [field]: parseInt(value) || 0
-        }
+        maintenanceTargetDate: new Date(value).toISOString()
     }));
   };
   
@@ -268,12 +265,11 @@ export function DevPanel() {
                     </div>
                      <div className="bg-accent/50 p-4 rounded-lg space-y-4">
                       <Label>Maintenance Page Countdown</Label>
-                      <div className='grid grid-cols-4 gap-2'>
-                          <div><Label>Days</Label><Input type="number" value={maintenanceCountdown.days} onChange={(e) => handleMaintenanceCountdownChange('days', e.target.value)} /></div>
-                          <div><Label>Hours</Label><Input type="number" value={maintenanceCountdown.hours} onChange={(e) => handleMaintenanceCountdownChange('hours', e.target.value)} /></div>
-                          <div><Label>Mins</Label><Input type="number" value={maintenanceCountdown.minutes} onChange={(e) => handleMaintenanceCountdownChange('minutes', e.target.value)} /></div>
-                          <div><Label>Secs</Label><Input type="number" value={maintenanceCountdown.seconds} onChange={(e) => handleMaintenanceCountdownChange('seconds', e.target.value)} /></div>
-                      </div>
+                       <Input
+                            type="datetime-local"
+                            value={formatDateTimeForInput(maintenanceTargetDate)}
+                            onChange={(e) => handleMaintenanceTargetDateChange(e.target.value)}
+                        />
                    </div>
                     <div className="bg-accent/50 p-4 rounded-lg space-y-2">
                         <Label htmlFor="maintenance-message">Maintenance Page Message</Label>

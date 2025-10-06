@@ -84,7 +84,7 @@ export type MaintenanceConfig = {
         category: string;
         upcomingFeatureDetails: string;
     };
-    maintenanceCountdown: Countdown;
+    maintenanceTargetDate: string;
     maintenanceMessage: string;
     updateItems: UpdateItem[];
     aboutPageContent: AboutPageContent;
@@ -118,7 +118,7 @@ const defaultMaintenanceConfig: MaintenanceConfig = {
         category: 'Bug Fix',
         upcomingFeatureDetails: '1. bug fix\n2. may be some feature not working',
     },
-    maintenanceCountdown: { days: 0, hours: 2, minutes: 0, seconds: 0 },
+    maintenanceTargetDate: new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString(),
     maintenanceMessage: "We're currently performing scheduled maintenance to improve our services. We're working as quickly as possible to restore service.",
     updateItems: [
         {
@@ -251,7 +251,6 @@ export const MaintenanceProvider = ({ children }: { children: ReactNode }) => {
       });
 
     return () => unsubscribe();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   
   const setDevMode = (isDev: boolean) => {
