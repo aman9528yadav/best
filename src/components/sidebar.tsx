@@ -4,6 +4,7 @@
 
 import {
   Sheet,
+  SheetClose,
   SheetContent,
   SheetHeader,
   SheetTitle,
@@ -110,6 +111,11 @@ export const SidebarContent = ({ onLinkClick }: { onLinkClick?: () => void }) =>
     <>
       <SheetHeader className="p-4 flex flex-row items-center justify-between border-b">
          <SheetTitle>Sutradhaar</SheetTitle>
+         <SheetClose asChild>
+            <Button variant="ghost" size="icon" className="h-8 w-8">
+                <X className="h-5 w-5" />
+            </Button>
+         </SheetClose>
       </SheetHeader>
       <ScrollArea className="flex-1">
           <div className="p-6 space-y-8">
