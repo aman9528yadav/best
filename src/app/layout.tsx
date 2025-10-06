@@ -10,7 +10,7 @@ import { ThemeProvider } from '@/components/theme-provider';
 import { BroadcastListener } from '@/components/broadcast-listener';
 import { NotificationProvider } from '@/context/NotificationContext';
 import { CustomThemeHandler } from '@/components/custom-theme-handler';
-import { BottomNavigation } from '@/components/bottom-navigation';
+import { ConditionalBottomNavigation } from '@/components/conditional-bottom-navigation';
 
 
 export const metadata: Metadata = {
@@ -48,7 +48,7 @@ export default function RootLayout({
                   <CustomThemeHandler />
                   <MaintenanceWrapper>
                     {children}
-                    <BottomNavigation />
+                    <ConditionalBottomNavigation />
                   </MaintenanceWrapper>
                   <Toaster />
                   <BroadcastListener />
