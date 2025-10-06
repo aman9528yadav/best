@@ -6,6 +6,8 @@ import React from 'react';
 import {
   Card,
   CardContent,
+  CardHeader,
+  CardTitle,
 } from '@/components/ui/card';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -29,6 +31,7 @@ import {
   Settings,
   Share2,
   LogOut,
+  Gem,
 } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
@@ -36,6 +39,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useProfile } from '@/context/ProfileContext';
 import { useAuth } from '@/context/AuthContext';
+import { Progress } from '@/components/ui/progress';
 
 const DetailItem = ({ icon: Icon, label, value }: { icon: React.ElementType, label: string, value: string }) => (
     <div className="flex justify-between items-center text-sm py-3 border-b border-border/50">
@@ -57,11 +61,24 @@ const QuickActionButton = ({ icon: Icon, label, href }: { icon: React.ElementTyp
     return href ? <Link href={href}>{content}</Link> : content;
 };
 
+const ProgressItem = ({ label, value, goal }: { label: string, value: number, goal: number }) => {
+    const percentage = Math.min((value / goal) * 100, 100);
+    return (
+        <div className="space-y-2">
+            <div className="flex justify-between text-sm">
+                <span className="font-medium">{label}</span>
+                <span className="text-muted-foreground">{value} / {goal}</span>
+            </div>
+            <Progress value={percentage} />
+        </div>
+    );
+};
+
 export function ProfilePage() {
     const { profile } = useProfile();
     const { user, logout } = useAuth();
     
-    const { allTimeActivities = 0, daysActive = 0 } = profile.stats || {};
+    const { allTimeActivities = 0, daysActive = 0, streak = 0 } = profile.stats || {};
     const totalNotes = profile.notes.filter(n => !n.isTrashed).length;
     
     const displayName = user?.displayName || profile.name;
@@ -70,6 +87,11 @@ export function ProfilePage() {
     const avatarFallback = displayName.charAt(0).toUpperCase();
 
     const isOwner = displayEmail === 'amanyadavyadav9458@gmail.com';
+    const isPremium = profile.membership === 'premium' || profile.membership === 'owner';
+    
+    const PREMIUM_ACTIVITIES_GOAL = 3000;
+    const PREMIUM_STREAK_GOAL = 15;
+
 
     return (
         <div className="w-full space-y-6 pb-12">
@@ -108,8 +130,10 @@ export function ProfilePage() {
                     <div className="space-y-1">
                         <h2 className="text-2xl font-bold">{displayName}</h2>
                         <div className="flex items-center justify-center gap-2">
-                            {isOwner ? (
+                            {profile.membership === 'owner' ? (
                                 <Badge variant="outline" className="border-yellow-500 text-yellow-500">Owner</Badge>
+                            ) : profile.membership === 'premium' ? (
+                                <Badge variant="outline" className="border-purple-500 text-purple-500">Premium</Badge>
                             ) : (
                                 <Badge variant="secondary">Member</Badge>
                             )}
@@ -118,6 +142,21 @@ export function ProfilePage() {
                     </div>
                 </CardContent>
             </Card>
+
+            {!isPremium && (
+                 <Card>
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2 text-lg">
+                            <Gem className="h-5 w-5 text-primary" />
+                            Premium Progress
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                       <ProgressItem label="All-Time Activities" value={allTimeActivities} goal={PREMIUM_ACTIVITIES_GOAL} />
+                       <ProgressItem label="Login Streak" value={streak} goal={PREMIUM_STREAK_GOAL} />
+                    </CardContent>
+                </Card>
+            )}
 
             <Card>
                 <CardContent className="p-4 space-y-1">

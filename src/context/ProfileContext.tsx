@@ -167,6 +167,9 @@ type ProfileContextType = {
 
 const ProfileContext = createContext<ProfileContextType | undefined>(undefined);
 
+const PREMIUM_ACTIVITIES_GOAL = 3000;
+const PREMIUM_STREAK_GOAL = 15;
+
 const defaultStats: UserStats = {
     allTimeActivities: 0,
     todayActivities: 0,
@@ -293,7 +296,12 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
           const history = fetchedData.history ? Object.values(fetchedData.history).sort((a: any, b: any) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()) as HistoryItem[] : [];
           const favorites = fetchedData.favorites ? Object.values(fetchedData.favorites) as FavoriteItem[] : [];
 
-          const membership = user.email === 'amanyadavyadav9458@gmail.com' ? 'owner' : (fetchedData.membership || 'member');
+          let membership = user.email === 'amanyadavyadav9458@gmail.com' ? 'owner' : (fetchedData.membership || 'member');
+          // Check for premium upgrade
+          if (membership === 'member' && stats.allTimeActivities >= PREMIUM_ACTIVITIES_GOAL && stats.streak >= PREMIUM_STREAK_GOAL) {
+            membership = 'premium';
+          }
+
 
           const fullProfile = {
             ...getInitialProfile(),
@@ -347,7 +355,12 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
 
   const setProfile = (newProfileData: UserProfile | ((prevState: UserProfile) => UserProfile)) => {
     setProfileState(currentProfile => {
-        const updatedProfile = typeof newProfileData === 'function' ? newProfileData(currentProfile) : newProfileData;
+        let updatedProfile = typeof newProfileData === 'function' ? newProfileData(currentProfile) : newProfileData;
+        
+        // Premium check logic
+        if (updatedProfile.membership === 'member' && updatedProfile.stats.allTimeActivities >= PREMIUM_ACTIVITIES_GOAL && updatedProfile.stats.streak >= PREMIUM_STREAK_GOAL) {
+            updatedProfile = { ...updatedProfile, membership: 'premium' };
+        }
         
         if (user) {
             const userRef = ref(rtdb, `users/${user.uid}/profile`);
