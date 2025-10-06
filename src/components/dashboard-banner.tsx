@@ -6,7 +6,7 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Rocket, Info, PartyPopper } from 'lucide-react';
+import { Rocket, Info, PartyPopper, Download } from 'lucide-react';
 import { useMaintenance, Countdown } from '@/context/MaintenanceContext';
 import Link from 'next/link';
 
@@ -35,6 +35,7 @@ const calculateTimeLeft = (targetDate: string): Countdown => {
 
 export function DashboardBanner() {
   const { maintenanceConfig } = useMaintenance();
+  const { appUpdate } = maintenanceConfig;
   const { show, targetDate, category } = maintenanceConfig.dashboardBanner || {};
   
   const [timeLeft, setTimeLeft] = useState<Countdown>(calculateTimeLeft(targetDate));
@@ -61,55 +62,73 @@ export function DashboardBanner() {
     return () => clearTimeout(timer);
   }, [timeLeft, isVisible, isClient, targetDate]);
 
-  if (!isVisible || !maintenanceConfig.dashboardBanner) {
-    return null;
-  }
-  
   const isTimerFinished = timeLeft.days <= 0 && timeLeft.hours <= 0 && timeLeft.minutes <= 0 && timeLeft.seconds <= 0;
 
   return (
-    <Card className="bg-gradient-to-br from-primary/10 to-accent/20 border-primary/20">
-      <CardContent className="p-4 relative">
-        <div className="flex items-start gap-4">
-            <div className="p-3 bg-primary/10 rounded-full mt-1">
-                <Rocket className="h-6 w-6 text-primary" />
+    <>
+      {appUpdate?.showBanner && (
+        <Card className="bg-blue-500/10 border-blue-500/20">
+          <CardContent className="p-4">
+            <div className="flex items-start gap-4">
+              <div className="p-3 bg-blue-500/10 rounded-full mt-1">
+                <Download className="h-6 w-6 text-blue-500" />
+              </div>
+              <div className="flex-1 space-y-2">
+                <h3 className="font-bold">New App Update Available!</h3>
+                <p className="text-xs text-muted-foreground">Version {appUpdate.version} is ready to download. {appUpdate.releaseNotes}</p>
+                <Button asChild size="sm" className="bg-blue-500 hover:bg-blue-600 text-white">
+                  <a href={appUpdate.url} target="_blank" rel="noopener noreferrer">Download APK</a>
+                </Button>
+              </div>
             </div>
-            <div className='flex-1 space-y-2'>
-                <div>
-                    <h3 className="font-bold">Next Update Incoming!</h3>
-                     <p className="text-xs text-muted-foreground">
-                        {isTimerFinished ? "The latest update is live!" : "We're launching new features soon. Check out what's new!"}
-                    </p>
+          </CardContent>
+        </Card>
+      )}
+      {isVisible && maintenanceConfig.dashboardBanner && (
+        <Card className="bg-gradient-to-br from-primary/10 to-accent/20 border-primary/20">
+          <CardContent className="p-4 relative">
+            <div className="flex items-start gap-4">
+                <div className="p-3 bg-primary/10 rounded-full mt-1">
+                    <Rocket className="h-6 w-6 text-primary" />
                 </div>
-                
-                {isTimerFinished ? (
-                    <div className="flex items-center justify-center gap-2 p-4 bg-accent/70 rounded-md text-primary font-semibold">
-                       <PartyPopper className="h-5 w-5" />
-                       <span>The new update is live!</span>
+                <div className='flex-1 space-y-2'>
+                    <div>
+                        <h3 className="font-bold">Next Update Incoming!</h3>
+                         <p className="text-xs text-muted-foreground">
+                            {isTimerFinished ? "The latest update is live!" : "We're launching new features soon. Check out what's new!"}
+                        </p>
                     </div>
-                ) : (
-                    <div className="flex gap-2">
-                        <CountdownBox value={String(timeLeft.days).padStart(2, '0')} label="DAYS" />
-                        <CountdownBox value={String(timeLeft.hours).padStart(2, '0')} label="HOURS" />
-                        <CountdownBox value={String(timeLeft.minutes).padStart(2, '0')} label="MINS" />
-                        <CountdownBox value={String(timeLeft.seconds).padStart(2, '0')} label="SECS" />
+                    
+                    {isTimerFinished ? (
+                        <div className="flex items-center justify-center gap-2 p-4 bg-accent/70 rounded-md text-primary font-semibold">
+                           <PartyPopper className="h-5 w-5" />
+                           <span>The new update is live!</span>
+                        </div>
+                    ) : (
+                        <div className="flex gap-2">
+                            <CountdownBox value={String(timeLeft.days).padStart(2, '0')} label="DAYS" />
+                            <CountdownBox value={String(timeLeft.hours).padStart(2, '0')} label="HOURS" />
+                            <CountdownBox value={String(timeLeft.minutes).padStart(2, '0')} label="MINS" />
+                            <CountdownBox value={String(timeLeft.seconds).padStart(2, '0')} label="SECS" />
+                        </div>
+                    )}
+                    
+                    <div className="flex justify-between items-center">
+                        <Badge variant="outline" className="text-primary bg-primary/10 border-primary/50 text-xs shrink-0">
+                            {category}
+                        </Badge>
+                         <Button asChild size="sm" variant="link" className="text-primary pr-0">
+                             <Link href="/whats-new">
+                                <Info className="mr-2 h-4 w-4" />
+                                Learn More
+                             </Link>
+                        </Button>
                     </div>
-                )}
-                
-                <div className="flex justify-between items-center">
-                    <Badge variant="outline" className="text-primary bg-primary/10 border-primary/50 text-xs shrink-0">
-                        {category}
-                    </Badge>
-                     <Button asChild size="sm" variant="link" className="text-primary pr-0">
-                         <Link href="/whats-new">
-                            <Info className="mr-2 h-4 w-4" />
-                            Learn More
-                         </Link>
-                    </Button>
                 </div>
             </div>
-        </div>
-      </CardContent>
-    </Card>
+          </CardContent>
+        </Card>
+      )}
+    </>
   );
 }
