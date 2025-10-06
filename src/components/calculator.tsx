@@ -5,7 +5,7 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { ChevronUp, Divide, Equal, Minus, Plus, X, Percent, Baseline, History, Undo2, Trash2, Volume2, VolumeX } from 'lucide-react';
+import { ChevronUp, Divide, Equal, Minus, Plus, X, Percent, Baseline, History, Undo2, Trash2, Volume2, VolumeX, Delete } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useProfile, CalculatorHistoryItem } from '@/context/ProfileContext';
 import Link from 'next/link';
@@ -162,6 +162,19 @@ export function Calculator() {
     setExpression('');
   };
 
+  const handleBackspace = () => {
+    if (display === 'Error' || display === '0') return;
+
+    // Don't backspace if display is a result of an operation or a function
+    if (['+', '-', '×', '÷', '^'].includes(display) || display.endsWith('(')) {
+        return;
+    }
+    
+    setDisplay(prev => prev.length > 1 ? prev.slice(0, -1) : '0');
+    setExpression(prev => prev.length > 1 ? prev.slice(0, -1) : '');
+  };
+
+
   const handlePlusMinus = () => {
     if (display === 'Error' || display === '0' || ['+', '-', '×', '÷'].includes(display)) return;
     
@@ -285,9 +298,14 @@ export function Calculator() {
       <Card>
         <CardContent className="p-4 space-y-4">
           <div className="bg-muted p-4 rounded-lg text-right relative">
-            <Button variant="ghost" size="icon" className="absolute top-2 left-2 h-8 w-8 text-muted-foreground" onClick={toggleSounds}>
-              {calculatorSounds ? <Volume2 className="h-5 w-5"/> : <VolumeX className="h-5 w-5"/>}
-            </Button>
+            <div className='flex justify-between items-center'>
+                <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground" onClick={toggleSounds}>
+                  {calculatorSounds ? <Volume2 className="h-5 w-5"/> : <VolumeX className="h-5 w-5"/>}
+                </Button>
+                <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground" onClick={handleBackspace}>
+                    <Delete className="h-5 w-5" />
+                </Button>
+            </div>
             <div className="text-muted-foreground text-xl h-8 truncate">{expression || '0'}</div>
             <div className="text-foreground text-5xl font-bold h-[60px] flex items-end justify-end truncate">{display}</div>
           </div>
