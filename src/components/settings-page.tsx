@@ -267,7 +267,7 @@ export function SettingsPage() {
 
 
   return (
-    <div className="w-full space-y-6">
+    <div className="w-full space-y-6 pb-24">
       <Tabs defaultValue="general" className="w-full">
         <TabsList className="grid w-full grid-cols-3 bg-accent/50">
           <TabsTrigger value="general">General</TabsTrigger>
