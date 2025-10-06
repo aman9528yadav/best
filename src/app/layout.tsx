@@ -10,6 +10,7 @@ import { ThemeProvider } from '@/components/theme-provider';
 import { BroadcastListener } from '@/components/broadcast-listener';
 import { NotificationProvider } from '@/context/NotificationContext';
 import { CustomThemeHandler } from '@/components/custom-theme-handler';
+import { BottomNavigation } from '@/components/bottom-navigation';
 
 
 export const metadata: Metadata = {
@@ -32,11 +33,11 @@ export default function RootLayout({
           rel="stylesheet"
         />
       </head>
-      <body>
+      <body className="theme-sutradhaar">
         <ThemeProvider
           attribute="class"
-          defaultTheme="system"
-          enableSystem
+          defaultTheme="light"
+          enableSystem={false}
           disableTransitionOnChange
           themes={['light', 'dark', 'theme-sutradhaar', 'theme-forest', 'theme-ocean', 'theme-sunset', 'custom']}
         >
@@ -47,6 +48,7 @@ export default function RootLayout({
                   <CustomThemeHandler />
                   <MaintenanceWrapper>
                     {children}
+                    <BottomNavigation />
                   </MaintenanceWrapper>
                   <Toaster />
                   <BroadcastListener />

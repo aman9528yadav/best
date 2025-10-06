@@ -1,9 +1,10 @@
 
+
 "use client";
 
-import { Menu, Search, Bell, CircleUser, Home, X } from 'lucide-react';
+import { Menu, Search, Bell, CircleUser, Home, X, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Sidebar } from './sidebar';
 import Link from 'next/link';
 import { useMaintenance } from '@/context/MaintenanceContext';
@@ -11,16 +12,6 @@ import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/context/AuthContext';
 import { useRouter } from 'next/navigation';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -33,16 +24,21 @@ import { Badge } from '@/components/ui/badge';
 import { useNotifications } from '@/context/NotificationContext';
 import { formatDistanceToNow } from 'date-fns';
 import { SearchDialog } from './search-dialog';
+import { useProfile } from '@/context/ProfileContext';
 
 export function Header() {
   const { setDevMode } = useMaintenance();
   const [clickCount, setClickCount] = useState(0);
   const { toast } = useToast();
   const { user } = useAuth();
+  const { profile } = useProfile();
   const router = useRouter();
-  const [showLoginDialog, setShowLoginDialog] = useState(false);
   const { notifications, markAllAsRead, unreadCount, removeNotification } = useNotifications();
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  
+  const displayName = user ? (user.displayName || profile.name) : 'Guest';
+  const avatarUrl = user?.photoURL || profile.photoUrl;
+  const avatarFallback = displayName.charAt(0).toUpperCase();
 
   const handleLogoClick = () => {
     const newClickCount = clickCount + 1;
@@ -60,14 +56,6 @@ export function Header() {
     }, 1500)
   };
 
-  const handleProfileClick = () => {
-    if (user) {
-      router.push('/profile');
-    } else {
-      setShowLoginDialog(true);
-    }
-  };
-
   const handleNotificationOpen = (open: boolean) => {
     if (open) {
       markAllAsRead();
@@ -76,20 +64,26 @@ export function Header() {
 
   return (
     <>
-      <Card className="sticky top-4 z-50 w-full rounded-full shadow-md mt-4">
-        <div className="flex h-14 items-center px-4">
-          <div className="flex items-center space-x-2">
-            <Sidebar />
+      <header className="sticky top-4 z-50 w-full mt-4">
+        <div className="flex h-14 items-center px-0">
+          <div className="flex items-center gap-3">
+             <Link href="/profile">
+                <Avatar>
+                    {avatarUrl ? <AvatarImage src={avatarUrl} alt={displayName} /> : (
+                        <div className="h-10 w-10 rounded-full bg-gradient-to-br from-primary to-purple-400 flex items-center justify-center">
+                            <span className="text-xl font-bold text-primary-foreground">{avatarFallback}</span>
+                        </div>
+                     )}
+                     <AvatarFallback>{avatarFallback}</AvatarFallback>
+                </Avatar>
+             </Link>
+             <div>
+                <p className="text-sm text-muted-foreground">Welcome back,</p>
+                <h1 className="font-bold text-lg" onClick={handleLogoClick}>Sutradhaar</h1>
+             </div>
           </div>
-          <div className="flex flex-1 items-center justify-center space-x-2 md:justify-center">
-            <span className="font-bold text-lg cursor-pointer" onClick={handleLogoClick}>Sutradhaar</span>
-          </div>
-          <div className="flex items-center justify-end space-x-1">
-            <Button asChild variant="ghost" size="icon" aria-label="Home">
-              <Link href="/">
-                <Home className="h-5 w-5" />
-              </Link>
-            </Button>
+          
+          <div className="flex flex-1 items-center justify-end space-x-1">
             <Button variant="ghost" size="icon" aria-label="Search" onClick={() => setIsSearchOpen(true)}>
               <Search className="h-5 w-5" />
             </Button>
@@ -99,7 +93,7 @@ export function Header() {
                     <Button variant="ghost" size="icon" aria-label="Notifications" className="relative">
                         <Bell className="h-5 w-5" />
                         {unreadCount > 0 && (
-                            <Badge variant="destructive" className="absolute -top-1 -right-1 h-4 w-4 justify-center rounded-full p-0 text-xs">
+                            <Badge variant="destructive" className="absolute top-1 right-1 h-4 w-4 justify-center rounded-full p-0 text-xs">
                                 {unreadCount}
                             </Badge>
                         )}
@@ -133,28 +127,10 @@ export function Header() {
                     )}
                 </DropdownMenuContent>
             </DropdownMenu>
-
-            <Button variant="ghost" size="icon" aria-label="Profile" onClick={handleProfileClick}>
-                <CircleUser className="h-5 w-5" />
-            </Button>
           </div>
         </div>
-      </Card>
+      </header>
       <SearchDialog open={isSearchOpen} onOpenChange={setIsSearchOpen} />
-       <AlertDialog open={showLoginDialog} onOpenChange={setShowLoginDialog}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Login Required</AlertDialogTitle>
-            <AlertDialogDescription>
-              You need to be logged in to access your profile. Would you like to go to the login page?
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={() => router.push('/login')}>Login</AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </>
   );
 }
