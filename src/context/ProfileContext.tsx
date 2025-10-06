@@ -151,7 +151,7 @@ type ProfileContextType = {
   updateTodo: (todo: TodoItem) => void;
   toggleTodo: (id: string) => void;
   deleteTodo: (id: string) => void;
-  deleteAllUserData: () => void;
+  deleteAllUserData: () => Promise<void>;
   updateStats: (type: ActivityType) => void;
   // History methods
   history: HistoryItem[];
@@ -244,7 +244,7 @@ const guestProfileDefault: UserProfile = {
 export const ProfileProvider = ({ children }: { children: ReactNode }) => {
   const [profile, setProfileState] = useState<UserProfile>(getInitialProfile());
   const [isLoading, setIsLoading] = useState(true);
-  const { user, loading: authLoading, logout } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const { maintenanceConfig } = useMaintenance();
   
   const dataLoaded = useRef(false);
@@ -522,7 +522,7 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
         }
     });
     setProfileState(getInitialProfile());
-    logout();
+    // The logout call will be handled in the component that calls this.
   };
   
   const addConversionToHistory = (item: Omit<ConversionHistoryItem, 'id' | 'timestamp' | 'type'>) => {

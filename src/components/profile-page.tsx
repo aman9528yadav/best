@@ -41,6 +41,7 @@ import { useProfile } from '@/context/ProfileContext';
 import { useAuth } from '@/context/AuthContext';
 import { Progress } from '@/components/ui/progress';
 import { useMaintenance } from '@/context/MaintenanceContext';
+import { useRouter } from 'next/navigation';
 
 const DetailItem = ({ icon: Icon, label, value }: { icon: React.ElementType, label: string, value: string }) => (
     <div className="flex justify-between items-center text-sm py-3 border-b border-border/50">
@@ -79,6 +80,7 @@ export function ProfilePage() {
     const { profile } = useProfile();
     const { user, logout } = useAuth();
     const { maintenanceConfig } = useMaintenance();
+    const router = useRouter();
     
     const { allTimeActivities = 0, daysActive = 0, streak = 0 } = profile.stats || {};
     const totalNotes = profile.notes.filter(n => !n.isTrashed).length;
@@ -92,6 +94,11 @@ export function ProfilePage() {
     const isPremium = profile.membership === 'premium' || profile.membership === 'owner';
     
     const { activities: premiumActivitiesGoal, streak: premiumStreakGoal } = maintenanceConfig.premiumCriteria;
+
+    const handleLogout = () => {
+        logout();
+        router.push('/auth-action?action=logout');
+    };
 
 
     return (
@@ -111,7 +118,7 @@ export function ProfilePage() {
                             </Link>
                         </Button>
                         {user && (
-                            <Button variant="destructive" size="sm" className="gap-2" onClick={logout}>
+                            <Button variant="destructive" size="sm" className="gap-2" onClick={handleLogout}>
                                 <LogOut className="h-3 w-3" />
                                 Logout
                             </Button>

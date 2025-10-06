@@ -71,7 +71,7 @@ const PasswordField = ({ label, id, value, onChange }: { label: string, id: stri
 
 export function EditProfilePage() {
     const { profile, setProfile, deleteAllUserData } = useProfile();
-    const { changePassword } = useAuth();
+    const { changePassword, logout } = useAuth();
     const [formData, setFormData] = useState(profile);
     const [passwordData, setPasswordData] = useState({ currentPassword: '', newPassword: '', confirmPassword: '' });
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -136,8 +136,9 @@ export function EditProfilePage() {
         }
     };
     
-    const handleDeleteData = () => {
-        deleteAllUserData();
+    const handleDeleteData = async () => {
+        await deleteAllUserData();
+        logout();
         toast({
             title: "All Data Deleted",
             description: "Your profile and history have been permanently removed.",
