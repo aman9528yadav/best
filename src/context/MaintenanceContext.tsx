@@ -74,6 +74,11 @@ export type Countdown = {
     seconds: number;
 };
 
+export type MaintenanceCard = {
+    title: string;
+    description: string;
+};
+
 export type MaintenanceConfig = {
     globalMaintenance: boolean;
     isDevMode: boolean;
@@ -86,6 +91,7 @@ export type MaintenanceConfig = {
     };
     maintenanceTargetDate: string;
     maintenanceMessage: string;
+    maintenanceCards: MaintenanceCard[];
     updateItems: UpdateItem[];
     aboutPageContent: AboutPageContent;
     comingSoonItems: ComingSoonItem[];
@@ -120,6 +126,10 @@ const defaultMaintenanceConfig: MaintenanceConfig = {
     },
     maintenanceTargetDate: new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString(),
     maintenanceMessage: "We're currently performing scheduled maintenance to improve our services. We're working as quickly as possible to restore service.",
+    maintenanceCards: [
+        { title: "Minimal Downtime", description: "We're working as quickly as possible to restore service." },
+        { title: "Better Experience", description: "Coming back with improved features and performance." }
+    ],
     updateItems: [
         {
             id: 'update-1-unique',
@@ -227,6 +237,7 @@ export const MaintenanceProvider = ({ children }: { children: ReactNode }) => {
                 ...defaultMaintenanceConfig,
                 ...dbConfig,
                 dashboardBanner: { ...defaultMaintenanceConfig.dashboardBanner, ...(dbConfig.dashboardBanner || {}) },
+                maintenanceCards: dbConfig.maintenanceCards || defaultMaintenanceConfig.maintenanceCards,
                 aboutPageContent: {
                     ...defaultMaintenanceConfig.aboutPageContent,
                     ...(dbConfig.aboutPageContent || {}),

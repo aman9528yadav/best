@@ -49,7 +49,7 @@ const calculateTimeLeft = (targetDate: string): Countdown => {
 export function MaintenancePage() {
   const router = useRouter();
   const { maintenanceConfig, setDevMode } = useMaintenance();
-  const { maintenanceTargetDate, maintenanceMessage } = maintenanceConfig;
+  const { maintenanceTargetDate, maintenanceMessage, maintenanceCards } = maintenanceConfig;
   const { toast } = useToast();
   
   const [clickCount, setClickCount] = useState(0);
@@ -146,28 +146,17 @@ export function MaintenancePage() {
           </Card>
           
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-left">
-            <Card className="bg-accent/50 border-none">
-              <CardContent className="p-4 flex items-start gap-4">
-                <Hourglass className="h-6 w-6 text-primary mt-1" />
-                <div>
-                  <h3 className="font-semibold">Minimal Downtime</h3>
-                  <p className="text-sm text-muted-foreground">
-                    We're working as quickly as possible to restore service.
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-            <Card className="bg-accent/50 border-none">
-              <CardContent className="p-4 flex items-start gap-4">
-                <Zap className="h-6 w-6 text-primary mt-1" />
-                <div>
-                  <h3 className="font-semibold">Better Experience</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Coming back with improved features and performance.
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
+             {maintenanceCards && maintenanceCards.map((card, index) => (
+              <Card key={index} className="bg-accent/50 border-none">
+                <CardContent className="p-4 flex items-start gap-4">
+                  {index === 0 ? <Hourglass className="h-6 w-6 text-primary mt-1" /> : <Zap className="h-6 w-6 text-primary mt-1" />}
+                  <div>
+                    <h3 className="font-semibold">{card.title}</h3>
+                    <p className="text-sm text-muted-foreground">{card.description}</p>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
           </div>
 
           <div className="text-sm text-muted-foreground">

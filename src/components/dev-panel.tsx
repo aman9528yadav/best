@@ -51,7 +51,7 @@ export function DevPanel() {
     setMaintenanceConfig,
     isLoading,
   } = useMaintenance();
-  const { globalMaintenance, dashboardBanner, maintenanceMessage, devPassword, welcomeDialog, maintenanceTargetDate, premiumCriteria } = maintenanceConfig;
+  const { globalMaintenance, dashboardBanner, maintenanceMessage, devPassword, welcomeDialog, maintenanceTargetDate, premiumCriteria, maintenanceCards } = maintenanceConfig;
   const [broadcastMessage, setBroadcastMessage] = useState('');
   const { clearAllHistory } = useProfile();
   const [passwordState, setPasswordState] = useState({ currentPassword: '', newPassword: '', confirmNewPassword: '' });
@@ -196,6 +196,15 @@ export function DevPanel() {
         }
     }));
   };
+  
+  const handleMaintenanceCardChange = (index: number, field: 'title' | 'description', value: string) => {
+    setMaintenanceConfig(prev => {
+        const newCards = [...prev.maintenanceCards];
+        newCards[index] = { ...newCards[index], [field]: value };
+        return { ...prev, maintenanceCards: newCards };
+    });
+  };
+
 
   const formatDateTimeForInput = (isoString: string) => {
     try {
@@ -275,6 +284,14 @@ export function DevPanel() {
                         <Label htmlFor="maintenance-message">Maintenance Page Message</Label>
                         <Textarea id="maintenance-message" value={maintenanceMessage} onChange={handleMaintenanceMessageChange} rows={4} />
                     </div>
+                    {maintenanceCards.map((card, index) => (
+                         <div key={index} className="bg-accent/50 p-4 rounded-lg space-y-2">
+                            <Label htmlFor={`card-title-${index}`}>Card {index + 1} Title</Label>
+                            <Input id={`card-title-${index}`} value={card.title} onChange={(e) => handleMaintenanceCardChange(index, 'title', e.target.value)} />
+                             <Label htmlFor={`card-desc-${index}`}>Card {index + 1} Description</Label>
+                            <Textarea id={`card-desc-${index}`} value={card.description} onChange={(e) => handleMaintenanceCardChange(index, 'description', e.target.value)} rows={2} />
+                        </div>
+                    ))}
                   </div>
                 </AccordionContent>
               </Card>
