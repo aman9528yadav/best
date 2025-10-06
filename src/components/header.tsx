@@ -66,7 +66,7 @@ export function Header() {
   return (
     <>
       <header className="sticky top-4 z-50 w-full mt-4">
-        <Card className="p-2">
+        <Card className="p-2 bg-card/80 backdrop-blur-sm">
             <div className="flex h-14 items-center px-2">
               <div className="flex items-center gap-3">
                  <Link href="/profile">
