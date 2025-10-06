@@ -36,6 +36,13 @@ export type ComingSoonItem = {
     description: string;
 };
 
+export type MembershipFeature = {
+  id: string;
+  feature: string;
+  member: boolean;
+  premium: boolean;
+};
+
 type AboutPageContent = {
     stats: {
         happyUsers: string;
@@ -83,6 +90,7 @@ export type MaintenanceConfig = {
     aboutPageContent: AboutPageContent;
     comingSoonItems: ComingSoonItem[];
     welcomeDialog: WelcomeDialogContent;
+    membershipFeatures: MembershipFeature[];
 };
 
 
@@ -171,7 +179,16 @@ const defaultMaintenanceConfig: MaintenanceConfig = {
     welcomeDialog: {
         title: "Welcome to Sutradhaar!",
         description: "This is a smart unit converter and calculator app designed to make your life easier. Explore all the features available to you."
-    }
+    },
+    membershipFeatures: [
+        { id: 'feat-1', feature: 'Basic Unit Conversions', member: true, premium: true },
+        { id: 'feat-2', feature: 'Scientific Calculator', member: true, premium: true },
+        { id: 'feat-3', feature: 'Save History', member: true, premium: true },
+        { id: 'feat-4', feature: 'Premium Themes', member: false, premium: true },
+        { id: 'feat-5', feature: 'Premium Unit Categories', member: false, premium: true },
+        { id: 'feat-6', feature: 'Cloud Sync', member: true, premium: true },
+        { id: 'feat-7', feature: 'Ad-Free Experience', member: false, premium: true },
+    ]
 };
 
 export const MaintenanceProvider = ({ children }: { children: ReactNode }) => {
@@ -209,6 +226,7 @@ export const MaintenanceProvider = ({ children }: { children: ReactNode }) => {
                 },
                 comingSoonItems: dbConfig.comingSoonItems || defaultMaintenanceConfig.comingSoonItems,
                 welcomeDialog: { ...defaultMaintenanceConfig.welcomeDialog, ...(dbConfig.welcomeDialog || {}) },
+                membershipFeatures: dbConfig.membershipFeatures || defaultMaintenanceConfig.membershipFeatures,
             };
             setMaintenanceConfigState(mergedConfig);
         } else {

@@ -19,7 +19,7 @@ import {
 } from '@/components/ui/accordion';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import { ArrowLeft, Clock, Shield, Trash, Megaphone, Pencil, ChevronRight, Send, KeyRound, MessageSquare, Timer, Calendar } from 'lucide-react';
+import { ArrowLeft, Clock, Shield, Trash, Megaphone, Pencil, ChevronRight, Send, KeyRound, MessageSquare, Timer, Calendar, Gem } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useMaintenance, Countdown } from '@/context/MaintenanceContext';
 import { useToast } from '@/hooks/use-toast';
@@ -344,6 +344,12 @@ export function DevPanel() {
                    <Button asChild variant="ghost" className="w-full justify-between">
                     <Link href="/dev/manage-coming-soon">
                       Manage "Coming Soon"
+                      <ChevronRight className="h-4 w-4" />
+                    </Link>
+                  </Button>
+                   <Button asChild variant="ghost" className="w-full justify-between">
+                    <Link href="/dev/manage-membership">
+                      Manage Membership
                       <ChevronRight className="h-4 w-4" />
                     </Link>
                   </Button>

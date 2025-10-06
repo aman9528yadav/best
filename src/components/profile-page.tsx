@@ -146,10 +146,15 @@ export function ProfilePage() {
             {!isPremium && (
                  <Card>
                     <CardHeader>
-                        <CardTitle className="flex items-center gap-2 text-lg">
-                            <Gem className="h-5 w-5 text-primary" />
-                            Premium Progress
-                        </CardTitle>
+                        <div className="flex justify-between items-center">
+                            <CardTitle className="flex items-center gap-2 text-lg">
+                                <Gem className="h-5 w-5 text-primary" />
+                                Premium Progress
+                            </CardTitle>
+                            <Button asChild variant="link" size="sm" className="text-primary">
+                                <Link href="/membership">View Benefits</Link>
+                            </Button>
+                        </div>
                     </CardHeader>
                     <CardContent className="space-y-4">
                        <ProgressItem label="All-Time Activities" value={allTimeActivities} goal={PREMIUM_ACTIVITIES_GOAL} />
