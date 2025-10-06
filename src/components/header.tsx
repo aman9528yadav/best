@@ -79,7 +79,7 @@ export function Header() {
              </Link>
              <div>
                 <p className="text-sm text-muted-foreground">Welcome back,</p>
-                <h1 className="font-bold text-lg" onClick={handleLogoClick}>Sutradhaar</h1>
+                <h1 className="font-bold text-lg" onClick={handleLogoClick}>{displayName}</h1>
              </div>
           </div>
           
