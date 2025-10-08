@@ -71,6 +71,7 @@ import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { WelcomeDialog } from '@/components/welcome-dialog';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
+import { useToast } from '@/hooks/use-toast';
 
 export const quickAccessItems = [
   {
@@ -112,10 +113,18 @@ export default function DashboardPage() {
   const { profile, isLoading: isProfileLoading, checkAndUpdateStreak } = useProfile();
   const { user } = useAuth();
   const router = useRouter();
+  const { toast } = useToast();
 
   const [showLoginDialog, setShowLoginDialog] = useState(false);
   const [showWelcomeDialog, setShowWelcomeDialog] = useState(false);
   const [showMore, setShowMore] = useState(false);
+
+  useEffect(() => {
+    toast({
+      title: "Welcome to your Dashboard!",
+      description: "You can find all your tools and stats here.",
+    });
+  }, [toast]);
 
   useEffect(() => {
     const welcomeSetting = localStorage.getItem('sutradhaar_show_welcome');
