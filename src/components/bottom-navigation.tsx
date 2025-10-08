@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import React from 'react';
@@ -24,7 +25,7 @@ export function BottomNavigation() {
   return (
     <Sheet open={isSidebarOpen} onOpenChange={setIsSidebarOpen}>
       <div className="fixed bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-background via-background/90 to-transparent flex justify-center z-50">
-        <div className="bg-card shadow-lg rounded-full flex items-center justify-around w-full max-w-sm mx-4 h-16 self-center px-2">
+        <div className="bg-pink-100/30 backdrop-blur-sm border-pink-200/50 shadow-lg rounded-full flex items-center justify-around w-full max-w-sm mx-4 h-16 self-center px-2">
           {navItems.slice(0, 2).map((item) => (
             <Link href={item.href} key={item.href} className="flex-1">
               <div
