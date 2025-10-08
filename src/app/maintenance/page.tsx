@@ -104,7 +104,7 @@ export default function MaintenancePage() {
   return (
     <div className="relative flex flex-col items-center justify-center min-h-screen bg-background text-foreground p-4">
       <div 
-        className="absolute inset-0 bg-cover bg-center"
+        className="absolute inset-0 bg-contain bg-no-repeat bg-center"
         style={{
           backgroundImage: "url(/img/imgi_195_flat-design-construction-concept_108061-440.jpg)",
           filter: 'brightness(0.7)',
