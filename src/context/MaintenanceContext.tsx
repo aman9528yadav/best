@@ -88,6 +88,7 @@ export type AppUpdateConfig = {
 
 export type MaintenanceConfig = {
     globalMaintenance: boolean;
+    pageMaintenance: { [key: string]: boolean };
     isDevMode: boolean;
     devPassword?: string;
     dashboardBanner: {
@@ -124,6 +125,7 @@ const MaintenanceContext = createContext<MaintenanceContextType | undefined>(und
 
 const defaultMaintenanceConfig: MaintenanceConfig = {
     globalMaintenance: false,
+    pageMaintenance: {},
     isDevMode: false,
     devPassword: 'aman',
     dashboardBanner: {
@@ -250,6 +252,7 @@ export const MaintenanceProvider = ({ children }: { children: ReactNode }) => {
             const mergedConfig = {
                 ...defaultMaintenanceConfig,
                 ...dbConfig,
+                pageMaintenance: dbConfig.pageMaintenance || defaultMaintenanceConfig.pageMaintenance,
                 dashboardBanner: { ...defaultMaintenanceConfig.dashboardBanner, ...(dbConfig.dashboardBanner || {}) },
                 maintenanceCards: dbConfig.maintenanceCards || defaultMaintenanceConfig.maintenanceCards,
                 aboutPageContent: {
@@ -312,26 +315,30 @@ export const MaintenanceWrapper = ({ children }: { children: ReactNode }) => {
     useEffect(() => {
         if (isLoading) return; 
 
-        const isUnderMaintenance = maintenanceConfig.globalMaintenance;
         const isMaintenancePage = pathname === '/maintenance';
-        
-        const isAllowedPath = isMaintenancePage || (isDevMode && (pathname.startsWith('/dev') || pathname === '/settings'));
+        const isUnderGlobalMaintenance = maintenanceConfig.globalMaintenance;
+        const isUnderPageMaintenance = maintenanceConfig.pageMaintenance?.[pathname];
 
-        if (isUnderMaintenance && !isAllowedPath) {
+        const isAllowedDuringMaintenance = isMaintenancePage || (isDevMode && (pathname.startsWith('/dev') || pathname === '/settings'));
+
+        if ((isUnderGlobalMaintenance || isUnderPageMaintenance) && !isAllowedDuringMaintenance) {
             router.replace('/maintenance');
         }
 
-        if (!isUnderMaintenance && isMaintenancePage) {
+        if (!isUnderGlobalMaintenance && !isUnderPageMaintenance && isMaintenancePage) {
             router.replace('/');
         }
 
-    }, [maintenanceConfig.globalMaintenance, isDevMode, pathname, router, isLoading]);
+    }, [maintenanceConfig, isDevMode, pathname, router, isLoading]);
     
     if (isLoading) {
         return null;
     }
     
-    if (maintenanceConfig.globalMaintenance && !pathname.startsWith('/maintenance') && !(isDevMode && (pathname.startsWith('/dev') || pathname === '/settings'))) {
+    const isUnderPageMaintenance = maintenanceConfig.pageMaintenance?.[pathname];
+    const isAllowedDuringMaintenance = pathname === '/maintenance' || (isDevMode && (pathname.startsWith('/dev') || pathname === '/settings'));
+
+    if ((maintenanceConfig.globalMaintenance || isUnderPageMaintenance) && !isAllowedDuringMaintenance) {
       return null;
     }
     

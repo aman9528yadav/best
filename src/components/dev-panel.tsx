@@ -41,7 +41,31 @@ import {
 } from "@/components/ui/alert-dialog"
 import { useProfile } from '@/context/ProfileContext';
 import { format, parseISO } from 'date-fns';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
+const appPages = [
+    { name: 'Dashboard', path: '/' },
+    { name: 'Converter', path: '/converter' },
+    { name: 'Calculator', path: '/calculator' },
+    { name: 'Date Calculator', path: '/date-calculator' },
+    { name: 'Timer', path: '/timer' },
+    { name: 'Stopwatch', path: '/stopwatch' },
+    { name: 'History', path: '/history' },
+    { name: 'Notes', path: '/notes' },
+    { name: 'Todo', path: '/todo' },
+    { name: 'Analytics', path: '/analytics' },
+    { name: 'Profile', path: '/profile' },
+    { name: 'Settings', path: '/settings' },
+    { name: 'About', path: '/about' },
+    { name: 'What\'s New', path: '/whats-new' },
+    { name: 'Membership', path: '/membership' },
+];
 
 export function DevPanel() {
   const router = useRouter();
@@ -51,7 +75,7 @@ export function DevPanel() {
     setMaintenanceConfig,
     isLoading,
   } = useMaintenance();
-  const { globalMaintenance, dashboardBanner, maintenanceMessage, devPassword, welcomeDialog, maintenanceTargetDate, premiumCriteria, maintenanceCards, appUpdate } = maintenanceConfig;
+  const { globalMaintenance, pageMaintenance, dashboardBanner, maintenanceMessage, devPassword, welcomeDialog, maintenanceTargetDate, premiumCriteria, maintenanceCards, appUpdate } = maintenanceConfig;
   const [broadcastMessage, setBroadcastMessage] = useState('');
   const { clearAllHistory } = useProfile();
   const [passwordState, setPasswordState] = useState({ currentPassword: '', newPassword: '', confirmNewPassword: '' });
@@ -76,6 +100,19 @@ export function DevPanel() {
     setMaintenanceConfig(prev => ({...prev, globalMaintenance: checked }));
     toast({
       title: `Global Maintenance ${checked ? 'Enabled' : 'Disabled'}`,
+    });
+  };
+
+  const handlePageMaintenanceChange = (path: string, checked: boolean) => {
+    setMaintenanceConfig(prev => ({
+        ...prev,
+        pageMaintenance: {
+            ...prev.pageMaintenance,
+            [path]: checked
+        }
+    }));
+    toast({
+        title: `Maintenance for ${path} ${checked ? 'Enabled' : 'Disabled'}`,
     });
   };
 
@@ -281,6 +318,19 @@ export function DevPanel() {
                           onCheckedChange={handleGlobalMaintenanceChange}
                         />
                       )}
+                    </div>
+                    <div className="bg-accent/50 p-4 rounded-lg space-y-2">
+                        <Label>Page-Specific Maintenance</Label>
+                        {appPages.map(page => (
+                           <div key={page.path} className="flex items-center justify-between">
+                                <Label htmlFor={`page-maintenance-${page.path}`} className="text-sm font-normal">{page.name}</Label>
+                                <Switch
+                                    id={`page-maintenance-${page.path}`}
+                                    checked={!!pageMaintenance[page.path]}
+                                    onCheckedChange={(checked) => handlePageMaintenanceChange(page.path, checked)}
+                                />
+                            </div>
+                        ))}
                     </div>
                      <div className="bg-accent/50 p-4 rounded-lg space-y-4">
                       <Label>Maintenance Page Countdown</Label>
