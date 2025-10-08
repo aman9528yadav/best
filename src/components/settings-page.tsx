@@ -51,6 +51,7 @@ import {
   MessageSquare,
   Paintbrush,
   Lock,
+  Atom,
 } from 'lucide-react';
 import { useMaintenance } from '@/context/MaintenanceContext';
 import { useRouter } from 'next/navigation';
@@ -58,6 +59,7 @@ import { useTheme } from 'next-themes';
 import { useProfile, HSLColor } from '@/context/ProfileContext';
 import { Slider } from './ui/slider';
 import { useAuth } from '@/context/AuthContext';
+import Link from 'next/link';
 
 const themes = [
   { name: 'Sutradhaar', value: 'sutradhaar', isPremium: false },
@@ -224,19 +226,28 @@ export function SettingsPage() {
     label,
     children,
     icon: Icon,
+    isLink,
+    href
   }: {
     label: string;
-    children: React.ReactNode;
+    children?: React.ReactNode;
     icon?: React.ElementType;
-  }) => (
-    <div className="flex items-center justify-between py-4 border-b">
-        <Label className="font-medium flex items-center gap-2">
-            {Icon && <Icon className="h-4 w-4" />}
-            {label}
-        </Label>
-      {children}
-    </div>
-  );
+    isLink?: boolean;
+    href?: string;
+  }) => {
+    const content = (
+       <div className="flex items-center justify-between py-4 border-b">
+            <Label className="font-medium flex items-center gap-2">
+                {Icon && <Icon className="h-4 w-4" />}
+                {label}
+            </Label>
+          {children}
+          {isLink && <ChevronRight className="h-5 w-5 text-muted-foreground"/>}
+        </div>
+    );
+
+    return isLink && href ? <Link href={href}>{content}</Link> : content;
+  };
 
   const handleDevModeChange = (checked: boolean) => {
     if (checked && !isDevMode) {
@@ -281,7 +292,7 @@ export function SettingsPage() {
 
         <TabsContent value="general" className="pt-6">
           <Card>
-            <CardContent className="p-4 pt-6 space-y-2">
+            <CardContent className="p-4 pt-0">
               <SettingRow label="Default Region" icon={Globe}>
                 <Select defaultValue="International">
                   <SelectTrigger className="w-[150px]">
@@ -305,6 +316,7 @@ export function SettingsPage() {
                   onCheckedChange={handleCalculatorSoundsChange}
                 />
               </SettingRow>
+               <SettingRow label="Custom Units" icon={Atom} isLink href="/settings/custom-units" />
               <SettingRow label="Show Welcome Screen" icon={MessageSquare}>
                 <Switch
                   checked={showWelcome}
@@ -370,7 +382,7 @@ export function SettingsPage() {
                       toast({ title: "Premium Theme", description: "Upgrade to unlock this theme." });
                       return;
                     }
-                    setTheme(v === 'custom' ? 'custom' : `theme-${v}`);
+                    setTheme(v === 'sutradhaar' ? 'sutradhaar' : v === 'custom' ? 'custom' : `theme-${v}`);
                   }}
                 >
                   <SelectTrigger className="w-[150px]">
