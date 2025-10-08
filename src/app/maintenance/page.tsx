@@ -106,7 +106,7 @@ export default function MaintenancePage() {
       <div 
         className="absolute inset-0 bg-cover bg-center"
         style={{
-          backgroundImage: "url(/sound/imgi_195_flat-design-construction-concept_108061-440.jpg)",
+          backgroundImage: "url(/img/imgi_195_flat-design-construction-concept_108061-440.jpg)",
           filter: 'brightness(0.7)',
           zIndex: 0,
         }}
