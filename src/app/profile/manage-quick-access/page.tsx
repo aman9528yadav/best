@@ -7,8 +7,10 @@ import { Card, CardContent } from '@/components/ui/card';
 import { ArrowLeft, GripVertical, Eye, EyeOff, ArrowUp, ArrowDown } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useProfile } from '@/context/ProfileContext';
-import { quickAccessItems } from '@/app/page';
+import { quickAccessItems, moreAccessItems } from '@/app/page';
 import { cn } from '@/lib/utils';
+
+const allAccessItems = [...quickAccessItems, ...moreAccessItems];
 
 
 export default function ManageQuickAccessPage() {
@@ -18,16 +20,25 @@ export default function ManageQuickAccessPage() {
   const [managedItems, setManagedItems] = useState(
     (profile.quickAccessOrder && profile.quickAccessOrder.length > 0)
       ? profile.quickAccessOrder
-      : quickAccessItems.map(item => ({ id: item.id, hidden: false }))
+      : allAccessItems.map(item => ({ id: item.id, hidden: false }))
   );
 
   useEffect(() => {
-    // Sync with profile context if it changes, but only if it's not empty
-     if (profile.quickAccessOrder && profile.quickAccessOrder.length > 0) {
-      setManagedItems(profile.quickAccessOrder);
+    // Sync with profile context if it changes
+    if (profile.quickAccessOrder && profile.quickAccessOrder.length > 0) {
+        // Filter out any items that might have been removed from the main lists
+        const validOrder = profile.quickAccessOrder.filter(orderItem => allAccessItems.some(item => item.id === orderItem.id));
+        
+        // Add any new items that are not in the user's saved order
+        const savedIds = new Set(validOrder.map(item => item.id));
+        const newItems = allAccessItems
+            .filter(item => !savedIds.has(item.id))
+            .map(item => ({ id: item.id, hidden: false }));
+        
+        setManagedItems([...validOrder, ...newItems]);
     } else {
       // If the profile has no order, initialize with default
-      setManagedItems(quickAccessItems.map(item => ({ id: item.id, hidden: false })));
+      setManagedItems(allAccessItems.map(item => ({ id: item.id, hidden: false })));
     }
   }, [profile.quickAccessOrder]);
   
@@ -59,7 +70,7 @@ export default function ManageQuickAccessPage() {
     router.back();
   };
   
-  const itemMap = new Map(quickAccessItems.map(item => [item.id, item]));
+  const itemMap = new Map(allAccessItems.map(item => [item.id, item]));
 
   return (
     <div className="flex flex-col items-center w-full min-h-screen bg-background text-foreground p-4">
