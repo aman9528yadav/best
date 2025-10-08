@@ -166,12 +166,12 @@ export default function MaintenancePage() {
             ))}
           </div>
 
-          <div className="text-sm text-white/70">
+          <div className="text-sm text-black font-bold">
             <p>
               Need immediate assistance? Contact Aman at:{' '}
               <a
                 href="mailto:amanyadavyadav9458@gmail.com"
-                className="text-white hover:underline"
+                className="text-primary hover:underline"
               >
                 amanyadavyadav9458@gmail.com
               </a>
