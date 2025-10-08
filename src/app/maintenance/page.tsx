@@ -23,9 +23,9 @@ import { Input } from "@/components/ui/input"
 import { format } from 'date-fns';
 
 const CountdownBox = ({ value, label }: { value: string; label: string }) => (
-  <div className="bg-card rounded-lg p-3 w-20 flex flex-col items-center shadow-inner">
-    <span className="text-3xl font-bold text-primary">{value}</span>
-    <span className="text-xs text-muted-foreground">{label}</span>
+  <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3 w-20 flex flex-col items-center shadow-inner">
+    <span className="text-3xl font-bold text-white">{value}</span>
+    <span className="text-xs text-white/70">{label}</span>
   </div>
 );
 
@@ -114,20 +114,20 @@ export default function MaintenancePage() {
       <div className="relative z-10 w-full max-w-md mx-auto">
         <div className="text-center space-y-6">
           <div className="flex justify-center">
-            <div className="bg-accent/70 p-4 rounded-full shadow-lg transition-transform duration-200 hover:-translate-y-1 hover:shadow-2xl" onClick={handleIconClick}>
-              <Wrench className="h-8 w-8 text-primary" />
+            <div className="bg-white/10 backdrop-blur-sm p-4 rounded-full shadow-lg transition-transform duration-200 hover:-translate-y-1 hover:shadow-2xl" onClick={handleIconClick}>
+              <Wrench className="h-8 w-8 text-white" />
             </div>
           </div>
 
-          <div className="space-y-2">
+          <div className="space-y-2 text-white">
             <h1 className="text-4xl font-bold">{isTimerFinished ? "We're Back!" : "We'll Be Back Soon!"}</h1>
-            <p className="text-muted-foreground">
+            <p className="text-white/80">
              {isTimerFinished ? "The maintenance is complete. The app is now back online." : "The app is currently undergoing scheduled maintenance. We expect to be back online in:"}
             </p>
           </div>
 
           {isTimerFinished ? (
-             <div className="flex justify-center gap-3 p-4 bg-accent rounded-lg text-primary font-semibold">
+             <div className="flex justify-center gap-3 p-4 bg-green-500/20 rounded-lg text-green-300 font-semibold">
                 <PartyPopper className="h-6 w-6" />
                 <span>We're back online! Thanks for your patience.</span>
             </div>
@@ -139,39 +139,39 @@ export default function MaintenancePage() {
                     <CountdownBox value={String(timeLeft.minutes).padStart(2, '0')} label="MINUTES"/>
                     <CountdownBox value={String(timeLeft.seconds).padStart(2, '0')} label="SECONDS" />
                 </div>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-sm text-white/70">
                     (Estimated: {format(new Date(maintenanceTargetDate), 'PPP p')})
                 </p>
              </div>
           )}
 
-          <Card>
-            <CardContent className="p-4 text-left">
+          <Card className="bg-white/10 backdrop-blur-sm border-white/20">
+            <CardContent className="p-4 text-left text-white">
                 <h3 className="font-semibold mb-2">A message from the team:</h3>
-                <p className="text-sm text-muted-foreground whitespace-pre-line">{maintenanceMessage}</p>
+                <p className="text-sm text-white/80 whitespace-pre-line">{maintenanceMessage}</p>
             </CardContent>
           </Card>
           
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-left">
              {maintenanceCards && maintenanceCards.map((card, index) => (
-              <Card key={index} className="bg-accent/50 border-none">
-                <CardContent className="p-4 flex items-start gap-4">
-                  {index === 0 ? <Hourglass className="h-6 w-6 text-primary mt-1" /> : <Zap className="h-6 w-6 text-primary mt-1" />}
+              <Card key={index} className="bg-white/10 backdrop-blur-sm border-white/20">
+                <CardContent className="p-4 flex items-start gap-4 text-white">
+                  {index === 0 ? <Hourglass className="h-6 w-6 text-white/80 mt-1" /> : <Zap className="h-6 w-6 text-white/80 mt-1" />}
                   <div>
                     <h3 className="font-semibold">{card.title}</h3>
-                    <p className="text-sm text-muted-foreground">{card.description}</p>
+                    <p className="text-sm text-white/80">{card.description}</p>
                   </div>
                 </CardContent>
               </Card>
             ))}
           </div>
 
-          <div className="text-sm text-muted-foreground">
+          <div className="text-sm text-white/70">
             <p>
               Need immediate assistance? Contact Aman at:{' '}
               <a
                 href="mailto:amanyadavyadav9458@gmail.com"
-                className="text-primary hover:underline"
+                className="text-white hover:underline"
               >
                 amanyadavyadav9458@gmail.com
               </a>
