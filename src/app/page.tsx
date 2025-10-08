@@ -350,9 +350,9 @@ export default function DashboardPage() {
                       whileHover={{ y: -2, scale: 1.02 }}
                       className="w-48 shrink-0"
                     >
-                      <Card className="h-full">
+                      <Card className="h-full bg-primary/10 border-primary/20">
                         <CardContent className="p-3 flex items-start gap-3">
-                          <div className="p-2 bg-accent rounded-lg">
+                          <div className="p-2 bg-primary/10 rounded-lg">
                             <ItemIcon className="h-5 w-5 text-primary" />
                           </div>
                           <div className="flex-1">
