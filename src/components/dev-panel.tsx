@@ -67,6 +67,10 @@ const appPages = [
     { name: 'Membership', path: '/membership' },
 ];
 
+const sanitizePathForKey = (path: string) => {
+    return path.replace(/\//g, '_');
+};
+
 export function DevPanel() {
   const router = useRouter();
   const { toast } = useToast();
@@ -104,11 +108,12 @@ export function DevPanel() {
   };
 
   const handlePageMaintenanceChange = (path: string, checked: boolean) => {
+    const key = sanitizePathForKey(path);
     setMaintenanceConfig(prev => ({
         ...prev,
         pageMaintenance: {
             ...prev.pageMaintenance,
-            [path]: checked
+            [key]: checked
         }
     }));
     toast({
@@ -326,7 +331,7 @@ export function DevPanel() {
                                 <Label htmlFor={`page-maintenance-${page.path}`} className="text-sm font-normal">{page.name}</Label>
                                 <Switch
                                     id={`page-maintenance-${page.path}`}
-                                    checked={!!pageMaintenance[page.path]}
+                                    checked={!!pageMaintenance[sanitizePathForKey(page.path)]}
                                     onCheckedChange={(checked) => handlePageMaintenanceChange(page.path, checked)}
                                 />
                             </div>

@@ -225,6 +225,10 @@ const defaultMaintenanceConfig: MaintenanceConfig = {
     },
 };
 
+const sanitizePathForKey = (path: string) => {
+    return path.replace(/\//g, '_');
+};
+
 export const MaintenanceProvider = ({ children }: { children: ReactNode }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [maintenanceConfig, setMaintenanceConfigState] = useState<MaintenanceConfig>(defaultMaintenanceConfig);
@@ -317,7 +321,8 @@ export const MaintenanceWrapper = ({ children }: { children: ReactNode }) => {
 
         const isMaintenancePage = pathname === '/maintenance';
         const isUnderGlobalMaintenance = maintenanceConfig.globalMaintenance;
-        const isUnderPageMaintenance = maintenanceConfig.pageMaintenance?.[pathname];
+        const sanitizedPath = sanitizePathForKey(pathname);
+        const isUnderPageMaintenance = maintenanceConfig.pageMaintenance?.[sanitizedPath];
 
         const isAllowedDuringMaintenance = isMaintenancePage || (isDevMode && (pathname.startsWith('/dev') || pathname === '/settings'));
 
@@ -335,7 +340,8 @@ export const MaintenanceWrapper = ({ children }: { children: ReactNode }) => {
         return null;
     }
     
-    const isUnderPageMaintenance = maintenanceConfig.pageMaintenance?.[pathname];
+    const sanitizedPath = sanitizePathForKey(pathname);
+    const isUnderPageMaintenance = maintenanceConfig.pageMaintenance?.[sanitizedPath];
     const isAllowedDuringMaintenance = pathname === '/maintenance' || (isDevMode && (pathname.startsWith('/dev') || pathname === '/settings'));
 
     if ((maintenanceConfig.globalMaintenance || isUnderPageMaintenance) && !isAllowedDuringMaintenance) {
