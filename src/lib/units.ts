@@ -148,6 +148,11 @@ export const CATEGORIES: Category[] = [
       { name: 'GBP', symbol: '£' },
       { name: 'JPY', symbol: '¥' },
       { name: 'INR', symbol: '₹' },
+      { name: 'CAD', symbol: 'CA$' },
+      { name: 'AUD', symbol: 'A$' },
+      { name: 'CHF', symbol: 'CHF' },
+      { name: 'CNY', symbol: '¥' },
+      { name: 'RUB', symbol: '₽' },
     ],
   },
 ];
@@ -222,6 +227,11 @@ const conversionFactors: Record<string, Record<string, number>> = {
   GBP: 0.79,
   JPY: 157.2,
   INR: 83.5,
+  CAD: 1.37,
+  AUD: 1.51,
+  CHF: 0.90,
+  CNY: 7.25,
+  RUB: 88.23,
 };
 
 export function convert(
