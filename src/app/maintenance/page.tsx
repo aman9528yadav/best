@@ -147,8 +147,8 @@ export default function MaintenancePage() {
 
           <Card className="bg-white/10 backdrop-blur-sm border-white/20">
             <CardContent className="p-4 text-left">
-                <h3 className="font-semibold mb-2 text-white">A message from the team:</h3>
-                <p className="text-sm text-white/80 whitespace-pre-line">{maintenanceMessage}</p>
+                <h3 className="font-semibold mb-2 text-black">A message from the team:</h3>
+                <p className="text-sm text-black/80 whitespace-pre-line">{maintenanceMessage}</p>
             </CardContent>
           </Card>
           
@@ -158,8 +158,8 @@ export default function MaintenancePage() {
                 <CardContent className="p-4 flex items-start gap-4">
                   {index === 0 ? <Hourglass className="h-6 w-6 text-primary mt-1" /> : <Zap className="h-6 w-6 text-primary mt-1" />}
                   <div>
-                    <h3 className="font-semibold text-white">{card.title}</h3>
-                    <p className="text-sm text-white/80">{card.description}</p>
+                    <h3 className="font-bold text-black">{card.title}</h3>
+                    <p className="text-sm font-bold text-black">{card.description}</p>
                   </div>
                 </CardContent>
               </Card>
