@@ -121,7 +121,7 @@ export default function MaintenancePage() {
 
           <div className="space-y-2">
             <h1 className="text-4xl font-bold text-primary">{isTimerFinished ? "We're Back!" : "We'll Be Back Soon!"}</h1>
-            <p className="text-white/80">
+            <p className="text-black">
              {isTimerFinished ? "The maintenance is complete. The app is now back online." : "The app is currently undergoing scheduled maintenance. We expect to be back online in:"}
             </p>
           </div>
