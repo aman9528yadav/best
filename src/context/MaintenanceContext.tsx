@@ -226,6 +226,8 @@ const defaultMaintenanceConfig: MaintenanceConfig = {
 };
 
 const sanitizePathForKey = (path: string) => {
+    // Replace '/' with '_' but handle the root path case
+    if (path === '/') return 'root';
     return path.replace(/\//g, '_');
 };
 
@@ -320,18 +322,28 @@ export const MaintenanceWrapper = ({ children }: { children: ReactNode }) => {
         if (isLoading) return; 
 
         const isMaintenancePage = pathname === '/maintenance';
+
+        // If in dev mode, don't apply maintenance redirects
+        if (isDevMode) {
+             // Still redirect away from maintenance page if no maintenance is active
+            if (isMaintenancePage && !maintenanceConfig.globalMaintenance) {
+                router.replace('/');
+            }
+            return;
+        }
+
         const isUnderGlobalMaintenance = maintenanceConfig.globalMaintenance;
         const sanitizedPath = sanitizePathForKey(pathname);
         const isUnderPageMaintenance = maintenanceConfig.pageMaintenance?.[sanitizedPath];
 
-        const isAllowedDuringMaintenance = isMaintenancePage || (isDevMode && (pathname.startsWith('/dev') || pathname === '/settings'));
-
-        if ((isUnderGlobalMaintenance || isUnderPageMaintenance) && !isAllowedDuringMaintenance) {
-            router.replace('/maintenance');
-        }
-
-        if (!isUnderGlobalMaintenance && !isUnderPageMaintenance && isMaintenancePage) {
-            router.replace('/');
+        if (isUnderGlobalMaintenance || isUnderPageMaintenance) {
+            if (!isMaintenancePage) {
+                router.replace('/maintenance');
+            }
+        } else {
+             if (isMaintenancePage) {
+                router.replace('/');
+            }
         }
 
     }, [maintenanceConfig, isDevMode, pathname, router, isLoading]);
@@ -340,12 +352,15 @@ export const MaintenanceWrapper = ({ children }: { children: ReactNode }) => {
         return null;
     }
     
-    const sanitizedPath = sanitizePathForKey(pathname);
-    const isUnderPageMaintenance = maintenanceConfig.pageMaintenance?.[sanitizedPath];
-    const isAllowedDuringMaintenance = pathname === '/maintenance' || (isDevMode && (pathname.startsWith('/dev') || pathname === '/settings'));
-
-    if ((maintenanceConfig.globalMaintenance || isUnderPageMaintenance) && !isAllowedDuringMaintenance) {
-      return null;
+    if (!isDevMode) {
+        const isUnderGlobalMaintenance = maintenanceConfig.globalMaintenance;
+        const sanitizedPath = sanitizePathForKey(pathname);
+        const isUnderPageMaintenance = maintenanceConfig.pageMaintenance?.[sanitizedPath];
+        const isMaintenancePage = pathname === '/maintenance';
+        
+        if ((isUnderGlobalMaintenance || isUnderPageMaintenance) && !isMaintenancePage) {
+          return null;
+        }
     }
     
     return <>{children}</>;
