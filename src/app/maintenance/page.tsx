@@ -102,8 +102,16 @@ export default function MaintenancePage() {
 
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-background text-foreground p-4">
-      <div className="w-full max-w-md mx-auto">
+    <div className="relative flex flex-col items-center justify-center min-h-screen bg-background text-foreground p-4">
+      <div 
+        className="absolute inset-0 bg-cover bg-center"
+        style={{
+          backgroundImage: "url(/sound/imgi_195_flat-design-construction-concept_108061-440.jpg)",
+          filter: 'brightness(0.7)',
+          zIndex: 0,
+        }}
+      />
+      <div className="relative z-10 w-full max-w-md mx-auto">
         <div className="text-center space-y-6">
           <div className="flex justify-center">
             <div className="bg-accent/70 p-4 rounded-full shadow-lg transition-transform duration-200 hover:-translate-y-1 hover:shadow-2xl" onClick={handleIconClick}>
