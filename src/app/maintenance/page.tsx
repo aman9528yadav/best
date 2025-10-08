@@ -25,7 +25,7 @@ import { format } from 'date-fns';
 const CountdownBox = ({ value, label }: { value: string; label: string }) => (
   <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3 w-20 flex flex-col items-center shadow-inner">
     <span className="text-3xl font-bold text-primary">{value}</span>
-    <span className="text-xs text-white/70">{label}</span>
+    <span className="text-xs text-black">{label}</span>
   </div>
 );
 
