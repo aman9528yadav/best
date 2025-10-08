@@ -139,11 +139,7 @@ export default function MaintenancePage() {
                     <CountdownBox value={String(timeLeft.minutes).padStart(2, '0')} label="MINUTES"/>
                     <CountdownBox value={String(timeLeft.seconds).padStart(2, '0')} label="SECONDS" />
                 </div>
-<<<<<<< HEAD
-                <p className="text-sm text-black font-bold">
-=======
-                <p className="text-sm font-bold text-foreground">
->>>>>>> 2cc43c7 (this text make bold black (_for element p_))
+                <p className="text-sm font-bold text-black">
                     (Estimated: {format(new Date(maintenanceTargetDate), 'PPP p')})
                 </p>
              </div>
