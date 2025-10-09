@@ -145,6 +145,20 @@ export type UserSettings = {
 
 export type Membership = 'guest' | 'member' | 'premium' | 'owner';
 
+export type CustomUnit = {
+    id: string;
+    name: string;
+    symbol: string;
+    categoryId: string;
+    factor: number;
+    standard: string;
+};
+
+export type CustomCategory = {
+    id: string;
+    name: string;
+}
+
 export type UserProfile = {
   name: string;
   email: string;
@@ -170,6 +184,8 @@ export type UserProfile = {
   photoId?: string;
   history: HistoryItem[];
   favorites: FavoriteItem[];
+  customUnits: CustomUnit[];
+  customCategories: CustomCategory[];
 };
 
 type ProfileContextType = {
@@ -189,9 +205,16 @@ type ProfileContextType = {
   toggleTodo: (id: string) => void;
   deleteTodo: (id: string) => void;
   addTransaction: (transaction: Omit<Transaction, 'id'>) => void;
+  updateTransaction: (transaction: Transaction) => void;
+  deleteTransaction: (id: string) => void;
+  addAccount: (account: Omit<Account, 'id'>) => void;
+  updateAccount: (account: Account) => void;
+  deleteAccount: (id: string) => void;
+  addCategory: (category: Omit<Category, 'id'>) => void;
+  updateCategory: (category: Category) => void;
+  deleteCategory: (id: string) => void;
   deleteAllUserData: () => Promise<void>;
   updateStats: (type: ActivityType) => void;
-  // History methods
   history: HistoryItem[];
   favorites: FavoriteItem[];
   addConversionToHistory: (item: Omit<ConversionHistoryItem, 'id' | 'timestamp' | 'type'>) => void;
@@ -202,6 +225,12 @@ type ProfileContextType = {
   deleteFavorite: (id: string) => void;
   clearAllHistory: (type: 'conversion' | 'calculator' | 'date_calculation' | 'all') => void;
   clearAllFavorites: () => void;
+  addCustomUnit: (unit: Omit<CustomUnit, 'id'>) => void;
+  updateCustomUnit: (unit: CustomUnit) => void;
+  deleteCustomUnit: (id: string) => void;
+  addCustomCategory: (name: string) => void;
+  updateCustomCategory: (category: CustomCategory) => void;
+  deleteCustomCategory: (id: string) => void;
 };
 
 const ProfileContext = createContext<ProfileContextType | undefined>(undefined);
@@ -266,6 +295,8 @@ const getInitialProfile = (): UserProfile => {
     photoId: 'user-avatar-1',
     history: [],
     favorites: [],
+    customUnits: [],
+    customCategories: [],
   };
 };
 
@@ -294,6 +325,8 @@ const guestProfileDefault: UserProfile = {
     photoId: 'user-avatar-1',
     history: [],
     favorites: [],
+    customUnits: [],
+    customCategories: [],
 }
 
 export const ProfileProvider = ({ children }: { children: ReactNode }) => {
@@ -322,7 +355,9 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
             const activityLog = parsedProfile.activityLog || [];
             const history = parsedProfile.history || [];
             const favorites = parsedProfile.favorites || [];
-            setProfileState({ ...guestProfileDefault, ...parsedProfile, settings, stats, notes, todos, budget, activityLog, history, favorites });
+            const customUnits = parsedProfile.customUnits || [];
+            const customCategories = parsedProfile.customCategories || [];
+            setProfileState({ ...guestProfileDefault, ...parsedProfile, settings, stats, notes, todos, budget, activityLog, history, favorites, customUnits, customCategories });
           } else {
             setProfileState(guestProfileDefault);
           }
@@ -351,14 +386,14 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
           const activityLog = fetchedData.activityLog || [];
           const history = fetchedData.history ? Object.values(fetchedData.history).sort((a: any, b: any) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()) as HistoryItem[] : [];
           const favorites = fetchedData.favorites ? Object.values(fetchedData.favorites) as FavoriteItem[] : [];
+          const customUnits = fetchedData.customUnits ? Object.values(fetchedData.customUnits) as CustomUnit[] : [];
+          const customCategories = fetchedData.customCategories ? Object.values(fetchedData.customCategories) as CustomCategory[] : [];
 
           let membership = user.email === 'amanyadavyadav9458@gmail.com' ? 'owner' : (fetchedData.membership || 'member');
-          // Check for premium upgrade
           const { activities, streak } = maintenanceConfig.premiumCriteria;
           if (membership === 'member' && stats.allTimeActivities >= activities && stats.streak >= streak) {
             membership = 'premium';
           }
-
 
           const fullProfile = {
             ...getInitialProfile(),
@@ -374,6 +409,8 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
             activityLog,
             history,
             favorites,
+            customUnits,
+            customCategories,
           };
           setProfileState(fullProfile);
 
@@ -395,6 +432,8 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
             photoId: guestProfileDefault.photoId,
             history: [],
             favorites: [],
+            customUnits: [],
+            customCategories: [],
           };
           await set(userRef, newProfile);
           setProfileState(newProfile);
@@ -416,7 +455,6 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
     setProfileState(currentProfile => {
         let updatedProfile = typeof newProfileData === 'function' ? newProfileData(currentProfile) : newProfileData;
         
-        // Premium check logic
         const { activities, streak } = maintenanceConfig.premiumCriteria;
         if (updatedProfile.membership === 'member' && updatedProfile.stats.allTimeActivities >= activities && updatedProfile.stats.streak >= streak) {
             updatedProfile = { ...updatedProfile, membership: 'premium' };
@@ -429,6 +467,10 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
             dbProfile.history = (dbProfile.history || []).reduce((acc, item) => ({...acc, [item.id]: item}), {});
             // @ts-ignore
             dbProfile.favorites = (dbProfile.favorites || []).reduce((acc, item) => ({...acc, [item.id]: item}), {});
+            // @ts-ignore
+            dbProfile.customUnits = (dbProfile.customUnits || []).reduce((acc, item) => ({...acc, [item.id]: item}), {});
+            // @ts-ignore
+            dbProfile.customCategories = (dbProfile.customCategories || []).reduce((acc, item) => ({...acc, [item.id]: item}), {});
             set(userRef, dbProfile).catch(error => {
                  console.error("Failed to save profile to Realtime DB", error);
             });
@@ -559,6 +601,74 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
     updateStats('budget');
   };
 
+  const updateTransaction = (transaction: Transaction) => {
+    setProfile(p => {
+        const oldTransaction = p.budget.transactions.find(t => t.id === transaction.id);
+        if (!oldTransaction) return p;
+
+        const newTransactions = p.budget.transactions.map(t => t.id === transaction.id ? transaction : t);
+
+        // Revert old transaction amount from its account
+        const oldAccount = p.budget.accounts.find(acc => acc.id === oldTransaction.accountId);
+        if (!oldAccount) return p; // Should not happen
+
+        let intermediateAccounts = p.budget.accounts;
+        const oldAccountBalance = oldTransaction.type === 'income' ? oldAccount.balance - oldTransaction.amount : oldAccount.balance + oldTransaction.amount;
+        intermediateAccounts = intermediateAccounts.map(acc => acc.id === oldTransaction.accountId ? { ...acc, balance: oldAccountBalance } : acc);
+
+        // Apply new transaction amount to its account
+        const newAccount = intermediateAccounts.find(acc => acc.id === transaction.accountId);
+        if (!newAccount) return p;
+
+        const newAccountBalance = transaction.type === 'income' ? newAccount.balance + transaction.amount : newAccount.balance - transaction.amount;
+        const finalAccounts = intermediateAccounts.map(acc => acc.id === transaction.accountId ? { ...acc, balance: newAccountBalance } : acc);
+
+        return { ...p, budget: { ...p.budget, transactions: newTransactions, accounts: finalAccounts }};
+    });
+  };
+
+  const deleteTransaction = (id: string) => {
+    setProfile(p => {
+        const transactionToDelete = p.budget.transactions.find(t => t.id === id);
+        if (!transactionToDelete) return p;
+
+        const newTransactions = p.budget.transactions.filter(t => t.id !== id);
+
+        const account = p.budget.accounts.find(acc => acc.id === transactionToDelete.accountId);
+        if (!account) return p;
+
+        const newBalance = transactionToDelete.type === 'income' ? account.balance - transactionToDelete.amount : account.balance + transactionToDelete.amount;
+        const newAccounts = p.budget.accounts.map(acc => acc.id === transactionToDelete.accountId ? { ...acc, balance: newBalance } : acc);
+
+        return { ...p, budget: { ...p.budget, transactions: newTransactions, accounts: newAccounts } };
+    });
+  };
+
+  const addAccount = (account: Omit<Account, 'id'>) => {
+    const newAccount: Account = { ...account, id: new Date().getTime().toString() };
+    setProfile(p => ({ ...p, budget: { ...p.budget, accounts: [...p.budget.accounts, newAccount] }}));
+  };
+
+  const updateAccount = (accountToUpdate: Account) => {
+    setProfile(p => ({ ...p, budget: { ...p.budget, accounts: p.budget.accounts.map(acc => acc.id === accountToUpdate.id ? accountToUpdate : acc) }}));
+  };
+
+  const deleteAccount = (id: string) => {
+    setProfile(p => ({ ...p, budget: { ...p.budget, accounts: p.budget.accounts.filter(acc => acc.id !== id), transactions: p.budget.transactions.filter(t => t.accountId !== id) }}));
+  };
+  
+  const addCategory = (category: Omit<Category, 'id'>) => {
+    const newCategory: Category = { ...category, id: new Date().getTime().toString() };
+    setProfile(p => ({ ...p, budget: { ...p.budget, categories: [...p.budget.categories, newCategory] }}));
+  };
+
+  const updateCategory = (categoryToUpdate: Category) => {
+    setProfile(p => ({ ...p, budget: { ...p.budget, categories: p.budget.categories.map(cat => cat.id === categoryToUpdate.id ? categoryToUpdate : cat) }}));
+  };
+
+  const deleteCategory = (id: string) => {
+    setProfile(p => ({ ...p, budget: { ...p.budget, categories: p.budget.categories.filter(cat => cat.id !== id), transactions: p.budget.transactions.map(t => t.categoryId === id ? { ...t, categoryId: '' } : t) }}));
+  };
 
   const checkAndUpdateStreak = () => {
     if (!dataLoaded.current) return;
@@ -600,7 +710,6 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
         }
     });
     setProfileState(getInitialProfile());
-    // The logout call will be handled in the component that calls this.
   };
   
   const addConversionToHistory = (item: Omit<ConversionHistoryItem, 'id' | 'timestamp' | 'type'>) => {
@@ -648,6 +757,32 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
   const clearAllFavorites = () => {
     setProfile(p => ({...p, favorites: []}));
   };
+  
+  const addCustomUnit = (unit: Omit<CustomUnit, 'id'>) => {
+    const newUnit: CustomUnit = { ...unit, id: new Date().getTime().toString() };
+    setProfile(p => ({ ...p, customUnits: [...(p.customUnits || []), newUnit] }));
+  }
+
+  const updateCustomUnit = (unitToUpdate: CustomUnit) => {
+    setProfile(p => ({ ...p, customUnits: (p.customUnits || []).map(u => u.id === unitToUpdate.id ? unitToUpdate : u) }));
+  }
+
+  const deleteCustomUnit = (id: string) => {
+    setProfile(p => ({ ...p, customUnits: (p.customUnits || []).filter(u => u.id !== id) }));
+  }
+  
+  const addCustomCategory = (name: string) => {
+    const newCategory: CustomCategory = { name, id: new Date().getTime().toString() };
+    setProfile(p => ({ ...p, customCategories: [...(p.customCategories || []), newCategory] }));
+  }
+
+  const updateCustomCategory = (categoryToUpdate: CustomCategory) => {
+    setProfile(p => ({ ...p, customCategories: (p.customCategories || []).map(c => c.id === categoryToUpdate.id ? categoryToUpdate : c) }));
+  }
+
+  const deleteCustomCategory = (id: string) => {
+    setProfile(p => ({ ...p, customCategories: (p.customCategories || []).filter(c => c.id !== id) }));
+  }
 
   return (
     <ProfileContext.Provider value={{ 
@@ -667,6 +802,14 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
         toggleTodo,
         deleteTodo,
         addTransaction,
+        updateTransaction,
+        deleteTransaction,
+        addAccount,
+        updateAccount,
+        deleteAccount,
+        addCategory,
+        updateCategory,
+        deleteCategory,
         deleteAllUserData,
         updateStats,
         history: profile.history,
@@ -679,6 +822,12 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
         deleteFavorite,
         clearAllHistory,
         clearAllFavorites,
+        addCustomUnit,
+        updateCustomUnit,
+        deleteCustomUnit,
+        addCustomCategory,
+        updateCustomCategory,
+        deleteCustomCategory,
     }}>
       {children}
     </ProfileContext.Provider>
@@ -692,4 +841,3 @@ export const useProfile = () => {
   }
   return context;
 };
-
