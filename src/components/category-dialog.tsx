@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import React, { useState, useEffect } from 'react';
@@ -22,7 +23,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import type { Category } from '@/context/ProfileContext';
-import { Landmark, Utensils, Bus, ShoppingBag, FileText, HeartPulse, Ticket, Icon } from 'lucide-react';
+import { Landmark, Utensils, Bus, ShoppingBag, FileText, HeartPulse, Ticket, Icon, Briefcase, Coins, Home, Car } from 'lucide-react';
 
 interface CategoryDialogProps {
   open: boolean;
@@ -39,6 +40,10 @@ const iconOptions: { name: string; icon: Icon }[] = [
     { name: 'HeartPulse', icon: HeartPulse },
     { name: 'Ticket', icon: Ticket },
     { name: 'Landmark', icon: Landmark },
+    { name: 'Briefcase', icon: Briefcase },
+    { name: 'Coins', icon: Coins },
+    { name: 'Home', icon: Home },
+    { name: 'Car', icon: Car },
 ];
 
 export function CategoryDialog({ open, onOpenChange, onSave, category }: CategoryDialogProps) {

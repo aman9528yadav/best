@@ -5,7 +5,7 @@
 import React, { useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Plus, MoreVertical, ArrowUp, ArrowDown, Landmark, Utensils, Bus, ShoppingBag, FileText, HeartPulse, Ticket, Icon, Edit, Trash2, Settings, Wallet, PiggyBank } from 'lucide-react';
+import { Plus, MoreVertical, ArrowUp, ArrowDown, Landmark, Utensils, Bus, ShoppingBag, FileText, HeartPulse, Ticket, Icon, Edit, Trash2, Settings, Wallet, PiggyBank, Briefcase, Coins, Home, Car } from 'lucide-react';
 import { useProfile, Transaction, Account, Category } from '@/context/ProfileContext';
 import { format } from 'date-fns';
 import { BudgetTransactionDialog } from './budget-transaction-dialog';
@@ -27,9 +27,11 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 const iconMap: { [key: string]: Icon } = {
-    Landmark, Utensils, Bus, ShoppingBag, FileText, HeartPulse, Ticket
+    Landmark, Utensils, Bus, ShoppingBag, FileText, HeartPulse, Ticket, Briefcase, Coins, Home, Car
 };
 
 const TransactionItem = ({ transaction, categoryName, categoryIcon, onEdit, onDelete }: { transaction: Transaction, categoryName: string, categoryIcon: Icon, onEdit: () => void, onDelete: () => void }) => {
@@ -86,24 +88,9 @@ export function BudgetTrackerPage() {
   const recentTransactions = useMemo(() => {
     return [...transactions]
       .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-      .slice(0, 5);
+      .slice(0, 10);
   }, [transactions]);
   
-  const spendingByCategory = useMemo(() => {
-    const spending: { [key: string]: { name: string; icon: Icon; total: number } } = {};
-    transactions.forEach(t => {
-        if (t.type === 'expense') {
-            const category = categoryMap.get(t.categoryId);
-            if(category) {
-                if(!spending[category.id]) {
-                    spending[category.id] = { name: category.name, icon: iconMap[category.icon] || Utensils, total: 0 };
-                }
-                spending[category.id].total += t.amount;
-            }
-        }
-    });
-    return Object.values(spending).sort((a,b) => b.total - a.total);
-  }, [transactions, categoryMap]);
 
   const handleSaveTransaction = (transaction: Transaction | Omit<Transaction, 'id'>) => {
     if ('id' in transaction) {
@@ -145,77 +132,88 @@ export function BudgetTrackerPage() {
           </div>
         </CardContent>
       </Card>
-
-      <div className="flex justify-end">
-        <Button onClick={() => { setEditingTransaction(undefined); setIsTxDialogOpen(true); }} className="gap-2">
-          <Plus className="h-4 w-4" /> Add Transaction
-        </Button>
-      </div>
       
-      <Card>
-        <CardHeader>
-          <CardTitle>Recent Transactions</CardTitle>
-        </CardHeader>
-        <CardContent className="divide-y">
-            {recentTransactions.length > 0 ? (
-                recentTransactions.map(t => {
-                    const category = categoryMap.get(t.categoryId);
-                    return (
-                        <TransactionItem 
-                            key={t.id}
-                            transaction={t}
-                            categoryName={category?.name || 'Uncategorized'}
-                            categoryIcon={iconMap[category?.icon || ''] || Utensils}
-                            onEdit={() => { setEditingTransaction(t); setIsTxDialogOpen(true); }}
-                            onDelete={() => setItemToDelete({ id: t.id, type: 'transaction'})}
-                        />
-                    )
-                })
-            ) : (
-                <p className="text-muted-foreground text-center py-8">No transactions yet.</p>
-            )}
-        </CardContent>
-      </Card>
-      
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle>Accounts</CardTitle>
-            <Button variant="ghost" size="sm" className="gap-2" onClick={() => { setEditingAccount(undefined); setIsAccountDialogOpen(true); }}><Plus className="h-4 w-4"/>Add</Button>
-        </CardHeader>
-        <CardContent>
-             {accounts.map(acc => (
-                <div key={acc.id} className="flex items-center gap-4 py-2 group">
-                    <div className="p-2 bg-accent rounded-full"><Wallet className="h-4 w-4 text-primary"/></div>
-                    <div className="flex-1 font-medium">{acc.name}</div>
-                    <div className="font-semibold">₹{acc.balance.toFixed(2)}</div>
-                    <div className="opacity-0 group-hover:opacity-100 transition-opacity">
-                         <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { setEditingAccount(acc); setIsAccountDialogOpen(true); }}><Edit className="h-4 w-4" /></Button>
-                    </div>
-                </div>
-             ))}
-        </CardContent>
-      </Card>
-
-       <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle>Spending Categories</CardTitle>
-            <Button variant="ghost" size="sm" className="gap-2" onClick={() => { setEditingCategory(undefined); setIsCategoryDialogOpen(true); }}><Plus className="h-4 w-4"/>Add</Button>
-        </CardHeader>
-        <CardContent>
-             {categories.filter(c => c.id !== 'cat-income').map(cat => {
-                const CategoryIcon = iconMap[cat.icon] || Utensils;
-                return (
-                    <div key={cat.id} className="flex items-center gap-4 py-2 group">
-                        <div className="p-2 bg-accent rounded-full"><CategoryIcon className="h-4 w-4 text-primary"/></div>
-                        <div className="flex-1 font-medium">{cat.name}</div>
-                        <div className="opacity-0 group-hover:opacity-100 transition-opacity">
-                            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { setEditingCategory(cat); setIsCategoryDialogOpen(true); }}><Edit className="h-4 w-4" /></Button>
+      <Tabs defaultValue="transactions" className="w-full">
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="transactions">Transactions</TabsTrigger>
+          <TabsTrigger value="accounts">Accounts</TabsTrigger>
+          <TabsTrigger value="categories">Categories</TabsTrigger>
+        </TabsList>
+        <TabsContent value="transactions" className="mt-4">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between">
+              <CardTitle>Recent Activity</CardTitle>
+              <Button onClick={() => { setEditingTransaction(undefined); setIsTxDialogOpen(true); }} className="gap-2" size="sm">
+                <Plus className="h-4 w-4" /> Add
+              </Button>
+            </CardHeader>
+            <CardContent>
+                {recentTransactions.length > 0 ? (
+                    <ScrollArea className="h-72">
+                        {recentTransactions.map(t => {
+                            const category = categoryMap.get(t.categoryId);
+                            return (
+                                <TransactionItem 
+                                    key={t.id}
+                                    transaction={t}
+                                    categoryName={category?.name || 'Uncategorized'}
+                                    categoryIcon={iconMap[category?.icon || ''] || Utensils}
+                                    onEdit={() => { setEditingTransaction(t); setIsTxDialogOpen(true); }}
+                                    onDelete={() => setItemToDelete({ id: t.id, type: 'transaction'})}
+                                />
+                            )
+                        })}
+                    </ScrollArea>
+                ) : (
+                    <p className="text-muted-foreground text-center py-8">No transactions yet.</p>
+                )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+        <TabsContent value="accounts" className="mt-4">
+            <Card>
+                <CardHeader className="flex flex-row items-center justify-between">
+                    <CardTitle>Accounts</CardTitle>
+                    <Button variant="ghost" size="sm" className="gap-2" onClick={() => { setEditingAccount(undefined); setIsAccountDialogOpen(true); }}><Plus className="h-4 w-4"/>Add</Button>
+                </CardHeader>
+                <CardContent>
+                     {accounts.map(acc => (
+                        <div key={acc.id} className="flex items-center gap-4 py-2 group">
+                            <div className="p-2 bg-accent rounded-full"><Wallet className="h-4 w-4 text-primary"/></div>
+                            <div className="flex-1 font-medium">{acc.name}</div>
+                            <div className="font-semibold">₹{acc.balance.toFixed(2)}</div>
+                            <div className="opacity-0 group-hover:opacity-100 transition-opacity">
+                                 <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { setEditingAccount(acc); setIsAccountDialogOpen(true); }}><Edit className="h-4 w-4" /></Button>
+                            </div>
                         </div>
-                    </div>
-                )
-             })}
-        </CardContent>
-      </Card>
+                     ))}
+                </CardContent>
+            </Card>
+        </TabsContent>
+        <TabsContent value="categories" className="mt-4">
+             <Card>
+                <CardHeader className="flex flex-row items-center justify-between">
+                    <CardTitle>Spending Categories</CardTitle>
+                    <Button variant="ghost" size="sm" className="gap-2" onClick={() => { setEditingCategory(undefined); setIsCategoryDialogOpen(true); }}><Plus className="h-4 w-4"/>Add</Button>
+                </CardHeader>
+                <CardContent>
+                     {categories.filter(c => c.id !== 'cat-income').map(cat => {
+                        const CategoryIcon = iconMap[cat.icon] || Utensils;
+                        return (
+                            <div key={cat.id} className="flex items-center gap-4 py-2 group">
+                                <div className="p-2 bg-accent rounded-full"><CategoryIcon className="h-4 w-4 text-primary"/></div>
+                                <div className="flex-1 font-medium">{cat.name}</div>
+                                <div className="opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { setEditingCategory(cat); setIsCategoryDialogOpen(true); }}><Edit className="h-4 w-4" /></Button>
+                                </div>
+                            </div>
+                        )
+                     })}
+                </CardContent>
+              </Card>
+        </TabsContent>
+      </Tabs>
+
 
       <BudgetTransactionDialog
         open={isTxDialogOpen}
