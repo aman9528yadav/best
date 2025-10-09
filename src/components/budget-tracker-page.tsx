@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Plus, MoreVertical, ArrowUp, ArrowDown, Landmark, Utensils, Bus, ShoppingBag, FileText, HeartPulse, Ticket, Icon, Edit, Trash2, Settings, Wallet, PiggyBank, Briefcase, Coins, Home, Car } from 'lucide-react';
 import { useProfile, Transaction, Account, Category } from '@/context/ProfileContext';
-import { format } from 'date-fns';
+import { format, parseISO } from 'date-fns';
 import { BudgetTransactionDialog } from './budget-transaction-dialog';
 import { AccountDialog } from './account-dialog';
 import { CategoryDialog } from './category-dialog';
@@ -45,7 +45,9 @@ const TransactionItem = ({ transaction, categoryName, categoryIcon, onEdit, onDe
       </div>
       <div className="flex-1">
         <p className="font-semibold">{transaction.description}</p>
-        <p className="text-sm text-muted-foreground">{categoryName}</p>
+        <p className="text-sm text-muted-foreground">
+          {categoryName} &bull; {format(parseISO(transaction.date), 'MMM d')}
+        </p>
       </div>
       <div className={`text-lg font-bold ${isIncome ? 'text-green-500' : 'text-red-500'}`}>
         {isIncome ? '+' : '-'}₹{transaction.amount.toFixed(2)}
