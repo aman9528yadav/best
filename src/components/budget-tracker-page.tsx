@@ -48,7 +48,7 @@ const TransactionItem = ({ transaction, categoryName, categoryIcon, onEdit, onDe
       <div className="flex-1">
         <p className="font-semibold">{transaction.description}</p>
         <p className="text-sm text-muted-foreground">
-          {categoryName} &bull; {format(parseISO(transaction.date), 'MMM d')}
+          {categoryName} &bull; {format(parseISO(transaction.date), 'MMM d, yyyy')}
         </p>
       </div>
       <div className={`text-lg font-bold ${isIncome ? 'text-green-500' : 'text-red-500'}`}>
@@ -317,4 +317,3 @@ export function BudgetTrackerPage() {
     </div>
   );
 }
-
