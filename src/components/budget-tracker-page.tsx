@@ -5,9 +5,9 @@
 import React, { useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Plus, MoreVertical, ArrowUp, ArrowDown, Landmark, Utensils, Bus, ShoppingBag, FileText, HeartPulse, Ticket, Icon, Edit, Trash2, Settings, Wallet, PiggyBank, Briefcase, Coins, Home, Car } from 'lucide-react';
+import { Plus, MoreVertical, ArrowUp, ArrowDown, Landmark, Utensils, Bus, ShoppingBag, FileText, HeartPulse, Ticket, Icon, Edit, Trash2, Settings, Wallet, PiggyBank, Briefcase, Coins, Home, Car, Filter } from 'lucide-react';
 import { useProfile, Transaction, Account, Category } from '@/context/ProfileContext';
-import { format, parseISO } from 'date-fns';
+import { format, parseISO, isSameMonth, subMonths, startOfMonth } from 'date-fns';
 import { BudgetTransactionDialog } from './budget-transaction-dialog';
 import { AccountDialog } from './account-dialog';
 import { CategoryDialog } from './category-dialog';
@@ -26,6 +26,8 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
 } from "@/components/ui/dropdown-menu";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -80,18 +82,45 @@ export function BudgetTrackerPage() {
   const [editingCategory, setEditingCategory] = useState<Category | undefined>();
 
   const [itemToDelete, setItemToDelete] = useState<{ id: string; type: 'transaction' | 'account' | 'category' } | null>(null);
+  const [transactionFilter, setTransactionFilter] = useState<'all' | 'income' | 'expense'>('all');
 
   const totalBalance = useMemo(() => accounts.reduce((sum, acc) => sum + acc.balance, 0), [accounts]);
-  const totalIncome = useMemo(() => transactions.filter(t => t.type === 'income').reduce((sum, t) => sum + t.amount, 0), [transactions]);
-  const totalExpenses = useMemo(() => transactions.filter(t => t.type === 'expense').reduce((sum, t) => sum + t.amount, 0), [transactions]);
+
+  const monthlyStats = useMemo(() => {
+    const now = new Date();
+    const lastMonth = subMonths(startOfMonth(now), 1);
+
+    const currentMonthIncome = transactions.filter(t => t.type === 'income' && isSameMonth(parseISO(t.date), now)).reduce((sum, t) => sum + t.amount, 0);
+    const lastMonthIncome = transactions.filter(t => t.type === 'income' && isSameMonth(parseISO(t.date), lastMonth)).reduce((sum, t) => sum + t.amount, 0);
+    
+    const currentMonthExpenses = transactions.filter(t => t.type === 'expense' && isSameMonth(parseISO(t.date), now)).reduce((sum, t) => sum + t.amount, 0);
+    const lastMonthExpenses = transactions.filter(t => t.type === 'expense' && isSameMonth(parseISO(t.date), lastMonth)).reduce((sum, t) => sum + t.amount, 0);
+
+    const calcChange = (current: number, previous: number) => {
+        if (previous === 0) return current > 0 ? 100 : 0;
+        return ((current - previous) / previous) * 100;
+    };
+
+    return {
+        income: {
+            total: currentMonthIncome,
+            change: calcChange(currentMonthIncome, lastMonthIncome),
+        },
+        expenses: {
+            total: currentMonthExpenses,
+            change: calcChange(currentMonthExpenses, lastMonthExpenses),
+        }
+    }
+  }, [transactions]);
   
   const categoryMap = useMemo(() => new Map(categories.map(c => [c.id, c])), [categories]);
 
   const recentTransactions = useMemo(() => {
-    return [...transactions]
+    const filtered = transactions.filter(t => transactionFilter === 'all' || t.type === transactionFilter);
+    return [...filtered]
       .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-      .slice(0, 10);
-  }, [transactions]);
+      .slice(0, 15);
+  }, [transactions, transactionFilter]);
   
 
   const handleSaveTransaction = (transaction: Transaction | Omit<Transaction, 'id'>) => {
@@ -109,6 +138,19 @@ export function BudgetTrackerPage() {
     if (itemToDelete.type === 'category') deleteCategory(itemToDelete.id);
     setItemToDelete(null);
   };
+  
+  const ChangeIndicator = ({ value }: { value: number }) => {
+    const isPositive = value >= 0;
+    if (value === 0 || !isFinite(value)) return null;
+
+    return (
+        <span className={`flex items-center text-xs ml-2 ${isPositive ? 'text-green-300' : 'text-red-300'}`}>
+           {isPositive ? <ArrowUp className="h-3 w-3" /> : <ArrowDown className="h-3 w-3" />}
+           {Math.abs(value).toFixed(0)}%
+        </span>
+    )
+  };
+
 
   return (
     <div className="space-y-6 pb-12">
@@ -120,15 +162,21 @@ export function BudgetTrackerPage() {
             <div className="flex items-center gap-2">
               <ArrowDown className="h-5 w-5 text-red-300" />
               <div>
-                <div className="text-xs">Expenses</div>
-                <div className="font-semibold">₹{totalExpenses.toFixed(2)}</div>
+                <div className="text-xs">Expenses (This Month)</div>
+                <div className="font-semibold flex items-center">
+                    ₹{monthlyStats.expenses.total.toFixed(2)}
+                    <ChangeIndicator value={monthlyStats.expenses.change} />
+                </div>
               </div>
             </div>
             <div className="flex items-center gap-2">
               <ArrowUp className="h-5 w-5 text-green-300" />
               <div>
-                <div className="text-xs">Income</div>
-                <div className="font-semibold">₹{totalIncome.toFixed(2)}</div>
+                <div className="text-xs">Income (This Month)</div>
+                <div className="font-semibold flex items-center">
+                    ₹{monthlyStats.income.total.toFixed(2)}
+                    <ChangeIndicator value={monthlyStats.income.change} />
+                </div>
               </div>
             </div>
           </div>
@@ -144,14 +192,31 @@ export function BudgetTrackerPage() {
         <TabsContent value="transactions" className="mt-4">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle>Recent Activity</CardTitle>
+                <div className='flex items-center gap-2'>
+                  <CardTitle>Recent Activity</CardTitle>
+                   <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                             <Button variant="ghost" size="sm" className="gap-2 text-muted-foreground">
+                                <Filter className="h-4 w-4" />
+                                <span>Filter</span>
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent>
+                            <DropdownMenuRadioGroup value={transactionFilter} onValueChange={(v) => setTransactionFilter(v as 'all' | 'income' | 'expense')}>
+                                <DropdownMenuRadioItem value="all">All</DropdownMenuRadioItem>
+                                <DropdownMenuRadioItem value="income">Income</DropdownMenuRadioItem>
+                                <DropdownMenuRadioItem value="expense">Expenses</DropdownMenuRadioItem>
+                            </DropdownMenuRadioGroup>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                </div>
               <Button onClick={() => { setEditingTransaction(undefined); setIsTxDialogOpen(true); }} className="gap-2" size="sm">
                 <Plus className="h-4 w-4" /> Add
               </Button>
             </CardHeader>
             <CardContent>
                 {recentTransactions.length > 0 ? (
-                    <ScrollArea className="h-72">
+                    <ScrollArea className="h-[400px]">
                         {recentTransactions.map(t => {
                             const category = categoryMap.get(t.categoryId);
                             return (
@@ -167,7 +232,7 @@ export function BudgetTrackerPage() {
                         })}
                     </ScrollArea>
                 ) : (
-                    <p className="text-muted-foreground text-center py-8">No transactions yet.</p>
+                    <p className="text-muted-foreground text-center py-8">No transactions for this filter.</p>
                 )}
             </CardContent>
           </Card>
@@ -252,3 +317,4 @@ export function BudgetTrackerPage() {
     </div>
   );
 }
+
