@@ -358,7 +358,7 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
             const settings = { ...defaultSettings, ...(parsedProfile.settings || {}), customTheme: { ...defaultSettings.customTheme, ...(parsedProfile.settings?.customTheme || {}) } };
             const notes = parsedProfile.notes || [];
             const todos = parsedProfile.todos || [];
-            const budget = { ...defaultBudgetData, ...(parsedProfile.budget || {}) };
+            const budget = { ...defaultBudgetData, ...(parsedProfile.budget || {}), goals: parsedProfile.budget?.goals || [] };
             const activityLog = parsedProfile.activityLog || [];
             const history = parsedProfile.history || [];
             const favorites = parsedProfile.favorites || [];
@@ -389,7 +389,12 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
           const settings = { ...defaultSettings, ...(fetchedData.settings || {}), customTheme: { ...defaultSettings.customTheme, ...(fetchedData.settings?.customTheme || {}) } };
           const notes = fetchedData.notes || [];
           const todos = fetchedData.todos || [];
-          const budget = { ...defaultBudgetData, ...(fetchedData.budget || {}) };
+          const budgetData = fetchedData.budget || defaultBudgetData;
+          const budget = {
+            ...defaultBudgetData,
+            ...budgetData,
+            goals: budgetData.goals ? Object.values(budgetData.goals) : [],
+          };
           const activityLog = fetchedData.activityLog || [];
           const history = fetchedData.history ? Object.values(fetchedData.history).sort((a: any, b: any) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()) as HistoryItem[] : [];
           const favorites = fetchedData.favorites ? Object.values(fetchedData.favorites) as FavoriteItem[] : [];
@@ -474,6 +479,11 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
             dbProfile.history = (dbProfile.history || []).reduce((acc, item) => ({...acc, [item.id]: item}), {});
             // @ts-ignore
             dbProfile.favorites = (dbProfile.favorites || []).reduce((acc, item) => ({...acc, [item.id]: item}), {});
+             // @ts-ignore
+            if (dbProfile.budget && dbProfile.budget.goals) {
+                // @ts-ignore
+                dbProfile.budget.goals = (dbProfile.budget.goals || []).reduce((acc, item) => ({...acc, [item.id]: item}), {});
+            }
             // @ts-ignore
             dbProfile.customUnits = (dbProfile.customUnits || []).reduce((acc, item) => ({...acc, [item.id]: item}), {});
             // @ts-ignore
