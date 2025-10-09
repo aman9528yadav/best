@@ -73,7 +73,7 @@ const TransactionItem = ({ transaction, categoryName, categoryIcon, onEdit, onDe
 };
 
 export function BudgetTrackerPage() {
-  const { profile, addTransaction, updateTransaction, deleteTransaction, addAccount, updateAccount, addCategory, updateCategory, addSavingsGoal, updateSavingsGoal, deleteSavingsGoal, contributeToGoal } = useProfile();
+  const { profile, addTransaction, updateTransaction, deleteTransaction, addAccount, updateAccount, deleteAccount, addCategory, updateCategory, deleteCategory, addSavingsGoal, updateSavingsGoal, deleteSavingsGoal, contributeToGoal } = useProfile();
   const { accounts, transactions, categories, goals } = profile.budget;
   
   const [isTxDialogOpen, setIsTxDialogOpen] = useState(false);
