@@ -483,7 +483,9 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
              // @ts-ignore
             if (dbProfile.budget && dbProfile.budget.goals) {
                 // @ts-ignore
-                dbProfile.budget.goals = (dbProfile.budget.goals || []).reduce((acc, item) => ({...acc, [item.id]: item}), {});
+                const goalsArray = Array.isArray(dbProfile.budget.goals) ? dbProfile.budget.goals : Object.values(dbProfile.budget.goals);
+                // @ts-ignore
+                dbProfile.budget.goals = goalsArray.reduce((acc, item) => ({...acc, [item.id]: item}), {});
             }
             // @ts-ignore
             dbProfile.customUnits = (dbProfile.customUnits || []).reduce((acc, item) => ({...acc, [item.id]: item}), {});
