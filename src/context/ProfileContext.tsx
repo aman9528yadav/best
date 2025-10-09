@@ -213,6 +213,10 @@ type ProfileContextType = {
   addCategory: (category: Omit<Category, 'id'>) => void;
   updateCategory: (category: Category) => void;
   deleteCategory: (id: string) => void;
+  addSavingsGoal: (goal: Omit<SavingsGoal, 'id' | 'currentAmount'>) => void;
+  updateSavingsGoal: (goal: SavingsGoal) => void;
+  deleteSavingsGoal: (id: string) => void;
+  contributeToGoal: (goalId: string, amount: number, accountId: string) => void;
   deleteAllUserData: () => Promise<void>;
   updateStats: (type: ActivityType) => void;
   history: HistoryItem[];
@@ -673,6 +677,37 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
     setProfile(p => ({ ...p, budget: { ...p.budget, categories: p.budget.categories.filter(cat => cat.id !== id), transactions: p.budget.transactions.map(t => t.categoryId === id ? { ...t, categoryId: '' } : t) }}));
   };
 
+  const addSavingsGoal = (goal: Omit<SavingsGoal, 'id' | 'currentAmount'>) => {
+    const newGoal: SavingsGoal = { ...goal, id: new Date().getTime().toString(), currentAmount: 0 };
+    setProfile(p => ({ ...p, budget: { ...p.budget, goals: [...p.budget.goals, newGoal] }}));
+  };
+
+  const updateSavingsGoal = (goalToUpdate: SavingsGoal) => {
+    setProfile(p => ({ ...p, budget: { ...p.budget, goals: p.budget.goals.map(g => g.id === goalToUpdate.id ? goalToUpdate : g) }}));
+  };
+
+  const deleteSavingsGoal = (id: string) => {
+    setProfile(p => ({ ...p, budget: { ...p.budget, goals: p.budget.goals.filter(g => g.id !== id) }}));
+  };
+
+  const contributeToGoal = (goalId: string, amount: number, accountId: string) => {
+    addTransaction({
+      type: 'expense',
+      amount,
+      description: `Contribution to goal`,
+      categoryId: '',
+      accountId,
+      date: new Date().toISOString(),
+    });
+    setProfile(p => {
+        const newGoals = p.budget.goals.map(g => 
+            g.id === goalId ? { ...g, currentAmount: g.currentAmount + amount } : g
+        );
+        return { ...p, budget: { ...p.budget, goals: newGoals }};
+    });
+  };
+
+
   const checkAndUpdateStreak = () => {
     if (!dataLoaded.current) return;
 
@@ -813,6 +848,10 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
         addCategory,
         updateCategory,
         deleteCategory,
+        addSavingsGoal,
+        updateSavingsGoal,
+        deleteSavingsGoal,
+        contributeToGoal,
         deleteAllUserData,
         updateStats,
         history: profile.history,

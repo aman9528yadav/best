@@ -5,12 +5,15 @@
 import React, { useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Plus, MoreVertical, ArrowUp, ArrowDown, Landmark, Utensils, Bus, ShoppingBag, FileText, HeartPulse, Ticket, Icon, Edit, Trash2, Settings, Wallet, PiggyBank, Briefcase, Coins, Home, Car, Filter } from 'lucide-react';
-import { useProfile, Transaction, Account, Category } from '@/context/ProfileContext';
+import { Plus, MoreVertical, ArrowUp, ArrowDown, Landmark, Utensils, Bus, ShoppingBag, FileText, HeartPulse, Ticket, Icon, Edit, Trash2, Settings, Wallet, PiggyBank, Briefcase, Coins, Home, Car, Filter, Target, Gem } from 'lucide-react';
+import { useProfile, Transaction, Account, Category, SavingsGoal } from '@/context/ProfileContext';
 import { format, parseISO, isSameMonth, subMonths, startOfMonth } from 'date-fns';
 import { BudgetTransactionDialog } from './budget-transaction-dialog';
 import { AccountDialog } from './account-dialog';
 import { CategoryDialog } from './category-dialog';
+import { SavingsGoalDialog } from './savings-goal-dialog';
+import { ContributeToGoalDialog } from './contribute-to-goal-dialog';
+import { Progress } from '@/components/ui/progress';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -70,18 +73,22 @@ const TransactionItem = ({ transaction, categoryName, categoryIcon, onEdit, onDe
 };
 
 export function BudgetTrackerPage() {
-  const { profile, addTransaction, updateTransaction, deleteTransaction, addAccount, updateAccount, deleteAccount, addCategory, updateCategory, deleteCategory } = useProfile();
-  const { accounts, transactions, categories } = profile.budget;
+  const { profile, addTransaction, updateTransaction, deleteTransaction, addAccount, updateAccount, addCategory, updateCategory, addSavingsGoal, updateSavingsGoal, deleteSavingsGoal, contributeToGoal } = useProfile();
+  const { accounts, transactions, categories, goals } = profile.budget;
   
   const [isTxDialogOpen, setIsTxDialogOpen] = useState(false);
   const [isAccountDialogOpen, setIsAccountDialogOpen] = useState(false);
   const [isCategoryDialogOpen, setIsCategoryDialogOpen] = useState(false);
+  const [isGoalDialogOpen, setIsGoalDialogOpen] = useState(false);
+  const [isContributeDialogOpen, setIsContributeDialogOpen] = useState(false);
   
   const [editingTransaction, setEditingTransaction] = useState<Transaction | undefined>();
   const [editingAccount, setEditingAccount] = useState<Account | undefined>();
   const [editingCategory, setEditingCategory] = useState<Category | undefined>();
+  const [editingGoal, setEditingGoal] = useState<SavingsGoal | undefined>();
+  const [goalToContribute, setGoalToContribute] = useState<SavingsGoal | undefined>();
 
-  const [itemToDelete, setItemToDelete] = useState<{ id: string; type: 'transaction' | 'account' | 'category' } | null>(null);
+  const [itemToDelete, setItemToDelete] = useState<{ id: string; type: 'transaction' | 'account' | 'category' | 'goal' } | null>(null);
   const [transactionFilter, setTransactionFilter] = useState<'all' | 'income' | 'expense'>('all');
 
   const totalBalance = useMemo(() => accounts.reduce((sum, acc) => sum + acc.balance, 0), [accounts]);
@@ -136,6 +143,7 @@ export function BudgetTrackerPage() {
     if (itemToDelete.type === 'transaction') deleteTransaction(itemToDelete.id);
     if (itemToDelete.type === 'account') deleteAccount(itemToDelete.id);
     if (itemToDelete.type === 'category') deleteCategory(itemToDelete.id);
+    if (itemToDelete.type === 'goal') deleteSavingsGoal(itemToDelete.id);
     setItemToDelete(null);
   };
   
@@ -184,10 +192,11 @@ export function BudgetTrackerPage() {
       </Card>
       
       <Tabs defaultValue="transactions" className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="transactions">Transactions</TabsTrigger>
           <TabsTrigger value="accounts">Accounts</TabsTrigger>
           <TabsTrigger value="categories">Categories</TabsTrigger>
+          <TabsTrigger value="goals">Goals</TabsTrigger>
         </TabsList>
         <TabsContent value="transactions" className="mt-4">
           <Card>
@@ -279,6 +288,39 @@ export function BudgetTrackerPage() {
                 </CardContent>
               </Card>
         </TabsContent>
+        <TabsContent value="goals" className="mt-4">
+            <Card>
+                 <CardHeader className="flex flex-row items-center justify-between">
+                    <CardTitle>Savings Goals</CardTitle>
+                    <Button variant="ghost" size="sm" className="gap-2" onClick={() => { setEditingGoal(undefined); setIsGoalDialogOpen(true); }}><Plus className="h-4 w-4"/>Add</Button>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                    {goals.map(goal => {
+                        const progress = goal.targetAmount > 0 ? (goal.currentAmount / goal.targetAmount) * 100 : 0;
+                        return (
+                            <div key={goal.id} className="p-4 border rounded-lg">
+                                <div className="flex justify-between items-center mb-2">
+                                    <span className="font-semibold flex items-center gap-2"><Target className="h-4 w-4 text-primary"/>{goal.name}</span>
+                                    <DropdownMenu>
+                                        <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-8 w-8"><MoreVertical className="h-4 w-4" /></Button></DropdownMenuTrigger>
+                                        <DropdownMenuContent>
+                                            <DropdownMenuItem onClick={() => {setGoalToContribute(goal); setIsContributeDialogOpen(true)}}><Gem className="mr-2 h-4 w-4" />Contribute</DropdownMenuItem>
+                                            <DropdownMenuItem onClick={() => { setEditingGoal(goal); setIsGoalDialogOpen(true); }}><Edit className="mr-2 h-4 w-4" />Edit</DropdownMenuItem>
+                                            <DropdownMenuItem onClick={() => setItemToDelete({ id: goal.id, type: 'goal' })} className="text-destructive"><Trash2 className="mr-2 h-4 w-4" />Delete</DropdownMenuItem>
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
+                                </div>
+                                <Progress value={progress} className="h-2" />
+                                <div className="flex justify-between text-sm text-muted-foreground mt-1">
+                                    <span>₹{goal.currentAmount.toFixed(2)}</span>
+                                    <span>₹{goal.targetAmount.toFixed(2)}</span>
+                                </div>
+                            </div>
+                        )
+                    })}
+                </CardContent>
+            </Card>
+        </TabsContent>
       </Tabs>
 
 
@@ -302,6 +344,21 @@ export function BudgetTrackerPage() {
         onSave={editingCategory ? updateCategory : addCategory}
         category={editingCategory}
       />
+      <SavingsGoalDialog
+        open={isGoalDialogOpen}
+        onOpenChange={setIsGoalDialogOpen}
+        onSave={editingGoal ? updateSavingsGoal : addSavingsGoal}
+        goal={editingGoal}
+      />
+      {goalToContribute && (
+        <ContributeToGoalDialog
+            open={isContributeDialogOpen}
+            onOpenChange={setIsContributeDialogOpen}
+            onContribute={(amount, accountId) => contributeToGoal(goalToContribute.id, amount, accountId)}
+            accounts={accounts}
+            goalName={goalToContribute.name}
+        />
+      )}
       <AlertDialog open={!!itemToDelete} onOpenChange={(open) => !open && setItemToDelete(null)}>
         <AlertDialogContent>
             <AlertDialogHeader>
