@@ -271,6 +271,7 @@ const defaultBudgetData: BudgetData = {
         { id: 'cat-housing', name: 'Housing', icon: 'Home' },
         { id: 'cat-personal', name: 'Personal Care', icon: 'Coins' },
         { id: 'cat-work', name: 'Work', icon: 'Briefcase' },
+        { id: 'cat-education', name: 'Education', icon: 'School'},
     ],
     transactions: [],
     goals: [],

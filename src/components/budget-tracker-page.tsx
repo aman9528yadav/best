@@ -5,7 +5,7 @@
 import React, { useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Plus, MoreVertical, ArrowUp, ArrowDown, Landmark, Utensils, Bus, ShoppingBag, FileText, HeartPulse, Ticket, Icon, Edit, Trash2, Settings, Wallet, PiggyBank, Briefcase, Coins, Home, Car, Filter, Target, Gem } from 'lucide-react';
+import { Plus, MoreVertical, ArrowUp, ArrowDown, Landmark, Utensils, Bus, ShoppingBag, FileText, HeartPulse, Ticket, Icon, Edit, Trash2, Settings, Wallet, PiggyBank, Briefcase, Coins, Home, Car, Filter, Target, Gem, School } from 'lucide-react';
 import { useProfile, Transaction, Account, Category, SavingsGoal } from '@/context/ProfileContext';
 import { format, parseISO, isSameMonth, subMonths, startOfMonth } from 'date-fns';
 import { BudgetTransactionDialog } from './budget-transaction-dialog';
@@ -36,7 +36,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
 const iconMap: { [key: string]: Icon } = {
-    Landmark, Utensils, Bus, ShoppingBag, FileText, HeartPulse, Ticket, Briefcase, Coins, Home, Car
+    Landmark, Utensils, Bus, ShoppingBag, FileText, HeartPulse, Ticket, Briefcase, Coins, Home, Car, School
 };
 
 const TransactionItem = ({ transaction, categoryName, categoryIcon, onEdit, onDelete }: { transaction: Transaction, categoryName: string, categoryIcon: Icon, onEdit: () => void, onDelete: () => void }) => {

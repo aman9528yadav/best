@@ -23,7 +23,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import type { Category } from '@/context/ProfileContext';
-import { Landmark, Utensils, Bus, ShoppingBag, FileText, HeartPulse, Ticket, Icon, Briefcase, Coins, Home, Car } from 'lucide-react';
+import { Landmark, Utensils, Bus, ShoppingBag, FileText, HeartPulse, Ticket, Icon, Briefcase, Coins, Home, Car, School } from 'lucide-react';
 
 interface CategoryDialogProps {
   open: boolean;
@@ -44,6 +44,7 @@ const iconOptions: { name: string; icon: Icon }[] = [
     { name: 'Coins', icon: Coins },
     { name: 'Home', icon: Home },
     { name: 'Car', icon: Car },
+    { name: 'School', icon: School },
 ];
 
 export function CategoryDialog({ open, onOpenChange, onSave, category }: CategoryDialogProps) {

@@ -19,6 +19,7 @@ import { useProfile } from '@/context/ProfileContext';
 import { isToday, isYesterday, formatDistanceToNow } from 'date-fns';
 import { ActivityBreakdownChart } from '@/components/activity-breakdown-chart';
 import { WeeklySummaryChart } from './weekly-summary-chart';
+import { BudgetBreakdownChart } from './budget-breakdown-chart';
 
 const StatCard = ({
   title,
@@ -165,6 +166,16 @@ export function AnalyticsPage() {
                 {showMoreStats ? <ChevronUp className="mr-2 h-4 w-4" /> : <ChevronDown className="mr-2 h-4 w-4" />}
                 {showMoreStats ? 'Show Less' : 'Show More'}
             </Button>
+
+            <Card>
+                <CardHeader>
+                    <CardTitle>Spending Breakdown</CardTitle>
+                    <CardDescription>This month's expenses by category.</CardDescription>
+                </CardHeader>
+                <CardContent className="h-[250px] flex justify-center items-center">
+                    <BudgetBreakdownChart />
+                </CardContent>
+            </Card>
 
             <Card>
                 <CardHeader>
