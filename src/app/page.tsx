@@ -46,6 +46,7 @@ import {
     ChevronDown,
     Info,
     Download,
+    Wallet,
 } from 'lucide-react';
 import Link from 'next/link';
 import { AdMobBanner } from '@/components/admob-banner';
@@ -84,6 +85,7 @@ export const quickAccessItems = [
   { id: 'calculator', icon: Calculator, label: 'Calculator', href: '/calculator', requiresAuth: false },
   { id: 'notes', icon: BookText, label: 'Notes', href: '/notes', requiresAuth: true },
   { id: 'todo', icon: CheckSquare, label: 'Todo', href: '/todo', requiresAuth: true },
+  { id: 'budget', icon: Wallet, label: 'Budget', href: '/budget-tracker', requiresAuth: true },
   { id: 'history', icon: History, label: 'History', href: '/history', requiresAuth: true },
   { id: 'news', icon: Newspaper, label: 'News', href: 'https://aman9528.wixstudio.com/my-site-3', requiresAuth: false },
   { id: 'translator', icon: Languages, label: 'Translator', href: '#', requiresAuth: true },
