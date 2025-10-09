@@ -9,7 +9,7 @@ import { useAuth } from './AuthContext';
 import { isToday, differenceInCalendarDays, startOfDay, isYesterday } from 'date-fns';
 import { useMaintenance } from './MaintenanceContext';
 
-export type ActivityType = 'conversion' | 'calculator' | 'date_calculation' | 'note' | 'todo';
+export type ActivityType = 'conversion' | 'calculator' | 'date_calculation' | 'note' | 'todo' | 'budget';
 
 export type ActivityLogItem = {
     timestamp: string;
@@ -84,6 +84,42 @@ export type TodoItem = {
   recurring?: 'none' | 'daily' | 'weekly' | 'monthly';
 };
 
+export type Transaction = {
+  id: string;
+  type: 'income' | 'expense';
+  amount: number;
+  description: string;
+  categoryId: string;
+  accountId: string;
+  date: string;
+};
+
+export type Account = {
+  id: string;
+  name: string;
+  balance: number;
+};
+
+export type Category = {
+  id: string;
+  name: string;
+  icon: string; // Lucide icon name
+};
+
+export type SavingsGoal = {
+  id: string;
+  name: string;
+  targetAmount: number;
+  currentAmount: number;
+};
+
+export type BudgetData = {
+    transactions: Transaction[];
+    accounts: Account[];
+    categories: Category[];
+    goals: SavingsGoal[];
+}
+
 export type QuickAccessItemOrder = {
   id: string;
   hidden: boolean;
@@ -127,6 +163,7 @@ export type UserProfile = {
   stats: UserStats;
   notes: NoteItem[];
   todos: TodoItem[];
+  budget: BudgetData;
   activityLog: ActivityLogItem[];
   quickAccessOrder?: QuickAccessItemOrder[];
   photoUrl?: string;
@@ -151,6 +188,7 @@ type ProfileContextType = {
   updateTodo: (todo: TodoItem) => void;
   toggleTodo: (id: string) => void;
   deleteTodo: (id: string) => void;
+  addTransaction: (transaction: Omit<Transaction, 'id'>) => void;
   deleteAllUserData: () => Promise<void>;
   updateStats: (type: ActivityType) => void;
   // History methods
@@ -187,6 +225,21 @@ const defaultSettings: UserSettings = {
     }
 };
 
+const defaultBudgetData: BudgetData = {
+    accounts: [{ id: 'default-cash', name: 'Cash', balance: 0 }, { id: 'default-bank', name: 'Bank', balance: 1000 }],
+    categories: [
+        { id: 'cat-income', name: 'Income', icon: 'Landmark' },
+        { id: 'cat-food', name: 'Food & Drink', icon: 'Utensils' },
+        { id: 'cat-transport', name: 'Transport', icon: 'Bus' },
+        { id: 'cat-shopping', name: 'Shopping', icon: 'ShoppingBag' },
+        { id: 'cat-bills', name: 'Bills & Utilities', icon: 'FileText' },
+        { id: 'cat-health', name: 'Health', icon: 'HeartPulse' },
+        { id: 'cat-fun', name: 'Entertainment', icon: 'Ticket' },
+    ],
+    transactions: [],
+    goals: [],
+};
+
 const getInitialProfile = (): UserProfile => {
   return {
     name: "",
@@ -206,6 +259,7 @@ const getInitialProfile = (): UserProfile => {
     stats: defaultStats,
     notes: [],
     todos: [],
+    budget: defaultBudgetData,
     activityLog: [],
     quickAccessOrder: [],
     photoUrl: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxtYW4lMjBwb3J0cmFpdHxlbnwwfHx8fDE3NTkwNzk5MTd8MA&ixlib=rb-4.1.0&q=80&w=1080",
@@ -233,6 +287,7 @@ const guestProfileDefault: UserProfile = {
     stats: defaultStats,
     notes: [],
     todos: [],
+    budget: defaultBudgetData,
     activityLog: [],
     quickAccessOrder: [],
     photoUrl: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxtYW4lMjBwb3J0cmFpdHxlbnwwfHx8fDE3NTkwNzk5MTd8MA&ixlib=rb-4.1.0&q=80&w=1080",
@@ -263,10 +318,11 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
             const settings = { ...defaultSettings, ...(parsedProfile.settings || {}), customTheme: { ...defaultSettings.customTheme, ...(parsedProfile.settings?.customTheme || {}) } };
             const notes = parsedProfile.notes || [];
             const todos = parsedProfile.todos || [];
+            const budget = { ...defaultBudgetData, ...(parsedProfile.budget || {}) };
             const activityLog = parsedProfile.activityLog || [];
             const history = parsedProfile.history || [];
             const favorites = parsedProfile.favorites || [];
-            setProfileState({ ...guestProfileDefault, ...parsedProfile, settings, stats, notes, todos, activityLog, history, favorites });
+            setProfileState({ ...guestProfileDefault, ...parsedProfile, settings, stats, notes, todos, budget, activityLog, history, favorites });
           } else {
             setProfileState(guestProfileDefault);
           }
@@ -291,6 +347,7 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
           const settings = { ...defaultSettings, ...(fetchedData.settings || {}), customTheme: { ...defaultSettings.customTheme, ...(fetchedData.settings?.customTheme || {}) } };
           const notes = fetchedData.notes || [];
           const todos = fetchedData.todos || [];
+          const budget = { ...defaultBudgetData, ...(fetchedData.budget || {}) };
           const activityLog = fetchedData.activityLog || [];
           const history = fetchedData.history ? Object.values(fetchedData.history).sort((a: any, b: any) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()) as HistoryItem[] : [];
           const favorites = fetchedData.favorites ? Object.values(fetchedData.favorites) as FavoriteItem[] : [];
@@ -313,6 +370,7 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
             stats,
             notes,
             todos,
+            budget,
             activityLog,
             history,
             favorites,
@@ -330,6 +388,7 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
             stats: defaultStats,
             notes: [],
             todos: [],
+            budget: defaultBudgetData,
             activityLog: [],
             quickAccessOrder: [],
             photoUrl: user.photoURL || guestProfileDefault.photoUrl,
@@ -480,6 +539,25 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
   const deleteTodo = (id: string) => {
     setProfile(p => ({ ...p, todos: (p.todos || []).filter(t => t.id !== id) }));
   };
+  
+  const addTransaction = (transaction: Omit<Transaction, 'id'>) => {
+    setProfile(p => {
+        const newTransaction: Transaction = {
+            ...transaction,
+            id: new Date().getTime().toString(),
+        };
+        const newTransactions = [newTransaction, ...p.budget.transactions];
+        
+        const account = p.budget.accounts.find(acc => acc.id === transaction.accountId);
+        if (!account) return p;
+
+        const newBalance = transaction.type === 'income' ? account.balance + transaction.amount : account.balance - transaction.amount;
+        const newAccounts = p.budget.accounts.map(acc => acc.id === transaction.accountId ? { ...acc, balance: newBalance } : acc);
+
+        return { ...p, budget: { ...p.budget, transactions: newTransactions, accounts: newAccounts } };
+    });
+    updateStats('budget');
+  };
 
 
   const checkAndUpdateStreak = () => {
@@ -588,6 +666,7 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
         updateTodo,
         toggleTodo,
         deleteTodo,
+        addTransaction,
         deleteAllUserData,
         updateStats,
         history: profile.history,
@@ -613,3 +692,4 @@ export const useProfile = () => {
   }
   return context;
 };
+

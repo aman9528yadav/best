@@ -29,6 +29,7 @@ import {
   Settings,
   CheckSquare,
   Gem,
+  Wallet,
 } from 'lucide-react';
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
@@ -52,6 +53,11 @@ const sidebarNavItems = [
     icon: Calculator,
     label: 'Calculator',
     href: '/calculator',
+  },
+  {
+    icon: Wallet,
+    label: 'Budget',
+    href: '/budget-tracker',
   },
   {
     icon: History,
