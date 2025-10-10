@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import React, { createContext, useContext, useState, ReactNode, useEffect, useRef } from 'react';
@@ -126,6 +127,11 @@ export type QuickAccessItemOrder = {
   hidden: boolean;
 };
 
+export type DashboardWidgetItem = {
+  id: 'recentNote' | 'pendingTodos' | 'miniBudget';
+  hidden: boolean;
+};
+
 export type HSLColor = {
     h: number;
     s: number;
@@ -181,6 +187,7 @@ export type UserProfile = {
   budget: BudgetData;
   activityLog: ActivityLogItem[];
   quickAccessOrder?: QuickAccessItemOrder[];
+  dashboardWidgets?: DashboardWidgetItem[];
   photoUrl?: string;
   photoId?: string;
   history: HistoryItem[];
@@ -278,6 +285,12 @@ const defaultBudgetData: BudgetData = {
     goals: [],
 };
 
+const defaultDashboardWidgets: DashboardWidgetItem[] = [
+    { id: 'recentNote', hidden: false },
+    { id: 'pendingTodos', hidden: false },
+    { id: 'miniBudget', hidden: true },
+];
+
 const getInitialProfile = (): UserProfile => {
   return {
     name: "",
@@ -300,6 +313,7 @@ const getInitialProfile = (): UserProfile => {
     budget: defaultBudgetData,
     activityLog: [],
     quickAccessOrder: [],
+    dashboardWidgets: defaultDashboardWidgets,
     photoUrl: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxtYW4lMjBwb3J0cmFpdHxlbnwwfHx8fDE3NTkwNzk5MTd8MA&ixlib=rb-4.1.0&q=80&w=1080",
     photoId: 'user-avatar-1',
     history: [],
@@ -330,6 +344,7 @@ const guestProfileDefault: UserProfile = {
     budget: defaultBudgetData,
     activityLog: [],
     quickAccessOrder: [],
+    dashboardWidgets: defaultDashboardWidgets,
     photoUrl: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxtYW4lMjBwb3J0cmFpdHxlbnwwfHx8fDE3NTkwNzk5MTd8MA&ixlib=rb-4.1.0&q=80&w=1080",
     photoId: 'user-avatar-1',
     history: [],
@@ -376,6 +391,7 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
         notes: parsedProfile.notes || [],
         todos: parsedProfile.todos || [],
         activityLog: parsedProfile.activityLog || [],
+        dashboardWidgets: parsedProfile.dashboardWidgets || defaultDashboardWidgets,
       };
     };
   

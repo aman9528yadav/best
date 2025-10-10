@@ -73,6 +73,8 @@ import { WelcomeDialog } from '@/components/welcome-dialog';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
+import { RecentNoteWidget } from '@/components/widgets/recent-note-widget';
+import { PendingTodosWidget } from '@/components/widgets/pending-todos-widget';
 
 export const quickAccessItems = [
   {
@@ -108,6 +110,12 @@ const iconMap: { [key: string]: LucideIcon } = {
   Wand2,
   Share2,
   Bot,
+};
+
+const widgetComponents = {
+    recentNote: RecentNoteWidget,
+    pendingTodos: PendingTodosWidget,
+    // miniBudget: MiniBudgetWidget,
 };
 
 export default function DashboardPage() {
@@ -192,6 +200,11 @@ export default function DashboardPage() {
     return [...orderedUserItems, ...remainingDefaultItems];
 
   }, [profile.quickAccessOrder]);
+  
+  const orderedWidgets = useMemo(() => {
+    if (!profile.dashboardWidgets) return [];
+    return profile.dashboardWidgets.filter(w => !w.hidden);
+  }, [profile.dashboardWidgets]);
 
 
   if (isPageLoading) {
@@ -322,6 +335,22 @@ export default function DashboardPage() {
                 )}
             </AnimatePresence>
           </motion.section>
+          
+           <motion.section initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}>
+            <div className="flex justify-between items-center mb-2">
+              <h2 className="font-semibold">My Widgets</h2>
+              <Button asChild variant="link" size="sm" className="text-primary pr-0">
+                <Link href="#">Manage</Link>
+              </Button>
+            </div>
+            <div className="space-y-4">
+               {orderedWidgets.map(widget => {
+                 const WidgetComponent = widgetComponents[widget.id];
+                 return WidgetComponent ? <WidgetComponent key={widget.id} /> : null;
+               })}
+            </div>
+          </motion.section>
+
 
            <motion.section initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}>
             <div className="flex justify-between items-center mb-2">
