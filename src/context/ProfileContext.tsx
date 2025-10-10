@@ -480,7 +480,7 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
             dbProfile.history = (dbProfile.history || []).reduce((acc, item) => ({...acc, [item.id]: item}), {});
             // @ts-ignore
             dbProfile.favorites = (dbProfile.favorites || []).reduce((acc, item) => ({...acc, [item.id]: item}), {});
-             // @ts-ignore
+            // @ts-ignore
             if (dbProfile.budget && dbProfile.budget.goals) {
                 // @ts-ignore
                 const goalsArray = Array.isArray(dbProfile.budget.goals) ? dbProfile.budget.goals : Object.values(dbProfile.budget.goals);
@@ -700,7 +700,11 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const deleteSavingsGoal = (id: string) => {
-    setProfile(p => ({ ...p, budget: { ...p.budget, goals: p.budget.goals.filter(g => g.id !== id) }}));
+    setProfile(p => {
+        const goalsArray = Array.isArray(p.budget.goals) ? p.budget.goals : Object.values(p.budget.goals);
+        const updatedGoals = goalsArray.filter(g => g.id !== id);
+        return { ...p, budget: { ...p.budget, goals: updatedGoals }};
+    });
   };
 
   const contributeToGoal = (goalId: string, amount: number, accountId: string) => {
@@ -713,7 +717,8 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
       date: new Date().toISOString(),
     });
     setProfile(p => {
-        const newGoals = p.budget.goals.map(g => 
+        const goalsArray = Array.isArray(p.budget.goals) ? p.budget.goals : Object.values(p.budget.goals);
+        const newGoals = goalsArray.map(g => 
             g.id === goalId ? { ...g, currentAmount: g.currentAmount + amount } : g
         );
         return { ...p, budget: { ...p.budget, goals: newGoals }};
@@ -896,3 +901,4 @@ export const useProfile = () => {
   }
   return context;
 };
+
