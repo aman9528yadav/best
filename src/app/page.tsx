@@ -340,7 +340,7 @@ export default function DashboardPage() {
             <div className="flex justify-between items-center mb-2">
               <h2 className="font-semibold">My Widgets</h2>
               <Button asChild variant="link" size="sm" className="text-primary pr-0">
-                <Link href="#">Manage</Link>
+                <Link href="/profile/manage-widgets">Manage</Link>
               </Button>
             </div>
             <div className="space-y-4">
