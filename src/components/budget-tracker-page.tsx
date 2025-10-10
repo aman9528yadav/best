@@ -74,7 +74,17 @@ const TransactionItem = ({ transaction, categoryName, categoryIcon, onEdit, onDe
 
 export function BudgetTrackerPage() {
   const { profile, addTransaction, updateTransaction, deleteTransaction, addAccount, updateAccount, deleteAccount, addCategory, updateCategory, deleteCategory, addSavingsGoal, updateSavingsGoal, deleteSavingsGoal, contributeToGoal } = useProfile();
-  const { accounts, transactions, categories, goals } = profile.budget;
+  const { accounts, transactions, categories } = profile.budget;
+  const goals = useMemo(() => {
+    const budgetGoals = profile.budget.goals;
+    if (Array.isArray(budgetGoals)) {
+      return budgetGoals;
+    }
+    if (typeof budgetGoals === 'object' && budgetGoals !== null) {
+      return Object.values(budgetGoals);
+    }
+    return [];
+  }, [profile.budget.goals]);
   
   const [isTxDialogOpen, setIsTxDialogOpen] = useState(false);
   const [isAccountDialogOpen, setIsAccountDialogOpen] = useState(false);
