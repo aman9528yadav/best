@@ -319,48 +319,36 @@ export const MaintenanceWrapper = ({ children }: { children: ReactNode }) => {
     const pathname = usePathname();
 
     useEffect(() => {
-        if (isLoading) return; 
+        if (isLoading) return;
 
         const isMaintenancePage = pathname === '/maintenance';
-
-        // If in dev mode, don't apply maintenance redirects
-        if (isDevMode) {
-             // Still redirect away from maintenance page if no maintenance is active
-            if (isMaintenancePage && !maintenanceConfig.globalMaintenance) {
-                router.replace('/');
-            }
-            return;
-        }
-
         const isUnderGlobalMaintenance = maintenanceConfig.globalMaintenance;
         const sanitizedPath = sanitizePathForKey(pathname);
         const isUnderPageMaintenance = maintenanceConfig.pageMaintenance?.[sanitizedPath];
+
+        // The dev panel should always be accessible to the developer
+        if (isDevMode && pathname.startsWith('/dev')) {
+            return;
+        }
 
         if (isUnderGlobalMaintenance || isUnderPageMaintenance) {
             if (!isMaintenancePage) {
                 router.replace('/maintenance');
             }
         } else {
-             if (isMaintenancePage) {
+            if (isMaintenancePage) {
                 router.replace('/');
             }
         }
-
     }, [maintenanceConfig, isDevMode, pathname, router, isLoading]);
-    
+
     if (isLoading) {
         return null;
     }
-    
-    if (!isDevMode) {
-        const isUnderGlobalMaintenance = maintenanceConfig.globalMaintenance;
-        const sanitizedPath = sanitizePathForKey(pathname);
-        const isUnderPageMaintenance = maintenanceConfig.pageMaintenance?.[sanitizedPath];
-        const isMaintenancePage = pathname === '/maintenance';
-        
-        if ((isUnderGlobalMaintenance || isUnderPageMaintenance) && !isMaintenancePage) {
-          return null;
-        }
+
+    const isUnderMaintenance = maintenanceConfig.globalMaintenance || maintenanceConfig.pageMaintenance?.[sanitizePathForKey(pathname)];
+    if (isUnderMaintenance && pathname !== '/maintenance' && !(isDevMode && pathname.startsWith('/dev'))) {
+        return null;
     }
     
     return <>{children}</>;
