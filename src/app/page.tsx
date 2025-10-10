@@ -223,9 +223,11 @@ export default function DashboardPage() {
           <Header />
         </div>
         <main className="flex-1 overflow-y-auto p-4 pt-0 space-y-6">
-          <DashboardBanner />
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
+            <DashboardBanner />
+          </motion.div>
         
-          <div className="grid grid-cols-3 gap-3 text-center">
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="grid grid-cols-3 gap-3 text-center">
             <Card>
               <CardContent className="p-3 space-y-1">
                 <Star className="h-5 w-5 text-yellow-500 mx-auto" />
@@ -247,23 +249,25 @@ export default function DashboardPage() {
                 <div className="text-xs text-muted-foreground">Streak</div>
               </CardContent>
             </Card>
-          </div>
+          </motion.div>
 
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-base font-medium">
-                Weekly Summary
-            </CardTitle>
-            <Button asChild variant="link" size="sm" className="text-primary pr-0">
-                <Link href="/analytics">View Analytics</Link>
-            </Button>
-            </CardHeader>
-            <CardContent>
-              <WeeklySummaryChart />
-            </CardContent>
-          </Card>
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-base font-medium">
+                  Weekly Summary
+              </CardTitle>
+              <Button asChild variant="link" size="sm" className="text-primary pr-0">
+                  <Link href="/analytics">View Analytics</Link>
+              </Button>
+              </CardHeader>
+              <CardContent>
+                <WeeklySummaryChart />
+              </CardContent>
+            </Card>
+          </motion.div>
           
-          <section>
+          <motion.section initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}>
             <div className="flex justify-between items-center mb-2">
               <h2 className="font-semibold">Quick Access</h2>
               <Button asChild variant="link" size="sm" className="text-primary pr-0">
@@ -317,9 +321,9 @@ export default function DashboardPage() {
                     </motion.div>
                 )}
             </AnimatePresence>
-          </section>
+          </motion.section>
 
-           <section>
+           <motion.section initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}>
             <div className="flex justify-between items-center mb-2">
               <h2 className="font-semibold">What&apos;s New</h2>
               <Button asChild variant="link" size="sm" className="text-primary pr-0">
@@ -347,9 +351,9 @@ export default function DashboardPage() {
                 </motion.div>
               )})}
             </div>
-          </section>
+          </motion.section>
 
-          <section>
+          <motion.section initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6 }}>
             <h2 className="font-semibold mb-2">Coming Soon</h2>
             <ScrollArea className="w-full">
               <div className="flex space-x-3 pb-4">
@@ -382,9 +386,9 @@ export default function DashboardPage() {
               </div>
               <ScrollBar orientation="horizontal" />
             </ScrollArea>
-          </section>
+          </motion.section>
 
-          <section>
+          <motion.section initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.7 }}>
             <h2 className="font-semibold mb-2">About Sutradhaar</h2>
             <motion.div whileHover={{ y: -2, scale: 1.02 }}>
               <Card>
@@ -406,7 +410,7 @@ export default function DashboardPage() {
                 </CardContent>
               </Card>
             </motion.div>
-          </section>
+          </motion.section>
         </main>
       <AlertDialog open={showLoginDialog} onOpenChange={setShowLoginDialog}>
         <AlertDialogContent>
