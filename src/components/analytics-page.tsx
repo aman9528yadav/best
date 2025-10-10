@@ -14,12 +14,20 @@ import {
   MoreVertical,
   ChevronUp,
   ChevronDown,
+  Icon as LucideIcon,
 } from 'lucide-react';
 import { useProfile } from '@/context/ProfileContext';
-import { isToday, isYesterday, formatDistanceToNow } from 'date-fns';
+import { isToday, isYesterday, formatDistanceToNow, parseISO } from 'date-fns';
 import { ActivityBreakdownChart } from '@/components/activity-breakdown-chart';
 import { WeeklySummaryChart } from './weekly-summary-chart';
 import { BudgetBreakdownChart } from './budget-breakdown-chart';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Utensils, Landmark } from 'lucide-react';
+import type { Transaction } from '@/context/ProfileContext';
+
+const iconMap: { [key: string]: LucideIcon } = {
+    Landmark, Utensils
+};
 
 const StatCard = ({
   title,
@@ -70,10 +78,32 @@ const DayOverDayComparison = ({ label, value }: { label: string, value: number }
     );
 };
 
+const TransactionItem = ({ transaction, categoryName, categoryIcon }: { transaction: Transaction, categoryName: string, categoryIcon: LucideIcon }) => {
+  const isIncome = transaction.type === 'income';
+  const CategoryIcon = categoryIcon;
+
+  return (
+    <div className="flex items-center gap-4 py-3 group">
+      <div className="p-3 bg-accent rounded-full">
+        <CategoryIcon className="h-5 w-5 text-primary" />
+      </div>
+      <div className="flex-1">
+        <p className="font-semibold">{transaction.description}</p>
+        <p className="text-sm text-muted-foreground">
+          {categoryName} &bull; {formatDistanceToNow(parseISO(transaction.date), { addSuffix: true })}
+        </p>
+      </div>
+      <div className={`text-lg font-bold ${isIncome ? 'text-green-500' : 'text-red-500'}`}>
+        {isIncome ? '+' : '-'}₹{transaction.amount.toFixed(2)}
+      </div>
+    </div>
+  );
+};
+
 
 export function AnalyticsPage() {
     const { profile } = useProfile();
-    const { history, favorites } = profile;
+    const { history, favorites, budget } = profile;
     const [showMoreStats, setShowMoreStats] = useState(false);
     
     const getCountForDay = (items: any[], dateFn: (d: Date) => boolean) => {
@@ -153,6 +183,19 @@ export function AnalyticsPage() {
     const dayOverDayCalculator = getCountForDay(history.filter(h => h.type === 'calculator'), isToday) - getCountForDay(history.filter(h => h.type === 'calculator'), isYesterday);
     const dayOverDayDateCalcs = getCountForDay(history.filter(h => h.type === 'date_calculation'), isToday) - getCountForDay(history.filter(h => h.type === 'date_calculation'), isYesterday);
 
+    const transactionsByAccount = useMemo(() => {
+        const grouped: { [key: string]: Transaction[] } = {};
+        budget.transactions.forEach(t => {
+            if (!grouped[t.accountId]) {
+                grouped[t.accountId] = [];
+            }
+            grouped[t.accountId].push(t);
+        });
+        return grouped;
+    }, [budget.transactions]);
+
+    const categoryMap = useMemo(() => new Map(budget.categories.map(c => [c.id, c])), [budget.categories]);
+    const accountMap = useMemo(() => new Map(budget.accounts.map(a => [a.id, a.name])), [budget.accounts]);
 
     return (
         <div className="w-full space-y-6 pb-12">
@@ -174,6 +217,40 @@ export function AnalyticsPage() {
                 </CardHeader>
                 <CardContent className="h-[250px] flex justify-center items-center">
                     <BudgetBreakdownChart />
+                </CardContent>
+            </Card>
+
+            <Card>
+                <CardHeader>
+                    <CardTitle>Transactions by Account</CardTitle>
+                    <CardDescription>Recent activity for each account.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <Tabs defaultValue={budget.accounts[0]?.id || 'no-accounts'}>
+                        <TabsList className="grid w-full grid-cols-2">
+                           {budget.accounts.map(account => (
+                               <TabsTrigger key={account.id} value={account.id}>{account.name}</TabsTrigger>
+                           ))}
+                        </TabsList>
+                       {budget.accounts.map(account => (
+                            <TabsContent key={account.id} value={account.id}>
+                                {(transactionsByAccount[account.id] || []).slice(0, 5).map(t => {
+                                    const category = categoryMap.get(t.categoryId);
+                                    return (
+                                        <TransactionItem
+                                            key={t.id}
+                                            transaction={t}
+                                            categoryName={category?.name || 'Uncategorized'}
+                                            categoryIcon={iconMap[category?.icon || ''] || Utensils}
+                                        />
+                                    );
+                                })}
+                                {(transactionsByAccount[account.id] || []).length === 0 && (
+                                    <p className="text-muted-foreground text-center py-4">No transactions for this account.</p>
+                                )}
+                            </TabsContent>
+                       ))}
+                    </Tabs>
                 </CardContent>
             </Card>
 
