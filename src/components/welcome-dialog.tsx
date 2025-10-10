@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import React, { useState } from 'react';
@@ -14,6 +13,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
+import Image from 'next/image';
 
 interface WelcomeDialogProps {
   open: boolean;
@@ -33,7 +33,10 @@ export function WelcomeDialog({ open, onOpenChange, onConfirm, title, descriptio
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
       <AlertDialogContent>
-        <AlertDialogHeader>
+        <AlertDialogHeader className="text-center items-center">
+          <div className="relative h-40 w-40 mb-4">
+             <Image src="/sound/imgi_3_default.png" alt="Welcome" layout="fill" objectFit="contain" />
+          </div>
           <AlertDialogTitle>{title}</AlertDialogTitle>
           <AlertDialogDescription>
             {description}
