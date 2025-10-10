@@ -720,7 +720,7 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
       type: 'expense',
       amount,
       description: `Contribution to goal`,
-      categoryId: '',
+      categoryId: '', // or a specific "Savings" category
       accountId,
       date: new Date().toISOString(),
       recurring: 'none',
