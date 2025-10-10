@@ -347,7 +347,7 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     if (authLoading) return;
-
+  
     const mergeWithDefaults = (parsedProfile: Partial<UserProfile>): UserProfile => {
       const stats = { ...defaultStats, ...(parsedProfile.stats || {}) };
       const settings = { ...defaultSettings, ...(parsedProfile.settings || {}), customTheme: { ...defaultSettings.customTheme, ...(parsedProfile.settings?.customTheme || {}) } };
@@ -361,7 +361,7 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
       const favorites = parsedProfile.favorites ? (Array.isArray(parsedProfile.favorites) ? parsedProfile.favorites : Object.values(parsedProfile.favorites)) : [];
       const customUnits = parsedProfile.customUnits ? (Array.isArray(parsedProfile.customUnits) ? parsedProfile.customUnits : Object.values(parsedProfile.customUnits)) : [];
       const customCategories = parsedProfile.customCategories ? (Array.isArray(parsedProfile.customCategories) ? parsedProfile.customCategories : Object.values(parsedProfile.customCategories)) : [];
-
+  
       return {
         ...guestProfileDefault,
         ...parsedProfile,
@@ -377,71 +377,65 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
         activityLog: parsedProfile.activityLog || [],
       };
     };
-
-    const loadData = () => {
-      setIsLoading(true);
-      if (user) {
-        // Load from cache first for logged-in user
-        const cachedProfileRaw = localStorage.getItem(`sutradhaar_profile_${user.uid}`);
-        if (cachedProfileRaw) {
-          const cachedProfile = mergeWithDefaults(JSON.parse(cachedProfileRaw));
-          setProfileState(cachedProfile);
-        }
-        setIsLoading(!cachedProfileRaw); // Only show loading skeleton if no cache
-
-        const userRef = ref(rtdb, `users/${user.uid}/profile`);
-        const unsubscribe = onValue(userRef, (snapshot) => {
-          if (snapshot.exists()) {
-            const fetchedData = snapshot.val() as Partial<UserProfile>;
-            const mergedProfile = mergeWithDefaults(fetchedData);
-            
-            let membership = user.email === 'amanyadavyadav9458@gmail.com' ? 'owner' : (mergedProfile.membership || 'member');
-            const { activities, streak } = maintenanceConfig.premiumCriteria;
-            if (membership === 'member' && mergedProfile.stats.allTimeActivities >= activities && mergedProfile.stats.streak >= streak) {
-              membership = 'premium';
-            }
-
-            const finalProfile = {
-              ...mergedProfile,
-              name: mergedProfile.name || user.displayName || "New User",
-              email: user.email || mergedProfile.email || "",
-              membership,
-            };
-
-            setProfileState(finalProfile);
-            localStorage.setItem(`sutradhaar_profile_${user.uid}`, JSON.stringify(finalProfile));
-          } else {
-             const membership = user.email === 'amanyadavyadav9458@gmail.com' ? 'owner' : 'member';
-             const newProfile = mergeWithDefaults({
-                email: user.email || '',
-                name: user.displayName || 'New User',
-                membership,
-                photoUrl: user.photoURL || guestProfileDefault.photoUrl,
-             });
-             set(userRef, newProfile);
-             setProfileState(newProfile);
-          }
-          setIsLoading(false);
-        }, (error) => {
-          console.error("Error listening to profile changes:", error);
-          setIsLoading(false);
-        });
-
-        return unsubscribe;
-      } else {
-        // Guest user logic
-        const savedProfileRaw = localStorage.getItem('sutradhaar_profile');
-        if (savedProfileRaw) {
-          const savedProfile = mergeWithDefaults(JSON.parse(savedProfileRaw));
-          setProfileState(savedProfile);
-        } else {
-          setProfileState(guestProfileDefault);
-        }
-        setIsLoading(false);
+  
+    let unsubscribe: (() => void) | undefined;
+  
+    if (user) {
+      // For logged-in users, load from localStorage first for speed
+      const cachedProfileRaw = localStorage.getItem(`sutradhaar_profile_${user.uid}`);
+      if (cachedProfileRaw) {
+        const cachedProfile = mergeWithDefaults(JSON.parse(cachedProfileRaw));
+        setProfileState(cachedProfile);
       }
-    };
-
-    const unsubscribe = loadData();
+      setIsLoading(!cachedProfileRaw); // Show loading only if no cache
+  
+      const userRef = ref(rtdb, `users/${user.uid}/profile`);
+      unsubscribe = onValue(userRef, (snapshot) => {
+        let finalProfile;
+        if (snapshot.exists()) {
+          const fetchedData = snapshot.val() as Partial<UserProfile>;
+          const mergedProfile = mergeWithDefaults(fetchedData);
+          
+          let membership = user.email === 'amanyadavyadav9458@gmail.com' ? 'owner' : (mergedProfile.membership || 'member');
+          const { activities, streak } = maintenanceConfig.premiumCriteria;
+          if (membership === 'member' && mergedProfile.stats.allTimeActivities >= activities && mergedProfile.stats.streak >= streak) {
+            membership = 'premium';
+          }
+  
+          finalProfile = {
+            ...mergedProfile,
+            name: mergedProfile.name || user.displayName || "New User",
+            email: user.email || mergedProfile.email || "",
+            membership,
+          };
+        } else {
+           const membership = user.email === 'amanyadavyadav9458@gmail.com' ? 'owner' : 'member';
+           finalProfile = mergeWithDefaults({
+              email: user.email || '',
+              name: user.displayName || 'New User',
+              membership,
+              photoUrl: user.photoURL || guestProfileDefault.photoUrl,
+           });
+           set(userRef, finalProfile);
+        }
+        setProfileState(finalProfile);
+        localStorage.setItem(`sutradhaar_profile_${user.uid}`, JSON.stringify(finalProfile));
+        setIsLoading(false);
+      }, (error) => {
+        console.error("Error fetching profile:", error);
+        setIsLoading(false);
+      });
+    } else {
+      // For guest users, load from localStorage
+      const savedProfileRaw = localStorage.getItem('sutradhaar_profile');
+      if (savedProfileRaw) {
+        setProfileState(mergeWithDefaults(JSON.parse(savedProfileRaw)));
+      } else {
+        setProfileState(guestProfileDefault);
+      }
+      setIsLoading(false);
+    }
+  
     return () => {
       if (unsubscribe) unsubscribe();
     };
@@ -459,20 +453,23 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
         if (user) {
             const userRef = ref(rtdb, `users/${user.uid}/profile`);
             const dbProfile = {...updatedProfile};
-            // Convert arrays to objects for Firebase
+            
+            const toObjectReducer = (acc:any, item:any) => ({...acc, [item.id]: item});
+
             // @ts-ignore
-            dbProfile.history = (dbProfile.history || []).reduce((acc, item) => ({...acc, [item.id]: item}), {});
+            dbProfile.history = (dbProfile.history || []).reduce(toObjectReducer, {});
             // @ts-ignore
-            dbProfile.favorites = (dbProfile.favorites || []).reduce((acc, item) => ({...acc, [item.id]: item}), {});
+            dbProfile.favorites = (dbProfile.favorites || []).reduce(toObjectReducer, {});
             if (dbProfile.budget && dbProfile.budget.goals) {
                 const goalsArray = Array.isArray(dbProfile.budget.goals) ? dbProfile.budget.goals : Object.values(dbProfile.budget.goals);
                 // @ts-ignore
-                dbProfile.budget.goals = goalsArray.reduce((acc, item) => ({...acc, [item.id]: item}), {});
+                dbProfile.budget.goals = goalsArray.reduce(toObjectReducer, {});
             }
              // @ts-ignore
-            dbProfile.customUnits = (dbProfile.customUnits || []).reduce((acc, item) => ({...acc, [item.id]: item}), {});
+            dbProfile.customUnits = (dbProfile.customUnits || []).reduce(toObjectReducer, {});
              // @ts-ignore
-            dbProfile.customCategories = (dbProfile.customCategories || []).reduce((acc, item) => ({...acc, [item.id]: item}), {});
+            dbProfile.customCategories = (dbProfile.customCategories || []).reduce(toObjectReducer, {});
+            
             set(userRef, dbProfile).catch(error => console.error("Failed to save profile to Realtime DB", error));
             localStorage.setItem(`sutradhaar_profile_${user.uid}`, JSON.stringify(updatedProfile));
         } else {
@@ -876,4 +873,5 @@ export const useProfile = () => {
   }
   return context;
 };
+
 
