@@ -335,7 +335,7 @@ export function BudgetTrackerPage() {
                                     <DropdownMenu>
                                         <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-8 w-8"><MoreVertical className="h-4 w-4" /></Button></DropdownMenuTrigger>
                                         <DropdownMenuContent>
-                                            <DropdownMenuItem onSelect={() => {setGoalToContribute(goal); setIsContributeDialogOpen(true)}}><Gem className="mr-2 h-4 w-4" />Contribute</DropdownMenuItem>
+                                            <DropdownMenuItem onSelect={() => {setGoalToContribute(goal); setIsContributeDialogOpen(true);}}><Gem className="mr-2 h-4 w-4" />Contribute</DropdownMenuItem>
                                             <DropdownMenuItem onClick={() => { setEditingGoal(goal); setIsGoalDialogOpen(true); }}><Edit className="mr-2 h-4 w-4" />Edit</DropdownMenuItem>
                                             <DropdownMenuItem onClick={() => setItemToDelete({ id: goal.id, type: 'goal' })} className="text-destructive"><Trash2 className="mr-2 h-4 w-4" />Delete</DropdownMenuItem>
                                         </DropdownMenuContent>
@@ -476,3 +476,6 @@ export function BudgetTrackerPage() {
     </div>
   );
 }
+
+
+    
