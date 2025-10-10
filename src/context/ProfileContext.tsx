@@ -92,6 +92,7 @@ export type Transaction = {
   categoryId: string;
   accountId: string;
   date: string;
+  recurring: 'none' | 'daily' | 'weekly' | 'monthly';
 };
 
 export type Account = {
@@ -346,18 +347,6 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
   const prevMembershipRef = useRef<Membership>();
   
   useEffect(() => {
-    if (profile.membership !== prevMembershipRef.current) {
-      if (profile.membership === 'premium' && prevMembershipRef.current === 'member') {
-        toast({
-          title: "Congratulations! 💎",
-          description: "You've been upgraded to a Premium Member.",
-        });
-      }
-      prevMembershipRef.current = profile.membership;
-    }
-  }, [profile.membership, toast]);
-
-  useEffect(() => {
     if (authLoading) return;
   
     const mergeWithDefaults = (parsedProfile: Partial<UserProfile>): UserProfile => {
@@ -449,6 +438,18 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
       if (unsubscribe) unsubscribe();
     };
   }, [user, authLoading, maintenanceConfig.premiumCriteria]);
+
+  useEffect(() => {
+    if (!isLoading && profile.membership !== prevMembershipRef.current) {
+        if (profile.membership === 'premium' && prevMembershipRef.current === 'member') {
+            toast({
+                title: "Congratulations! 💎",
+                description: "You've been upgraded to a Premium Member.",
+            });
+        }
+        prevMembershipRef.current = profile.membership;
+    }
+}, [profile.membership, isLoading, toast]);
 
   const setProfile = (newProfileData: UserProfile | ((prevState: UserProfile) => UserProfile)) => {
     setProfileState(currentProfile => {
@@ -706,6 +707,7 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
       categoryId: '',
       accountId,
       date: new Date().toISOString(),
+      recurring: 'none',
     });
     setProfile(p => {
         const goalsArray = Array.isArray(p.budget.goals) ? p.budget.goals : Object.values(p.budget.goals);
@@ -890,5 +892,3 @@ export const useProfile = () => {
   }
   return context;
 };
-
-    

@@ -5,7 +5,7 @@
 import React, { useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Plus, MoreVertical, ArrowUp, ArrowDown, Landmark, Utensils, Bus, ShoppingBag, FileText, HeartPulse, Ticket, Icon, Edit, Trash2, Settings, Wallet, PiggyBank, Briefcase, Coins, Home, Car, Filter, Target, Gem, School, LineChart } from 'lucide-react';
+import { Plus, MoreVertical, ArrowUp, ArrowDown, Landmark, Utensils, Bus, ShoppingBag, FileText, HeartPulse, Ticket, Icon, Edit, Trash2, Settings, Wallet, PiggyBank, Briefcase, Coins, Home, Car, Filter, Target, Gem, School, LineChart, Repeat } from 'lucide-react';
 import { useProfile, Transaction, Account, Category, SavingsGoal } from '@/context/ProfileContext';
 import { format, parseISO, isSameMonth, subMonths, startOfMonth, formatDistanceToNow } from 'date-fns';
 import { BudgetTransactionDialog } from './budget-transaction-dialog';
@@ -44,6 +44,7 @@ const TransactionItem = ({ transaction, categoryName, categoryIcon, onEdit, onDe
   const isIncome = transaction.type === 'income';
   const CategoryIcon = categoryIcon;
   const dateLabel = formatDistanceToNow(parseISO(transaction.date), { addSuffix: true });
+  const isRecurring = transaction.recurring && transaction.recurring !== 'none';
 
   return (
     <div className="flex items-center gap-4 py-3 group">
@@ -51,7 +52,7 @@ const TransactionItem = ({ transaction, categoryName, categoryIcon, onEdit, onDe
         <CategoryIcon className="h-5 w-5 text-primary" />
       </div>
       <div className="flex-1">
-        <p className="font-semibold">{transaction.description}</p>
+        <p className="font-semibold flex items-center gap-2">{transaction.description} {isRecurring && <Repeat className="h-3 w-3 text-muted-foreground" />}</p>
         <p className="text-sm text-muted-foreground">
           {categoryName} &bull; {dateLabel}
         </p>
@@ -476,6 +477,3 @@ export function BudgetTrackerPage() {
     </div>
   );
 }
-
-
-    

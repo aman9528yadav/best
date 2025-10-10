@@ -23,6 +23,7 @@ import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import type { Account, Category, Transaction } from '@/context/ProfileContext';
+import { Repeat } from 'lucide-react';
 
 interface BudgetTransactionDialogProps {
   open: boolean;
@@ -48,6 +49,7 @@ export function BudgetTransactionDialog({
   const [categoryId, setCategoryId] = useState('');
   const [accountId, setAccountId] = useState('');
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
+  const [recurring, setRecurring] = useState<Transaction['recurring']>('none');
   
   useEffect(() => {
     if (transaction) {
@@ -57,6 +59,7 @@ export function BudgetTransactionDialog({
       setCategoryId(transaction.categoryId);
       setAccountId(transaction.accountId);
       setDate(new Date(transaction.date).toISOString().split('T')[0]);
+      setRecurring(transaction.recurring || 'none');
     } else {
       resetForm();
     }
@@ -69,6 +72,7 @@ export function BudgetTransactionDialog({
     setAccountId(accounts[0]?.id || '');
     setDate(new Date().toISOString().split('T')[0]);
     setType('expense');
+    setRecurring('none');
   };
 
   const handleSave = () => {
@@ -84,6 +88,7 @@ export function BudgetTransactionDialog({
       categoryId,
       accountId,
       date,
+      recurring,
     };
     
     if (transaction) {
@@ -153,6 +158,18 @@ export function BudgetTransactionDialog({
             <div className="space-y-2">
                 <Label htmlFor="date">Date</Label>
                 <Input id="date" type="date" value={date} onChange={(e) => setDate(e.target.value)} />
+            </div>
+             <div className="space-y-2">
+                <Label htmlFor="recurring">Recurrence</Label>
+                <Select value={recurring} onValueChange={(v) => setRecurring(v as Transaction['recurring'])}>
+                    <SelectTrigger><div className="flex items-center gap-2"><Repeat className="h-4 w-4 text-muted-foreground" /><SelectValue placeholder="Select recurrence" /></div></SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="none">None</SelectItem>
+                        <SelectItem value="daily">Daily</SelectItem>
+                        <SelectItem value="weekly">Weekly</SelectItem>
+                        <SelectItem value="monthly">Monthly</SelectItem>
+                    </SelectContent>
+                </Select>
             </div>
         </div>
         <DialogFooter>
