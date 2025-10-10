@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import React, { useState, useMemo } from 'react';
@@ -301,13 +302,17 @@ export function BudgetTrackerPage() {
                 <CardContent>
                      {categories.filter(c => c.id !== 'cat-income').map(cat => {
                         const CategoryIcon = iconMap[cat.icon] || Utensils;
+                        const isDefault = cat.id.startsWith('cat-');
                         return (
                             <div key={cat.id} className="flex items-center gap-4 py-2 group">
                                 <div className="p-2 bg-accent rounded-full"><CategoryIcon className="h-4 w-4 text-primary"/></div>
                                 <div className="flex-1 font-medium">{cat.name}</div>
-                                <div className="opacity-0 group-hover:opacity-100 transition-opacity">
-                                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { setEditingCategory(cat); setIsCategoryDialogOpen(true); }}><Edit className="h-4 w-4" /></Button>
-                                </div>
+                                {!isDefault && (
+                                    <div className="opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { setEditingCategory(cat); setIsCategoryDialogOpen(true); }}><Edit className="h-4 w-4" /></Button>
+                                        <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => setItemToDelete({ id: cat.id, type: 'category' })}><Trash2 className="h-4 w-4" /></Button>
+                                    </div>
+                                )}
                             </div>
                         )
                      })}
