@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button';
 import { Plus, MoreVertical, ArrowUp, ArrowDown, Landmark, Utensils, Bus, ShoppingBag, FileText, HeartPulse, Ticket, Icon, Edit, Trash2, Settings, Wallet, PiggyBank, Briefcase, Coins, Home, Car, Filter, Target, Gem, School, LineChart } from 'lucide-react';
 import { useProfile, Transaction, Account, Category, SavingsGoal } from '@/context/ProfileContext';
-import { format, parseISO, isSameMonth, subMonths, startOfMonth } from 'date-fns';
+import { format, parseISO, isSameMonth, subMonths, startOfMonth, formatDistanceToNow } from 'date-fns';
 import { BudgetTransactionDialog } from './budget-transaction-dialog';
 import { AccountDialog } from './account-dialog';
 import { CategoryDialog } from './category-dialog';
@@ -42,6 +42,7 @@ const iconMap: { [key: string]: Icon } = {
 const TransactionItem = ({ transaction, categoryName, categoryIcon, onEdit, onDelete }: { transaction: Transaction, categoryName: string, categoryIcon: Icon, onEdit: () => void, onDelete: () => void }) => {
   const isIncome = transaction.type === 'income';
   const CategoryIcon = categoryIcon;
+  const dateLabel = formatDistanceToNow(parseISO(transaction.date), { addSuffix: true });
 
   return (
     <div className="flex items-center gap-4 py-3 group">
@@ -51,7 +52,7 @@ const TransactionItem = ({ transaction, categoryName, categoryIcon, onEdit, onDe
       <div className="flex-1">
         <p className="font-semibold">{transaction.description}</p>
         <p className="text-sm text-muted-foreground">
-          {categoryName} &bull; {format(parseISO(transaction.date), 'MMM d, yyyy')}
+          {categoryName} &bull; {dateLabel}
         </p>
       </div>
       <div className={`text-lg font-bold ${isIncome ? 'text-green-500' : 'text-red-500'}`}>
@@ -138,6 +139,17 @@ export function BudgetTrackerPage() {
       .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
       .slice(0, 15);
   }, [transactions, transactionFilter]);
+
+  const transactionsByAccount = useMemo(() => {
+      const grouped: { [key: string]: Transaction[] } = {};
+      transactions.forEach(t => {
+          if (!grouped[t.accountId]) {
+              grouped[t.accountId] = [];
+          }
+          grouped[t.accountId].push(t);
+      });
+      return grouped;
+  }, [transactions]);
   
 
   const handleSaveTransaction = (transaction: Transaction | Omit<Transaction, 'id'>) => {
@@ -366,6 +378,41 @@ export function BudgetTrackerPage() {
                         </CardHeader>
                         <CardContent className="h-[250px] flex justify-center items-center">
                             <BudgetBreakdownChart />
+                        </CardContent>
+                    </Card>
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Transactions by Account</CardTitle>
+                            <CardDescription>Recent activity for each account.</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <Tabs defaultValue={accounts[0]?.id || 'no-accounts'}>
+                                <TabsList className="grid w-full grid-cols-2">
+                                {accounts.map(account => (
+                                    <TabsTrigger key={account.id} value={account.id}>{account.name}</TabsTrigger>
+                                ))}
+                                </TabsList>
+                            {accounts.map(account => (
+                                    <TabsContent key={account.id} value={account.id}>
+                                        {(transactionsByAccount[account.id] || []).slice(0, 5).map(t => {
+                                            const category = categoryMap.get(t.categoryId);
+                                            return (
+                                                <TransactionItem
+                                                    key={t.id}
+                                                    transaction={t}
+                                                    categoryName={category?.name || 'Uncategorized'}
+                                                    categoryIcon={iconMap[category?.icon || ''] || Utensils}
+                                                    onEdit={() => { setEditingTransaction(t); setIsTxDialogOpen(true); }}
+                                                    onDelete={() => setItemToDelete({ id: t.id, type: 'transaction'})}
+                                                />
+                                            );
+                                        })}
+                                        {(transactionsByAccount[account.id] || []).length === 0 && (
+                                            <p className="text-muted-foreground text-center py-4">No transactions for this account.</p>
+                                        )}
+                                    </TabsContent>
+                            ))}
+                            </Tabs>
                         </CardContent>
                     </Card>
                 </CardContent>
