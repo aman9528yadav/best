@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import React, { createContext, useContext, useState, ReactNode, useEffect, useRef } from 'react';
@@ -8,6 +7,7 @@ import { rtdb } from '@/lib/firebase';
 import { useAuth } from './AuthContext';
 import { isToday, differenceInCalendarDays, startOfDay, isYesterday } from 'date-fns';
 import { useMaintenance } from './MaintenanceContext';
+import { useToast } from '@/hooks/use-toast';
 
 export type ActivityType = 'conversion' | 'calculator' | 'date_calculation' | 'note' | 'todo' | 'budget';
 
@@ -342,8 +342,20 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
   const [isLoading, setIsLoading] = useState(true);
   const { user, loading: authLoading } = useAuth();
   const { maintenanceConfig } = useMaintenance();
+  const { toast } = useToast();
+  const prevMembershipRef = useRef<Membership>();
   
-  const dataLoaded = useRef(false);
+  useEffect(() => {
+    if (profile.membership !== prevMembershipRef.current) {
+      if (profile.membership === 'premium' && prevMembershipRef.current === 'member') {
+        toast({
+          title: "Congratulations! 💎",
+          description: "You've been upgraded to a Premium Member.",
+        });
+      }
+      prevMembershipRef.current = profile.membership;
+    }
+  }, [profile.membership, toast]);
 
   useEffect(() => {
     if (authLoading) return;
@@ -381,13 +393,11 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
     let unsubscribe: (() => void) | undefined;
   
     if (user) {
-      // For logged-in users, load from localStorage first for speed
       const cachedProfileRaw = localStorage.getItem(`sutradhaar_profile_${user.uid}`);
       if (cachedProfileRaw) {
-        const cachedProfile = mergeWithDefaults(JSON.parse(cachedProfileRaw));
-        setProfileState(cachedProfile);
+        setProfileState(mergeWithDefaults(JSON.parse(cachedProfileRaw)));
       }
-      setIsLoading(!cachedProfileRaw); // Show loading only if no cache
+      setIsLoading(!cachedProfileRaw);
   
       const userRef = ref(rtdb, `users/${user.uid}/profile`);
       unsubscribe = onValue(userRef, (snapshot) => {
@@ -426,7 +436,6 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
         setIsLoading(false);
       });
     } else {
-      // For guest users, load from localStorage
       const savedProfileRaw = localStorage.getItem('sutradhaar_profile');
       if (savedProfileRaw) {
         setProfileState(mergeWithDefaults(JSON.parse(savedProfileRaw)));
@@ -456,19 +465,27 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
             
             const toObjectReducer = (acc:any, item:any) => ({...acc, [item.id]: item});
 
-            // @ts-ignore
-            dbProfile.history = (dbProfile.history || []).reduce(toObjectReducer, {});
-            // @ts-ignore
-            dbProfile.favorites = (dbProfile.favorites || []).reduce(toObjectReducer, {});
+            if (dbProfile.history && Array.isArray(dbProfile.history)) {
+                // @ts-ignore
+                dbProfile.history = dbProfile.history.reduce(toObjectReducer, {});
+            }
+            if (dbProfile.favorites && Array.isArray(dbProfile.favorites)) {
+                // @ts-ignore
+                dbProfile.favorites = dbProfile.favorites.reduce(toObjectReducer, {});
+            }
             if (dbProfile.budget && dbProfile.budget.goals) {
                 const goalsArray = Array.isArray(dbProfile.budget.goals) ? dbProfile.budget.goals : Object.values(dbProfile.budget.goals);
-                // @ts-ignore
+                 // @ts-ignore
                 dbProfile.budget.goals = goalsArray.reduce(toObjectReducer, {});
             }
-             // @ts-ignore
-            dbProfile.customUnits = (dbProfile.customUnits || []).reduce(toObjectReducer, {});
-             // @ts-ignore
-            dbProfile.customCategories = (dbProfile.customCategories || []).reduce(toObjectReducer, {});
+             if (dbProfile.customUnits && Array.isArray(dbProfile.customUnits)) {
+                 // @ts-ignore
+                dbProfile.customUnits = dbProfile.customUnits.reduce(toObjectReducer, {});
+             }
+             if (dbProfile.customCategories && Array.isArray(dbProfile.customCategories)) {
+                // @ts-ignore
+                dbProfile.customCategories = dbProfile.customCategories.reduce(toObjectReducer, {});
+             }
             
             set(userRef, dbProfile).catch(error => console.error("Failed to save profile to Realtime DB", error));
             localStorage.setItem(`sutradhaar_profile_${user.uid}`, JSON.stringify(updatedProfile));
@@ -874,4 +891,4 @@ export const useProfile = () => {
   return context;
 };
 
-
+    
