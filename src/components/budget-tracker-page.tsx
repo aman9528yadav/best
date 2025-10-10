@@ -32,7 +32,7 @@ import {
   DropdownMenuRadioItem,
 } from "@/components/ui/dropdown-menu";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ScrollArea } from '@/components/ui/scroll-area';
+import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { BudgetBreakdownChart } from './budget-breakdown-chart';
 
 const iconMap: { [key: string]: Icon } = {
@@ -203,13 +203,14 @@ export function BudgetTrackerPage() {
       
       <Tabs defaultValue="transactions" className="w-full">
         <ScrollArea className="w-full whitespace-nowrap rounded-md">
-            <TabsList className="inline-flex h-auto p-1 mb-4">
-                <TabsTrigger value="transactions">Transactions</TabsTrigger>
-                <TabsTrigger value="accounts">Accounts</TabsTrigger>
-                <TabsTrigger value="categories">Categories</TabsTrigger>
-                <TabsTrigger value="goals">Goals</TabsTrigger>
-                <TabsTrigger value="analytics">Analytics</TabsTrigger>
-            </TabsList>
+          <TabsList className="inline-flex h-auto p-1 mb-4">
+            <TabsTrigger value="transactions">Transactions</TabsTrigger>
+            <TabsTrigger value="accounts">Accounts</TabsTrigger>
+            <TabsTrigger value="categories">Categories</TabsTrigger>
+            <TabsTrigger value="goals">Goals</TabsTrigger>
+            <TabsTrigger value="analytics">Analytics</TabsTrigger>
+          </TabsList>
+          <ScrollBar orientation="horizontal" />
         </ScrollArea>
         <TabsContent value="transactions" className="mt-4">
           <Card>
