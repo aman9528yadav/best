@@ -3,9 +3,9 @@
 "use client";
 
 import React, { useState, useMemo } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Plus, MoreVertical, ArrowUp, ArrowDown, Landmark, Utensils, Bus, ShoppingBag, FileText, HeartPulse, Ticket, Icon, Edit, Trash2, Settings, Wallet, PiggyBank, Briefcase, Coins, Home, Car, Filter, Target, Gem, School } from 'lucide-react';
+import { Plus, MoreVertical, ArrowUp, ArrowDown, Landmark, Utensils, Bus, ShoppingBag, FileText, HeartPulse, Ticket, Icon, Edit, Trash2, Settings, Wallet, PiggyBank, Briefcase, Coins, Home, Car, Filter, Target, Gem, School, LineChart } from 'lucide-react';
 import { useProfile, Transaction, Account, Category, SavingsGoal } from '@/context/ProfileContext';
 import { format, parseISO, isSameMonth, subMonths, startOfMonth } from 'date-fns';
 import { BudgetTransactionDialog } from './budget-transaction-dialog';
@@ -34,6 +34,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { BudgetBreakdownChart } from './budget-breakdown-chart';
 
 const iconMap: { [key: string]: Icon } = {
     Landmark, Utensils, Bus, ShoppingBag, FileText, HeartPulse, Ticket, Briefcase, Coins, Home, Car, School
@@ -202,11 +203,12 @@ export function BudgetTrackerPage() {
       </Card>
       
       <Tabs defaultValue="transactions" className="w-full">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="transactions">Transactions</TabsTrigger>
           <TabsTrigger value="accounts">Accounts</TabsTrigger>
           <TabsTrigger value="categories">Categories</TabsTrigger>
           <TabsTrigger value="goals">Goals</TabsTrigger>
+          <TabsTrigger value="analytics">Analytics</TabsTrigger>
         </TabsList>
         <TabsContent value="transactions" className="mt-4">
           <Card>
@@ -314,7 +316,7 @@ export function BudgetTrackerPage() {
                                     <DropdownMenu>
                                         <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-8 w-8"><MoreVertical className="h-4 w-4" /></Button></DropdownMenuTrigger>
                                         <DropdownMenuContent>
-                                            <DropdownMenuItem onClick={() => {setGoalToContribute(goal); setIsContributeDialogOpen(true)}}><Gem className="mr-2 h-4 w-4" />Contribute</DropdownMenuItem>
+                                            <DropdownMenuItem onSelect={() => {setGoalToContribute(goal); setIsContributeDialogOpen(true)}}><Gem className="mr-2 h-4 w-4" />Contribute</DropdownMenuItem>
                                             <DropdownMenuItem onClick={() => { setEditingGoal(goal); setIsGoalDialogOpen(true); }}><Edit className="mr-2 h-4 w-4" />Edit</DropdownMenuItem>
                                             <DropdownMenuItem onClick={() => setItemToDelete({ id: goal.id, type: 'goal' })} className="text-destructive"><Trash2 className="mr-2 h-4 w-4" />Delete</DropdownMenuItem>
                                         </DropdownMenuContent>
@@ -328,6 +330,42 @@ export function BudgetTrackerPage() {
                             </div>
                         )
                     })}
+                </CardContent>
+            </Card>
+        </TabsContent>
+         <TabsContent value="analytics" className="mt-4">
+            <Card>
+                <CardHeader>
+                    <CardTitle className="flex items-center gap-2"><LineChart className="h-5 w-5" />Budget Analytics</CardTitle>
+                    <CardDescription>Visualize your income and spending habits.</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                    <div className="grid grid-cols-2 gap-4">
+                         <Card>
+                             <CardHeader className="p-3">
+                                <CardTitle className="text-sm font-medium">This Month's Income</CardTitle>
+                             </CardHeader>
+                             <CardContent className="p-3 pt-0">
+                                <p className="text-2xl font-bold">₹{monthlyStats.income.total.toFixed(2)}</p>
+                             </CardContent>
+                         </Card>
+                          <Card>
+                             <CardHeader className="p-3">
+                                <CardTitle className="text-sm font-medium">This Month's Expenses</CardTitle>
+                             </CardHeader>
+                             <CardContent className="p-3 pt-0">
+                                <p className="text-2xl font-bold">₹{monthlyStats.expenses.total.toFixed(2)}</p>
+                             </CardContent>
+                         </Card>
+                    </div>
+                     <Card>
+                        <CardHeader>
+                            <CardTitle>Spending Breakdown</CardTitle>
+                        </CardHeader>
+                        <CardContent className="h-[250px] flex justify-center items-center">
+                            <BudgetBreakdownChart />
+                        </CardContent>
+                    </Card>
                 </CardContent>
             </Card>
         </TabsContent>
