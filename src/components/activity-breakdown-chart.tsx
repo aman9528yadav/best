@@ -6,13 +6,6 @@ import { Label, Pie, PieChart, Sector } from "recharts"
 import { PieSectorDataItem } from "recharts/types/polar/Pie"
 
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
-import {
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
@@ -75,11 +68,7 @@ export function ActivityBreakdownChart() {
         config={chartConfig}
         className="mx-auto aspect-square h-full"
       >
-        <PieChart
-          onMouseEnter={(_, index) => {
-            setActiveIndex(index)
-          }}
-        >
+        <PieChart>
           <ChartTooltip
             cursor={false}
             content={<ChartTooltipContent hideLabel />}
