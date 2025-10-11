@@ -240,8 +240,8 @@ export default function CustomUnitsPage() {
                 <Card key={category.id}>
                     <AccordionItem value={category.id} className="border-b-0">
                         <CardHeader className="p-3">
-                             <AccordionTrigger className="w-full p-0 hover:no-underline">
-                                <div className="flex justify-between items-center w-full">
+                             <div className="flex justify-between items-center w-full">
+                                <AccordionTrigger className="w-full p-0 hover:no-underline flex-1">
                                     <div className="flex items-center gap-3">
                                         <div className="p-2 bg-accent rounded-lg">
                                             {category.isCustom ? <Sigma className="h-5 w-5 text-primary" /> : React.createElement(category.icon, { className: 'h-5 w-5 text-primary' })}
@@ -251,18 +251,18 @@ export default function CustomUnitsPage() {
                                             <p className="text-xs text-muted-foreground text-left">{unitsForCategory.length} units</p>
                                         </div>
                                     </div>
-                                    {category.isCustom && (
-                                        <div className="flex items-center">
-                                            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={(e) => { e.stopPropagation(); setEditingCategory(category); setIsCategoryDialogOpen(true); }}>
-                                                <Pencil className="h-4 w-4" />
-                                            </Button>
-                                            <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={(e) => { e.stopPropagation(); deleteCustomCategory(category.id); }}>
-                                                <Trash2 className="h-4 w-4" />
-                                            </Button>
-                                        </div>
-                                    )}
-                                </div>
-                             </AccordionTrigger>
+                                </AccordionTrigger>
+                                {category.isCustom && (
+                                    <div className="flex items-center ml-2">
+                                        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { setEditingCategory(category); setIsCategoryDialogOpen(true); }}>
+                                            <Pencil className="h-4 w-4" />
+                                        </Button>
+                                        <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => deleteCustomCategory(category.id)}>
+                                            <Trash2 className="h-4 w-4" />
+                                        </Button>
+                                    </div>
+                                )}
+                            </div>
                         </CardHeader>
                         <AccordionContent className="px-3 pb-3">
                             <div className="space-y-2 pt-2 border-t">
