@@ -47,7 +47,7 @@ const TransactionItem = ({ transaction, categoryName, categoryIcon, onEdit, onDe
   const isRecurring = transaction.recurring && transaction.recurring !== 'none';
 
   return (
-    <div className="flex items-center gap-4 py-3 group">
+    <div className="flex items-center gap-4 py-3">
       <div className="p-3 bg-accent rounded-full">
         <CategoryIcon className="h-5 w-5 text-primary" />
       </div>
@@ -60,7 +60,7 @@ const TransactionItem = ({ transaction, categoryName, categoryIcon, onEdit, onDe
       <div className={`text-lg font-bold ${isIncome ? 'text-green-500' : 'text-red-500'}`}>
         {isIncome ? '+' : '-'}₹{transaction.amount.toFixed(2)}
       </div>
-       <div className="opacity-0 group-hover:opacity-100 transition-opacity">
+       <div className="opacity-100 transition-opacity">
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="icon" className="h-8 w-8"><MoreVertical className="h-4 w-4" /></Button>
@@ -282,11 +282,11 @@ export function BudgetTrackerPage() {
                 </CardHeader>
                 <CardContent>
                      {accounts.map(acc => (
-                        <div key={acc.id} className="flex items-center gap-4 py-2 group">
+                        <div key={acc.id} className="flex items-center gap-4 py-2">
                             <div className="p-2 bg-accent rounded-full"><Wallet className="h-4 w-4 text-primary"/></div>
                             <div className="flex-1 font-medium">{acc.name}</div>
                             <div className="font-semibold">₹{acc.balance.toFixed(2)}</div>
-                            <div className="opacity-0 group-hover:opacity-100 transition-opacity">
+                            <div className="opacity-100 transition-opacity">
                                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { setEditingAccount(acc); setIsAccountDialogOpen(true); }}><Edit className="h-4 w-4" /></Button>
                             </div>
                         </div>
@@ -305,11 +305,11 @@ export function BudgetTrackerPage() {
                         const CategoryIcon = iconMap[cat.icon] || Utensils;
                         const isDefault = cat.id.startsWith('cat-');
                         return (
-                            <div key={cat.id} className="flex items-center gap-4 py-2 group">
+                            <div key={cat.id} className="flex items-center gap-4 py-2">
                                 <div className="p-2 bg-accent rounded-full"><CategoryIcon className="h-4 w-4 text-primary"/></div>
                                 <div className="flex-1 font-medium">{cat.name}</div>
                                 {!isDefault && (
-                                    <div className="opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <div className="opacity-100 transition-opacity">
                                         <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { setEditingCategory(cat); setIsCategoryDialogOpen(true); }}><Edit className="h-4 w-4" /></Button>
                                         <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => setItemToDelete({ id: cat.id, type: 'category' })}><Trash2 className="h-4 w-4" /></Button>
                                     </div>

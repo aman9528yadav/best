@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import React, { useState, useMemo } from 'react';
@@ -81,7 +82,7 @@ export function NotesPage() {
 
   const NoteItem = ({ note }: { note: typeof notes[0] }) => (
     <Card 
-        className="p-4 flex flex-col group"
+        className="p-4 flex flex-col"
         
     >
         <div className="flex-1 cursor-pointer" onClick={() => handleNoteClick(note.id)}>
@@ -96,7 +97,7 @@ export function NotesPage() {
           <span>Updated {formatDistanceToNow(new Date(note.updatedAt), { addSuffix: true })}</span>
         </div>
 
-        <div className="flex items-center opacity-0 group-hover:opacity-100 transition-opacity">
+        <div className="flex items-center opacity-100 transition-opacity">
             {note.isTrashed ? (
                 <>
                     <AlertDialog>

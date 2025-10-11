@@ -179,7 +179,7 @@ export function TodoPage() {
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, x: -20 }}
         transition={{ duration: 0.2 }}
-        className="flex items-start gap-3 p-3 group"
+        className="flex items-start gap-3 p-3"
       >
         <Checkbox
             id={`todo-${todo.id}`}
@@ -212,7 +212,7 @@ export function TodoPage() {
                 )}
             </div>
         </div>
-        <div className="flex items-center ml-auto opacity-0 group-hover:opacity-100 transition-opacity">
+        <div className="flex items-center ml-auto opacity-100 transition-opacity">
             <Flag className={cn("h-4 w-4 mr-2", priorityColors[todo.priority])} />
             <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setEditingTodo(todo)}><Edit className="h-4 w-4" /></Button>
             <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => deleteTodo(todo.id)}><Trash2 className="h-4 w-4" /></Button>
@@ -281,4 +281,3 @@ export function TodoPage() {
     </div>
   );
 }
-
