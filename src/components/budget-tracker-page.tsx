@@ -40,37 +40,41 @@ const iconMap: { [key: string]: Icon } = {
     Landmark, Utensils, Bus, ShoppingBag, FileText, HeartPulse, Ticket, Briefcase, Coins, Home, Car, School
 };
 
-const TransactionItem = ({ transaction, categoryName, categoryIcon, onEdit, onDelete }: { transaction: Transaction, categoryName: string, categoryIcon: Icon, onEdit: () => void, onDelete: () => void }) => {
+const TransactionItem = ({ transaction, categoryName, categoryIcon, onEdit, onDelete, accountName, remainingBalance }: { transaction: Transaction, categoryName: string, categoryIcon: Icon, onEdit: () => void, onDelete: () => void, accountName: string, remainingBalance: number }) => {
   const isIncome = transaction.type === 'income';
   const CategoryIcon = categoryIcon;
-  const dateLabel = formatDistanceToNow(parseISO(transaction.date), { addSuffix: true });
-  const isRecurring = transaction.recurring && transaction.recurring !== 'none';
 
   return (
-    <div className="flex items-center gap-4 py-3">
-      <div className="p-3 bg-accent rounded-full">
-        <CategoryIcon className="h-5 w-5 text-primary" />
-      </div>
-      <div className="flex-1">
-        <p className="font-semibold flex items-center gap-2">{transaction.description} {isRecurring && <Repeat className="h-3 w-3 text-muted-foreground" />}</p>
-        <p className="text-sm text-muted-foreground">
-          {categoryName} &bull; {dateLabel}
-        </p>
-      </div>
-      <div className={`text-lg font-bold ${isIncome ? 'text-green-500' : 'text-red-500'}`}>
-        {isIncome ? '+' : '-'}₹{transaction.amount.toFixed(2)}
-      </div>
-       <div className="opacity-100 transition-opacity">
-        <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-8 w-8"><MoreVertical className="h-4 w-4" /></Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={onEdit}><Edit className="mr-2 h-4 w-4" />Edit</DropdownMenuItem>
-                <DropdownMenuItem onClick={onDelete} className="text-destructive"><Trash2 className="mr-2 h-4 w-4" />Delete</DropdownMenuItem>
-            </DropdownMenuContent>
-        </DropdownMenu>
-       </div>
+    <div className="flex items-center gap-4 py-4 border-b">
+        <div className="p-3 bg-accent rounded-full">
+            <CategoryIcon className="h-5 w-5 text-primary" />
+        </div>
+        <div className="flex-1 space-y-1">
+            <div className="flex justify-between items-baseline">
+                <p className="font-semibold">{transaction.description}</p>
+                <p className={`font-bold text-lg ${isIncome ? 'text-green-500' : 'text-red-500'}`}>
+                    {isIncome ? '+' : '-'}₹{transaction.amount.toFixed(2)}
+                </p>
+            </div>
+            <div className="flex justify-between items-baseline text-sm text-muted-foreground">
+                <p>{accountName}</p>
+                <p>Balance: ₹{remainingBalance.toFixed(2)}</p>
+            </div>
+             <div className="flex justify-between items-baseline text-xs text-muted-foreground">
+                <p>{format(parseISO(transaction.date), 'dd-MMM-yyyy')}</p>
+                 <div className="opacity-100 transition-opacity">
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon" className="h-6 w-6"><MoreVertical className="h-4 w-4" /></Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={onEdit}><Edit className="mr-2 h-4 w-4" />Edit</DropdownMenuItem>
+                            <DropdownMenuItem onClick={onDelete} className="text-destructive"><Trash2 className="mr-2 h-4 w-4" />Delete</DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                </div>
+            </div>
+        </div>
     </div>
   );
 };
@@ -134,13 +138,27 @@ export function BudgetTrackerPage() {
   }, [transactions]);
   
   const categoryMap = useMemo(() => new Map(categories.map(c => [c.id, c])), [categories]);
+  const accountMap = useMemo(() => new Map(accounts.map(a => [a.id, a])), [accounts]);
 
   const recentTransactions = useMemo(() => {
     const filtered = transactions.filter(t => transactionFilter === 'all' || t.type === transactionFilter);
-    return [...filtered]
-      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-      .slice(0, 15);
-  }, [transactions, transactionFilter]);
+    const sorted = [...filtered].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    
+    const accountBalances = new Map(accounts.map(acc => [acc.id, acc.balance]));
+    const transactionWithBalance: (Transaction & { remainingBalance: number })[] = [];
+
+    for (let i = 0; i < sorted.length; i++) {
+        const tx = sorted[i];
+        const balance = accountBalances.get(tx.accountId) ?? 0;
+        transactionWithBalance.push({ ...tx, remainingBalance: balance });
+        
+        const amountChange = tx.type === 'income' ? -tx.amount : tx.amount;
+        accountBalances.set(tx.accountId, balance + amountChange);
+    }
+    
+    return transactionWithBalance.reverse().slice(0, 15);
+    
+  }, [transactions, transactionFilter, accounts]);
 
   const transactionsByAccount = useMemo(() => {
       const grouped: { [key: string]: Transaction[] } = {};
@@ -256,6 +274,7 @@ export function BudgetTrackerPage() {
                     <ScrollArea className="h-[400px]">
                         {recentTransactions.map(t => {
                             const category = categoryMap.get(t.categoryId);
+                            const account = accountMap.get(t.accountId);
                             return (
                                 <TransactionItem 
                                     key={t.id}
@@ -264,6 +283,8 @@ export function BudgetTrackerPage() {
                                     categoryIcon={iconMap[category?.icon || ''] || Utensils}
                                     onEdit={() => { setEditingTransaction(t); setIsTxDialogOpen(true); }}
                                     onDelete={() => setItemToDelete({ id: t.id, type: 'transaction'})}
+                                    accountName={account?.name || 'Unknown Account'}
+                                    remainingBalance={t.remainingBalance}
                                 />
                             )
                         })}
@@ -410,6 +431,8 @@ export function BudgetTrackerPage() {
                                                     categoryIcon={iconMap[category?.icon || ''] || Utensils}
                                                     onEdit={() => { setEditingTransaction(t); setIsTxDialogOpen(true); }}
                                                     onDelete={() => setItemToDelete({ id: t.id, type: 'transaction'})}
+                                                    accountName={accountMap.get(t.accountId)?.name || 'Unknown'}
+                                                    remainingBalance={accountMap.get(t.accountId)?.balance || 0}
                                                 />
                                             );
                                         })}
