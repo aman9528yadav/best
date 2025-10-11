@@ -1,7 +1,9 @@
 
+
 "use client";
 
 import React, { createContext, useContext, useState, ReactNode, useEffect, useCallback } from 'react';
+import { useProfile } from './ProfileContext';
 
 export type Notification = {
   id: string;
@@ -25,8 +27,13 @@ const NotificationContext = createContext<NotificationContextType | undefined>(u
 export const NotificationProvider = ({ children }: { children: ReactNode }) => {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
+  const { profile } = useProfile();
 
   useEffect(() => {
+    if (!profile.settings.enableNotifications) {
+      setNotifications([]);
+      return;
+    }
     try {
       const savedNotifications = localStorage.getItem('sutradhaar_notifications');
       if (savedNotifications) {
@@ -36,18 +43,20 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
     } catch (e) {
         console.error("Failed to load notifications from local storage", e);
     }
-  }, []);
+  }, [profile.settings.enableNotifications]);
 
   useEffect(() => {
+    if (!profile.settings.enableNotifications) return;
     try {
         localStorage.setItem('sutradhaar_notifications', JSON.stringify(notifications));
         setUnreadCount(notifications.filter(n => !n.read).length);
     } catch (e) {
         console.error("Failed to save notifications to local storage", e);
     }
-  }, [notifications]);
+  }, [notifications, profile.settings.enableNotifications]);
 
   const addNotification = useCallback((notification: Omit<Notification, 'id' | 'read'>) => {
+    if (!profile.settings.enableNotifications) return;
     setNotifications(prev => {
         const alreadyExists = prev.some(n => n.timestamp === notification.timestamp);
         if (alreadyExists) {
@@ -58,11 +67,13 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
           id: `${notification.timestamp}-${Math.random().toString(36).substring(2, 9)}`,
           read: false,
         };
-        const audio = new Audio('/sound/new-notification-09-352705.mp3');
-        audio.play().catch(e => console.error("Failed to play notification sound.", e));
+        if (profile.settings.enableSounds) {
+            const audio = new Audio('/sound/new-notification-09-352705.mp3');
+            audio.play().catch(e => console.error("Failed to play notification sound.", e));
+        }
         return [newNotification, ...prev].slice(0, 20); // Keep last 20
     });
-  }, []);
+  }, [profile.settings.enableNotifications, profile.settings.enableSounds]);
 
   const markAllAsRead = useCallback(() => {
     setNotifications(prev => {

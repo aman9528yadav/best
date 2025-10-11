@@ -148,6 +148,8 @@ export type CustomTheme = {
 export type UserSettings = {
     saveHistory: boolean;
     customTheme?: CustomTheme;
+    enableNotifications: boolean;
+    enableSounds: boolean;
 };
 
 export type Membership = 'guest' | 'member' | 'premium' | 'owner';
@@ -263,7 +265,9 @@ const defaultSettings: UserSettings = {
         foreground: { h: 240, s: 10, l: 3.9 },
         primary: { h: 240, s: 5.9, l: 10 },
         accent: { h: 240, s: 4.8, l: 95.9 },
-    }
+    },
+    enableNotifications: true,
+    enableSounds: true,
 };
 
 const defaultBudgetData: BudgetData = {

@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import React, { useState, useEffect } from 'react';
@@ -53,6 +54,8 @@ import {
   Atom,
   LayoutGrid,
   LayoutDashboard,
+  Bell,
+  VolumeX,
 } from 'lucide-react';
 import { useMaintenance } from '@/context/MaintenanceContext';
 import { useRouter } from 'next/navigation';
@@ -231,6 +234,19 @@ export default function SettingsPage() {
       title: `History saving ${checked ? 'enabled' : 'disabled'}`,
     });
   }
+  
+  const handleSettingChange = (key: keyof UserSettings, value: boolean) => {
+    setProfile(p => ({
+        ...p,
+        settings: {
+            ...p.settings,
+            [key]: value
+        }
+    }));
+    toast({
+        title: `${key.replace(/([A-Z])/g, ' $1')} ${value ? 'enabled' : 'disabled'}`
+    });
+  }
 
   const isOwner = user?.email === 'amanyadavyadav9458@gmail.com';
   const isPremium = profile.membership === 'premium' || profile.membership === 'owner';
@@ -325,13 +341,25 @@ export default function SettingsPage() {
                                 </SelectContent>
                               </Select>
                             </SettingRow>
+                            <SettingRow label="Notifications" icon={Bell}>
+                              <Switch
+                                checked={profile.settings.enableNotifications}
+                                onCheckedChange={(c) => handleSettingChange('enableNotifications', c)}
+                              />
+                            </SettingRow>
+                             <SettingRow label="Notification Sounds" icon={Volume2}>
+                              <Switch
+                                checked={profile.settings.enableSounds}
+                                onCheckedChange={(c) => handleSettingChange('enableSounds', c)}
+                              />
+                            </SettingRow>
                             <SettingRow label="Save History" icon={Info}>
                               <Switch
                                 checked={saveHistory}
                                 onCheckedChange={handleSaveHistoryChange}
                               />
                             </SettingRow>
-                            <SettingRow label="Calculator Sounds" icon={Volume2}>
+                            <SettingRow label="Calculator Sounds" icon={VolumeX}>
                               <Switch
                                 checked={calculatorSounds}
                                 onCheckedChange={handleCalculatorSoundsChange}
@@ -527,5 +555,3 @@ export default function SettingsPage() {
     </div>
   );
 }
-
-    
