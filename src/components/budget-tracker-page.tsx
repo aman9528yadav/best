@@ -147,18 +147,23 @@ export function BudgetTrackerPage() {
     const accountBalances = new Map(accounts.map(acc => [acc.id, acc.balance]));
     const transactionWithBalance: (Transaction & { remainingBalance: number })[] = [];
 
-    for (let i = 0; i < sorted.length; i++) {
-        const tx = sorted[i];
+    // To calculate running balance correctly, we need to iterate from oldest to newest
+    const reversedSorted = [...sorted].reverse();
+    const futureBalances: { [key: string]: number } = {};
+
+    for (const tx of reversedSorted) {
         const balance = accountBalances.get(tx.accountId) ?? 0;
-        transactionWithBalance.push({ ...tx, remainingBalance: balance });
-        
         const amountChange = tx.type === 'income' ? -tx.amount : tx.amount;
         accountBalances.set(tx.accountId, balance + amountChange);
+        futureBalances[tx.id] = accountBalances.get(tx.accountId) ?? 0;
     }
+
+    return sorted.slice(0, 15).map(tx => ({
+        ...tx,
+        remainingBalance: futureBalances[tx.id] ?? (accountMap.get(tx.accountId)?.balance || 0),
+    }));
     
-    return transactionWithBalance.reverse().slice(0, 15);
-    
-  }, [transactions, transactionFilter, accounts]);
+  }, [transactions, transactionFilter, accounts, accountMap]);
 
   const transactionsByAccount = useMemo(() => {
       const grouped: { [key: string]: Transaction[] } = {};
