@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import React, { useState, useRef, useEffect, useCallback } from 'react';
@@ -43,6 +44,7 @@ import { useRouter } from 'next/navigation';
 import type { NoteItem } from '@/context/ProfileContext';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
+import { useMaintenance } from '@/context/MaintenanceContext';
 
 interface NoteEditorProps {
   note?: NoteItem;
@@ -59,6 +61,7 @@ export function NoteEditor({ note, onSave, onDelete, onDeletePermanently, onRest
   const [content, setContent] = useState(note?.content || '');
   const editorRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
+  const { maintenanceConfig } = useMaintenance();
   
   const isFavorite = note?.isFavorite || false;
   const isTrashed = note?.isTrashed || false;
@@ -106,7 +109,10 @@ export function NoteEditor({ note, onSave, onDelete, onDeletePermanently, onRest
 
   const handleSave = () => {
     onSave(title, content);
-    toast({ title: 'Note Saved!' });
+    toast({ 
+      title: maintenanceConfig.noteSavedToast.title, 
+      description: maintenanceConfig.noteSavedToast.description 
+    });
   }
 
   // Set initial content for the editor but only when the note ID changes

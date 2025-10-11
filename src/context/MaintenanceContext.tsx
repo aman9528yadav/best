@@ -93,6 +93,11 @@ export type FeatureFlags = {
     }
 }
 
+export type ToastNotificationConfig = {
+    title: string;
+    description: string;
+}
+
 export type MaintenanceConfig = {
     globalMaintenance: boolean;
     pageMaintenance: { [key: string]: boolean };
@@ -118,6 +123,7 @@ export type MaintenanceConfig = {
     };
     appUpdate: AppUpdateConfig;
     featureFlags: FeatureFlags;
+    noteSavedToast: ToastNotificationConfig;
 };
 
 
@@ -240,6 +246,10 @@ const defaultMaintenanceConfig: MaintenanceConfig = {
             enabled: true,
             description: 'Provides AI-powered suggestions in the unit converter.'
         }
+    },
+    noteSavedToast: {
+        title: "Note Saved!",
+        description: "Your changes have been successfully saved."
     }
 };
 
@@ -290,6 +300,7 @@ export const MaintenanceProvider = ({ children }: { children: ReactNode }) => {
                 premiumCriteria: { ...defaultMaintenanceConfig.premiumCriteria, ...(dbConfig.premiumCriteria || {}) },
                 appUpdate: { ...defaultMaintenanceConfig.appUpdate, ...(dbConfig.appUpdate || {}) },
                 featureFlags: { ...defaultMaintenanceConfig.featureFlags, ...(dbConfig.featureFlags || {})},
+                noteSavedToast: { ...defaultMaintenanceConfig.noteSavedToast, ...(dbConfig.noteSavedToast || {})},
             };
             setMaintenanceConfigState(mergedConfig);
         } else {

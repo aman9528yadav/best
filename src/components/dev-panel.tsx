@@ -79,7 +79,7 @@ export function DevPanel() {
     setMaintenanceConfig,
     isLoading,
   } = useMaintenance();
-  const { globalMaintenance, pageMaintenance, dashboardBanner, maintenanceMessage, devPassword, welcomeDialog, maintenanceTargetDate, premiumCriteria, maintenanceCards, appUpdate, featureFlags } = maintenanceConfig;
+  const { globalMaintenance, pageMaintenance, dashboardBanner, maintenanceMessage, devPassword, welcomeDialog, maintenanceTargetDate, premiumCriteria, maintenanceCards, appUpdate, featureFlags, noteSavedToast } = maintenanceConfig;
   const [broadcastMessage, setBroadcastMessage] = useState('');
   const { clearAllHistory } = useProfile();
   const [passwordState, setPasswordState] = useState({ currentPassword: '', newPassword: '', confirmNewPassword: '' });
@@ -277,6 +277,16 @@ export function DevPanel() {
   const handleToastInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setToastData(prev => ({ ...prev, [name]: value }));
+  };
+  
+  const handleNoteSavedToastChange = (field: 'title' | 'description', value: string) => {
+    setMaintenanceConfig(prev => ({
+        ...prev,
+        noteSavedToast: {
+            ...prev.noteSavedToast,
+            [field]: value
+        }
+    }));
   };
 
   const handleShowToast = () => {
@@ -521,7 +531,7 @@ export function DevPanel() {
                                 <div>
                                     <CardTitle className="text-lg">UI & Messaging</CardTitle>
                                     <CardDescription>
-                                        Test various UI components and messages.
+                                        Test and edit UI components and messages.
                                     </CardDescription>
                                 </div>
                             </div>
@@ -529,7 +539,14 @@ export function DevPanel() {
                     </CardHeader>
                     <AccordionContent className="px-4 pb-4 space-y-4">
                         <div className="bg-accent/50 p-4 rounded-lg space-y-2">
-                            <Label>Test Toast Notification</Label>
+                            <Label className="font-semibold">Note Saved Notification</Label>
+                            <Label htmlFor="note-toast-title" className="text-xs">Title</Label>
+                            <Input id="note-toast-title" name="title" placeholder="Toast Title" value={noteSavedToast.title} onChange={(e) => handleNoteSavedToastChange('title', e.target.value)} />
+                            <Label htmlFor="note-toast-desc" className="text-xs">Description</Label>
+                            <Textarea id="note-toast-desc" name="description" placeholder="Toast Description" value={noteSavedToast.description} onChange={(e) => handleNoteSavedToastChange('description', e.target.value)} />
+                        </div>
+                         <div className="bg-accent/50 p-4 rounded-lg space-y-2">
+                            <Label className="font-semibold">Generic Test Toast</Label>
                             <Input name="title" placeholder="Toast Title" value={toastData.title} onChange={handleToastInputChange} />
                             <Textarea name="description" placeholder="Toast Description" value={toastData.description} onChange={handleToastInputChange} />
                             <Button onClick={handleShowToast} className="w-full">Show Toast</Button>
