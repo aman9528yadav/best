@@ -86,6 +86,13 @@ export type AppUpdateConfig = {
     releaseNotes: string;
 };
 
+export type FeatureFlags = {
+    [key: string]: {
+        enabled: boolean;
+        description: string;
+    }
+}
+
 export type MaintenanceConfig = {
     globalMaintenance: boolean;
     pageMaintenance: { [key: string]: boolean };
@@ -110,6 +117,7 @@ export type MaintenanceConfig = {
         streak: number;
     };
     appUpdate: AppUpdateConfig;
+    featureFlags: FeatureFlags;
 };
 
 
@@ -223,6 +231,16 @@ const defaultMaintenanceConfig: MaintenanceConfig = {
         url: "",
         releaseNotes: "New bug fixes and performance improvements.",
     },
+    featureFlags: {
+        'experimental-ui': {
+            enabled: false,
+            description: 'Enables the new experimental user interface components.'
+        },
+        'ai-suggestions': {
+            enabled: true,
+            description: 'Provides AI-powered suggestions in the unit converter.'
+        }
+    }
 };
 
 const sanitizePathForKey = (path: string) => {
@@ -271,6 +289,7 @@ export const MaintenanceProvider = ({ children }: { children: ReactNode }) => {
                 membershipFeatures: dbConfig.membershipFeatures || defaultMaintenanceConfig.membershipFeatures,
                 premiumCriteria: { ...defaultMaintenanceConfig.premiumCriteria, ...(dbConfig.premiumCriteria || {}) },
                 appUpdate: { ...defaultMaintenanceConfig.appUpdate, ...(dbConfig.appUpdate || {}) },
+                featureFlags: { ...defaultMaintenanceConfig.featureFlags, ...(dbConfig.featureFlags || {})},
             };
             setMaintenanceConfigState(mergedConfig);
         } else {

@@ -19,7 +19,7 @@ import {
 } from '@/components/ui/accordion';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import { ArrowLeft, Clock, Shield, Trash, Megaphone, Pencil, ChevronRight, Send, KeyRound, MessageSquare, Timer, Calendar, Gem, Download } from 'lucide-react';
+import { ArrowLeft, Clock, Shield, Trash, Megaphone, Pencil, ChevronRight, Send, KeyRound, MessageSquare, Timer, Calendar, Gem, Download, Flag } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useMaintenance, Countdown } from '@/context/MaintenanceContext';
 import { useToast } from '@/hooks/use-toast';
@@ -79,7 +79,7 @@ export function DevPanel() {
     setMaintenanceConfig,
     isLoading,
   } = useMaintenance();
-  const { globalMaintenance, pageMaintenance, dashboardBanner, maintenanceMessage, devPassword, welcomeDialog, maintenanceTargetDate, premiumCriteria, maintenanceCards, appUpdate } = maintenanceConfig;
+  const { globalMaintenance, pageMaintenance, dashboardBanner, maintenanceMessage, devPassword, welcomeDialog, maintenanceTargetDate, premiumCriteria, maintenanceCards, appUpdate, featureFlags } = maintenanceConfig;
   const [broadcastMessage, setBroadcastMessage] = useState('');
   const { clearAllHistory } = useProfile();
   const [passwordState, setPasswordState] = useState({ currentPassword: '', newPassword: '', confirmNewPassword: '' });
@@ -118,6 +118,22 @@ export function DevPanel() {
     }));
     toast({
         title: `Maintenance for ${path} ${checked ? 'Enabled' : 'Disabled'}`,
+    });
+  };
+  
+   const handleFeatureFlagChange = (flag: string, checked: boolean) => {
+    setMaintenanceConfig(prev => ({
+        ...prev,
+        featureFlags: {
+            ...prev.featureFlags,
+            [flag]: {
+                ...prev.featureFlags[flag],
+                enabled: checked,
+            }
+        }
+    }));
+    toast({
+        title: `Feature flag '${flag}' ${checked ? 'enabled' : 'disabled'}`,
     });
   };
 
@@ -573,6 +589,41 @@ export function DevPanel() {
                     </div>
                 </AccordionContent>
               </Card>
+            </AccordionItem>
+
+             <AccordionItem value="item-9" asChild>
+                <Card>
+                    <CardHeader className="p-4">
+                    <AccordionTrigger className="p-0 hover:no-underline">
+                        <div className="flex items-center gap-3">
+                        <Flag className="h-5 w-5" />
+                        <div>
+                            <CardTitle className="text-lg">Feature Flags</CardTitle>
+                            <CardDescription>
+                            Toggle experimental features on and off.
+                            </CardDescription>
+                        </div>
+                        </div>
+                    </AccordionTrigger>
+                    </CardHeader>
+                    <AccordionContent className="px-4 pb-4">
+                        <div className="space-y-4">
+                            {Object.entries(featureFlags).map(([key, flag]) => (
+                               <div key={key} className="bg-accent/50 p-4 rounded-lg flex items-center justify-between">
+                                  <div>
+                                    <Label htmlFor={`flag-${key}`} className="font-medium">{key}</Label>
+                                    <p className="text-xs text-muted-foreground">{flag.description}</p>
+                                  </div>
+                                  <Switch
+                                    id={`flag-${key}`}
+                                    checked={flag.enabled}
+                                    onCheckedChange={(checked) => handleFeatureFlagChange(key, checked)}
+                                  />
+                               </div>
+                            ))}
+                        </div>
+                    </AccordionContent>
+                </Card>
             </AccordionItem>
             
             <AccordionItem value="item-6" asChild>
