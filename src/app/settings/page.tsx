@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import React, { useState, useEffect } from 'react';
@@ -119,7 +120,7 @@ const hexToHsl = (hex: string): HSLColor => {
 }
 
 
-export function SettingsPage() {
+export default function SettingsPage() {
   const { toast } = useToast();
   const { profile, setProfile } = useProfile();
   const { settings, membership } = profile;
