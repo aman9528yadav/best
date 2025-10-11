@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import React, { useState, useEffect } from 'react';
@@ -62,6 +61,8 @@ import { useProfile, HSLColor } from '@/context/ProfileContext';
 import { Slider } from '@/components/ui/slider';
 import { useAuth } from '@/context/AuthContext';
 import Link from 'next/link';
+import { Header } from '@/components/header';
+import { SettingsPageSkeleton } from '@/components/settings-page-skeleton';
 
 const themes = [
   { name: 'Sutradhaar', value: 'sutradhaar', isPremium: false },
@@ -122,25 +123,40 @@ const hexToHsl = (hex: string): HSLColor => {
 
 export default function SettingsPage() {
   const { toast } = useToast();
-  const { profile, setProfile } = useProfile();
-  const { settings, membership } = profile;
-  const [saveHistory, setSaveHistory] = useState(settings.saveHistory);
+  const { profile, setProfile, isLoading: isProfileLoading } = useProfile();
+  
+  const { user, loading: isAuthLoading } = useAuth();
+  const { maintenanceConfig, setMaintenanceConfig, isLoading: isMaintenanceLoading } = useMaintenance();
+  
+  const router = useRouter();
+  const { theme, setTheme } = useTheme();
+
+  const [saveHistory, setSaveHistory] = useState(profile.settings.saveHistory);
   const [calculatorSounds, setCalculatorSounds] = useState(false);
   const [showWelcome, setShowWelcome] = useState(false);
-  const { theme, setTheme } = useTheme();
   const [isPasswordDialogOpen, setIsPasswordDialogOpen] = useState(false);
   const [password, setPassword] = useState('');
-  const { maintenanceConfig, setMaintenanceConfig } = useMaintenance();
-  const { isDevMode } = maintenanceConfig;
-  const router = useRouter();
-  const { user } = useAuth();
   
-  const [customTheme, setCustomTheme] = useState(settings.customTheme || {
+  const [customTheme, setCustomTheme] = useState(profile.settings.customTheme || {
       background: { h: 0, s: 0, l: 100 },
       foreground: { h: 240, s: 10, l: 3.9 },
       primary: { h: 240, s: 5.9, l: 10 },
       accent: { h: 240, s: 4.8, l: 95.9 },
   });
+
+  const isLoading = isProfileLoading || isAuthLoading || isMaintenanceLoading;
+
+  useEffect(() => {
+    if (!isProfileLoading) {
+      setSaveHistory(profile.settings.saveHistory);
+       setCustomTheme(profile.settings.customTheme || {
+          background: { h: 0, s: 0, l: 100 },
+          foreground: { h: 240, s: 10, l: 3.9 },
+          primary: { h: 240, s: 5.9, l: 10 },
+          accent: { h: 240, s: 4.8, l: 95.9 },
+      });
+    }
+  }, [isProfileLoading, profile.settings]);
 
 
   useEffect(() => {
@@ -150,11 +166,6 @@ export default function SettingsPage() {
     setShowWelcome(welcomeEnabled);
   }, []);
   
-  useEffect(() => {
-    if (settings.customTheme) {
-        setCustomTheme(settings.customTheme);
-    }
-  }, [settings.customTheme]);
 
   const handleCustomThemeChange = (colorName: keyof typeof customTheme, hexValue: string) => {
       const newHsl = hexToHsl(hexValue);
@@ -222,7 +233,7 @@ export default function SettingsPage() {
   }
 
   const isOwner = user?.email === 'amanyadavyadav9458@gmail.com';
-  const isPremium = membership === 'premium' || membership === 'owner';
+  const isPremium = profile.membership === 'premium' || profile.membership === 'owner';
 
   const SettingRow = ({
     label,
@@ -252,7 +263,7 @@ export default function SettingsPage() {
   };
 
   const handleDevModeChange = (checked: boolean) => {
-    if (checked && !isDevMode) {
+    if (checked && !maintenanceConfig.isDevMode) {
       setIsPasswordDialogOpen(true);
     } else {
       setMaintenanceConfig(p => ({...p, isDevMode: checked}));
@@ -275,7 +286,7 @@ export default function SettingsPage() {
   };
 
   const handleOpenDevPanelClick = () => {
-    if (isDevMode) {
+    if (maintenanceConfig.isDevMode) {
       router.push('/dev');
     } else {
       setIsPasswordDialogOpen(true);
@@ -284,223 +295,237 @@ export default function SettingsPage() {
 
 
   return (
-    <div className="w-full space-y-6 pb-24">
-      <Tabs defaultValue="general" className="w-full">
-        <TabsList className="grid w-full grid-cols-3 bg-accent/50">
-          <TabsTrigger value="general">General</TabsTrigger>
-          <TabsTrigger value="theme">Theme</TabsTrigger>
-          <TabsTrigger value="about">About</TabsTrigger>
-        </TabsList>
+    <div className="flex flex-col items-center w-full min-h-screen bg-background text-foreground">
+        <div className="w-full max-w-[412px] flex flex-col flex-1">
+            <div className="p-4 pt-0">
+                <Header />
+            </div>
+            <main className="flex-1 overflow-y-auto p-4 pt-0 space-y-4">
+                <h1 className="text-2xl font-bold self-start mb-4">Settings</h1>
+                {isLoading ? <SettingsPageSkeleton /> : (
+                  <div className="w-full space-y-6 pb-24">
+                    <Tabs defaultValue="general" className="w-full">
+                      <TabsList className="grid w-full grid-cols-3 bg-accent/50">
+                        <TabsTrigger value="general">General</TabsTrigger>
+                        <TabsTrigger value="theme">Theme</TabsTrigger>
+                        <TabsTrigger value="about">About</TabsTrigger>
+                      </TabsList>
 
-        <TabsContent value="general" className="pt-6">
-          <Card>
-            <CardContent className="p-4 pt-0">
-              <SettingRow label="Default Region" icon={Globe}>
-                <Select defaultValue="International">
-                  <SelectTrigger className="w-[150px]">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="International">International</SelectItem>
-                    <SelectItem value="Local">Local (Indian)</SelectItem>
-                  </SelectContent>
-                </Select>
-              </SettingRow>
-              <SettingRow label="Save History" icon={Info}>
-                <Switch
-                  checked={saveHistory}
-                  onCheckedChange={handleSaveHistoryChange}
-                />
-              </SettingRow>
-              <SettingRow label="Calculator Sounds" icon={Volume2}>
-                <Switch
-                  checked={calculatorSounds}
-                  onCheckedChange={handleCalculatorSoundsChange}
-                />
-              </SettingRow>
-               <SettingRow label="Custom Units" icon={Atom} isLink href="/settings/custom-units" />
-              <SettingRow label="Show Welcome Screen" icon={MessageSquare}>
-                <Switch
-                  checked={showWelcome}
-                  onCheckedChange={handleShowWelcomeChange}
-                />
-              </SettingRow>
-              {isOwner && (
-                <SettingRow label="Developer Mode" icon={Code}>
-                  <Switch
-                    checked={isDevMode}
-                    onCheckedChange={handleDevModeChange}
-                  />
-                </SettingRow>
-              )}
-            </CardContent>
-          </Card>
-          
-           <Card className="mt-6">
-                <CardHeader>
-                    <CardTitle className='flex items-center gap-2'><LayoutDashboard className='h-5 w-5' />Dashboard</CardTitle>
-                    <CardDescription>Customize your dashboard layout.</CardDescription>
-                </CardHeader>
-                <CardContent className="p-4 pt-0">
-                   <SettingRow label="Manage Quick Access" icon={LayoutGrid} isLink href="/profile/manage-quick-access" />
-                   <SettingRow label="Manage Widgets" icon={LayoutDashboard} isLink href="/profile/manage-widgets" />
-                </CardContent>
-             </Card>
-          
-          {isDevMode && isOwner && (
-             <Card className="mt-6">
-                <CardHeader>
-                    <CardTitle className='flex items-center gap-2'><Code className='h-5 w-5' />Developer Options</CardTitle>
-                    <CardDescription>Configure advanced developer settings for the application.</CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <Button className="w-full" onClick={handleOpenDevPanelClick}>
-                        Open Developer Panel
-                    </Button>
-                </CardContent>
-             </Card>
-          )}
+                      <TabsContent value="general" className="pt-6">
+                        <Card>
+                          <CardContent className="p-4 pt-0">
+                            <SettingRow label="Default Region" icon={Globe}>
+                              <Select defaultValue="International">
+                                <SelectTrigger className="w-[150px]">
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="International">International</SelectItem>
+                                  <SelectItem value="Local">Local (Indian)</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </SettingRow>
+                            <SettingRow label="Save History" icon={Info}>
+                              <Switch
+                                checked={saveHistory}
+                                onCheckedChange={handleSaveHistoryChange}
+                              />
+                            </SettingRow>
+                            <SettingRow label="Calculator Sounds" icon={Volume2}>
+                              <Switch
+                                checked={calculatorSounds}
+                                onCheckedChange={handleCalculatorSoundsChange}
+                              />
+                            </SettingRow>
+                            <SettingRow label="Custom Units" icon={Atom} isLink href="/settings/custom-units" />
+                            <SettingRow label="Show Welcome Screen" icon={MessageSquare}>
+                              <Switch
+                                checked={showWelcome}
+                                onCheckedChange={handleShowWelcomeChange}
+                              />
+                            </SettingRow>
+                            {isOwner && (
+                              <SettingRow label="Developer Mode" icon={Code}>
+                                <Switch
+                                  checked={maintenanceConfig.isDevMode}
+                                  onCheckedChange={handleDevModeChange}
+                                />
+                              </SettingRow>
+                            )}
+                          </CardContent>
+                        </Card>
+                        
+                        <Card className="mt-6">
+                              <CardHeader>
+                                  <CardTitle className='flex items-center gap-2'><LayoutDashboard className='h-5 w-5' />Dashboard</CardTitle>
+                                  <CardDescription>Customize your dashboard layout.</CardDescription>
+                              </CardHeader>
+                              <CardContent className="p-4 pt-0">
+                                <SettingRow label="Manage Quick Access" icon={LayoutGrid} isLink href="/profile/manage-quick-access" />
+                                <SettingRow label="Manage Widgets" icon={LayoutDashboard} isLink href="/profile/manage-widgets" />
+                              </CardContent>
+                          </Card>
+                        
+                        {maintenanceConfig.isDevMode && isOwner && (
+                          <Card className="mt-6">
+                              <CardHeader>
+                                  <CardTitle className='flex items-center gap-2'><Code className='h-5 w-5' />Developer Options</CardTitle>
+                                  <CardDescription>Configure advanced developer settings for the application.</CardDescription>
+                              </CardHeader>
+                              <CardContent>
+                                  <Button className="w-full" onClick={handleOpenDevPanelClick}>
+                                      Open Developer Panel
+                                  </Button>
+                              </CardContent>
+                          </Card>
+                        )}
 
-        </TabsContent>
+                      </TabsContent>
 
-        <TabsContent value="theme" className="pt-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Appearance</CardTitle>
-              <CardDescription>
-                Customize the look and feel of the app.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="p-4 pt-0 space-y-4">
-              <div className="flex justify-between items-center p-3 bg-accent/50 rounded-lg">
-                {appearanceModes.map((mode) => (
-                  <Button
-                    key={mode.value}
-                    variant={theme === mode.value ? 'default' : 'ghost'}
-                    size="sm"
-                    onClick={() => setTheme(mode.value)}
-                    className="flex-1 flex items-center gap-2"
-                  >
-                    <mode.icon className="h-4 w-4" />
-                    {mode.name}
-                  </Button>
-                ))}
-              </div>
-              <SettingRow label="Theme" icon={Palette}>
-                <Select
-                  value={theme?.includes('theme-') ? theme.substring(6) : (theme === 'custom' ? 'custom' : 'sutradhaar')}
-                  onValueChange={(v) => {
-                    const selectedTheme = themes.find(t => t.value === v);
-                    if (selectedTheme?.isPremium && !isPremium) {
-                      toast({ title: "Premium Theme", description: "Upgrade to unlock this theme." });
-                      return;
-                    }
-                    setTheme(v === 'sutradhaar' ? 'sutradhaar' : v === 'custom' ? 'custom' : `theme-${v}`);
-                  }}
-                >
-                  <SelectTrigger className="w-[150px]">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {themes.map((themeItem) => (
-                      <SelectItem
-                        key={themeItem.value}
-                        value={themeItem.value}
-                        disabled={themeItem.isPremium && !isPremium}
-                      >
-                        <div className="flex items-center justify-between w-full">
-                          <span>{themeItem.name}</span>
-                          {themeItem.isPremium && !isPremium && <Lock className="h-4 w-4 text-muted-foreground ml-2" />}
-                        </div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </SettingRow>
-            </CardContent>
-          </Card>
-
-           {theme === 'custom' && (
-            <Card className="mt-6">
-                <CardHeader>
-                    <CardTitle className="flex items-center gap-2"><Paintbrush className="h-5 w-5"/>Custom Theme Editor</CardTitle>
-                    <CardDescription>Fine-tune the colors for your custom theme.</CardDescription>
-                </CardHeader>
-                 <CardContent className="space-y-6">
-                    {(Object.keys(customTheme) as Array<keyof typeof customTheme>).map(colorName => (
-                         <div key={colorName} className="space-y-3 p-4 rounded-lg bg-accent/50">
-                            <Label className="font-medium capitalize flex items-center gap-2">
-                                {colorName}
-                            </Label>
-                            <div className="flex items-center gap-2">
-                               <Input 
-                                 type="color" 
-                                 className="h-10 w-12 p-1"
-                                 value={hslToHex(customTheme[colorName].h, customTheme[colorName].s, customTheme[colorName].l)}
-                                 onChange={(e) => handleCustomThemeChange(colorName, e.target.value)}
-                               />
-                               <Input 
-                                 className="flex-1"
-                                 value={hslToHex(customTheme[colorName].h, customTheme[colorName].s, customTheme[colorName].l)}
-                                 onChange={(e) => handleCustomThemeChange(colorName, e.target.value)}
-                               />
+                      <TabsContent value="theme" className="pt-6">
+                        <Card>
+                          <CardHeader>
+                            <CardTitle>Appearance</CardTitle>
+                            <CardDescription>
+                              Customize the look and feel of the app.
+                            </CardDescription>
+                          </CardHeader>
+                          <CardContent className="p-4 pt-0 space-y-4">
+                            <div className="flex justify-between items-center p-3 bg-accent/50 rounded-lg">
+                              {appearanceModes.map((mode) => (
+                                <Button
+                                  key={mode.value}
+                                  variant={theme === mode.value ? 'default' : 'ghost'}
+                                  size="sm"
+                                  onClick={() => setTheme(mode.value)}
+                                  className="flex-1 flex items-center gap-2"
+                                >
+                                  <mode.icon className="h-4 w-4" />
+                                  {mode.name}
+                                </Button>
+                              ))}
                             </div>
-                            <div className="space-y-2">
-                                <Label className='text-xs'>Hue: {customTheme[colorName].h}</Label>
-                                <Slider value={[customTheme[colorName].h]} max={360} onValueChange={([v]) => handleCustomThemeSliderChange(colorName, 'h', v)} />
-                                <Label className='text-xs'>Saturation: {customTheme[colorName].s}%</Label>
-                                <Slider value={[customTheme[colorName].s]} max={100} onValueChange={([v]) => handleCustomThemeSliderChange(colorName, 's', v)} />
-                                <Label className='text-xs'>Lightness: {customTheme[colorName].l}%</Label>
-                                <Slider value={[customTheme[colorName].l]} max={100} onValueChange={([v]) => handleCustomThemeSliderChange(colorName, 'l', v)} />
+                            <SettingRow label="Theme" icon={Palette}>
+                              <Select
+                                value={theme?.includes('theme-') ? theme.substring(6) : (theme === 'custom' ? 'custom' : 'sutradhaar')}
+                                onValueChange={(v) => {
+                                  const selectedTheme = themes.find(t => t.value === v);
+                                  if (selectedTheme?.isPremium && !isPremium) {
+                                    toast({ title: "Premium Theme", description: "Upgrade to unlock this theme." });
+                                    return;
+                                  }
+                                  setTheme(v === 'sutradhaar' ? 'sutradhaar' : v === 'custom' ? 'custom' : `theme-${v}`);
+                                }}
+                              >
+                                <SelectTrigger className="w-[150px]">
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {themes.map((themeItem) => (
+                                    <SelectItem
+                                      key={themeItem.value}
+                                      value={themeItem.value}
+                                      disabled={themeItem.isPremium && !isPremium}
+                                    >
+                                      <div className="flex items-center justify-between w-full">
+                                        <span>{themeItem.name}</span>
+                                        {themeItem.isPremium && !isPremium && <Lock className="h-4 w-4 text-muted-foreground ml-2" />}
+                                      </div>
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            </SettingRow>
+                          </CardContent>
+                        </Card>
+
+                        {theme === 'custom' && (
+                          <Card className="mt-6">
+                              <CardHeader>
+                                  <CardTitle className="flex items-center gap-2"><Paintbrush className="h-5 w-5"/>Custom Theme Editor</CardTitle>
+                                  <CardDescription>Fine-tune the colors for your custom theme.</CardDescription>
+                              </CardHeader>
+                              <CardContent className="space-y-6">
+                                  {(Object.keys(customTheme) as Array<keyof typeof customTheme>).map(colorName => (
+                                      <div key={colorName} className="space-y-3 p-4 rounded-lg bg-accent/50">
+                                          <Label className="font-medium capitalize flex items-center gap-2">
+                                              {colorName}
+                                          </Label>
+                                          <div className="flex items-center gap-2">
+                                            <Input 
+                                              type="color" 
+                                              className="h-10 w-12 p-1"
+                                              value={hslToHex(customTheme[colorName].h, customTheme[colorName].s, customTheme[colorName].l)}
+                                              onChange={(e) => handleCustomThemeChange(colorName, e.target.value)}
+                                            />
+                                            <Input 
+                                              className="flex-1"
+                                              value={hslToHex(customTheme[colorName].h, customTheme[colorName].s, customTheme[colorName].l)}
+                                              onChange={(e) => handleCustomThemeChange(colorName, e.target.value)}
+                                            />
+                                          </div>
+                                          <div className="space-y-2">
+                                              <Label className='text-xs'>Hue: {customTheme[colorName].h}</Label>
+                                              <Slider value={[customTheme[colorName].h]} max={360} onValueChange={([v]) => handleCustomThemeSliderChange(colorName, 'h', v)} />
+                                              <Label className='text-xs'>Saturation: {customTheme[colorName].s}%</Label>
+                                              <Slider value={[customTheme[colorName].s]} max={100} onValueChange={([v]) => handleCustomThemeSliderChange(colorName, 's', v)} />
+                                              <Label className='text-xs'>Lightness: {customTheme[colorName].l}%</Label>
+                                              <Slider value={[customTheme[colorName].l]} max={100} onValueChange={([v]) => handleCustomThemeSliderChange(colorName, 'l', v)} />
+                                          </div>
+                                      </div>
+                                  ))}
+                              </CardContent>
+                          </Card>
+                        )}
+
+                      </TabsContent>
+
+                      <TabsContent value="about" className="pt-6">
+                        <Card>
+                          <CardContent className="p-4 pt-6 space-y-2">
+                            <div className="flex justify-between items-center py-3 border-b">
+                                  <span className="font-medium">App Version</span>
+                                  <span className="text-muted-foreground">beta 1.5</span>
                             </div>
-                         </div>
-                    ))}
-                </CardContent>
-            </Card>
-           )}
-
-        </TabsContent>
-
-        <TabsContent value="about" className="pt-6">
-          <Card>
-            <CardContent className="p-4 pt-6 space-y-2">
-               <div className="flex justify-between items-center py-3 border-b">
-                    <span className="font-medium">App Version</span>
-                    <span className="text-muted-foreground">beta 1.5</span>
-               </div>
-               <div className="flex justify-between items-center py-3 border-b">
-                    <span className="font-medium">Developer</span>
-                    <span className="text-muted-foreground">Aman Yadav</span>
-               </div>
-               <div className="flex justify-between items-center py-3">
-                    <span className="font-medium">Privacy Policy</span>
-                    <ChevronRight className="h-5 w-5 text-muted-foreground"/>
-               </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
-      <AlertDialog open={isPasswordDialogOpen} onOpenChange={setIsPasswordDialogOpen}>
-        <AlertDialogContent>
-            <AlertDialogHeader>
-            <AlertDialogTitle>Enter Developer Password</AlertDialogTitle>
-            <AlertDialogDescription>
-                This action requires a password to access developer tools.
-            </AlertDialogDescription>
-            </AlertDialogHeader>
-            <Input 
-                type="password"
-                placeholder="Password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)} 
-                onKeyDown={(e) => e.key === 'Enter' && handlePasswordSubmit()}
-            />
-            <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handlePasswordSubmit}>Continue</AlertDialogAction>
-            </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+                            <div className="flex justify-between items-center py-3 border-b">
+                                  <span className="font-medium">Developer</span>
+                                  <span className="text-muted-foreground">Aman Yadav</span>
+                            </div>
+                            <div className="flex justify-between items-center py-3">
+                                  <span className="font-medium">Privacy Policy</span>
+                                  <ChevronRight className="h-5 w-5 text-muted-foreground"/>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      </TabsContent>
+                    </Tabs>
+                    <AlertDialog open={isPasswordDialogOpen} onOpenChange={setIsPasswordDialogOpen}>
+                      <AlertDialogContent>
+                          <AlertDialogHeader>
+                          <AlertDialogTitle>Enter Developer Password</AlertDialogTitle>
+                          <AlertDialogDescription>
+                              This action requires a password to access developer tools.
+                          </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <Input 
+                              type="password"
+                              placeholder="Password"
+                              value={password}
+                              onChange={(e) => setPassword(e.target.value)} 
+                              onKeyDown={(e) => e.key === 'Enter' && handlePasswordSubmit()}
+                          />
+                          <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogAction onClick={handlePasswordSubmit}>Continue</AlertDialogAction>
+                          </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  </div>
+                )}
+            </main>
+        </div>
     </div>
   );
 }
+
+    
