@@ -147,7 +147,7 @@ const UnitForm = ({
                      <Select value={formData.standard} onValueChange={(v) => handleSelectChange('standard', v)}>
                         <SelectTrigger className="col-span-3"><SelectValue placeholder="Select a base unit" /></SelectTrigger>
                         <SelectContent>
-                           {selectedCategory.units.map(u => (
+                           {(selectedCategory.units || []).map(u => (
                             <SelectItem key={u.name} value={u.name}>{u.name}</SelectItem>
                            ))}
                         </SelectContent>
@@ -239,8 +239,8 @@ export default function CustomUnitsPage() {
                 return (
                 <Card key={category.id}>
                     <AccordionItem value={category.id} className="border-b-0">
-                        <CardHeader className="p-3">
-                             <div className="flex justify-between items-center w-full">
+                         <CardHeader className="p-0">
+                            <div className="flex justify-between items-center w-full p-3">
                                 <AccordionTrigger className="w-full p-0 hover:no-underline flex-1">
                                     <div className="flex items-center gap-3">
                                         <div className="p-2 bg-accent rounded-lg">
