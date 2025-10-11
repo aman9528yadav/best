@@ -19,7 +19,7 @@ import {
 } from '@/components/ui/accordion';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import { ArrowLeft, Clock, Shield, Trash, Megaphone, Pencil, ChevronRight, Send, KeyRound, MessageSquare, Timer, Calendar, Gem, Download, Flag } from 'lucide-react';
+import { ArrowLeft, Clock, Shield, Trash, Megaphone, Pencil, ChevronRight, Send, KeyRound, MessageSquare, Timer, Calendar, Gem, Download, Flag, Bell } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useMaintenance, Countdown } from '@/context/MaintenanceContext';
 import { useToast } from '@/hooks/use-toast';
@@ -83,6 +83,7 @@ export function DevPanel() {
   const [broadcastMessage, setBroadcastMessage] = useState('');
   const { clearAllHistory } = useProfile();
   const [passwordState, setPasswordState] = useState({ currentPassword: '', newPassword: '', confirmNewPassword: '' });
+  const [toastData, setToastData] = useState({ title: 'Test Toast', description: 'This is a test message.' });
 
   useEffect(() => {
     const messageRef = ref(rtdb, 'broadcast/message');
@@ -271,6 +272,18 @@ export function DevPanel() {
             [field]: value
         }
     }));
+  };
+  
+  const handleToastInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setToastData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleShowToast = () => {
+    toast({
+      title: toastData.title,
+      description: toastData.description,
+    });
   };
 
 
@@ -497,6 +510,32 @@ export function DevPanel() {
                   </Button>
                 </AccordionContent>
               </Card>
+            </AccordionItem>
+            
+            <AccordionItem value="item-10" asChild>
+                <Card>
+                    <CardHeader className="p-4">
+                        <AccordionTrigger className="p-0 hover:no-underline">
+                            <div className="flex items-center gap-3">
+                                <Bell className="h-5 w-5" />
+                                <div>
+                                    <CardTitle className="text-lg">UI & Messaging</CardTitle>
+                                    <CardDescription>
+                                        Test various UI components and messages.
+                                    </CardDescription>
+                                </div>
+                            </div>
+                        </AccordionTrigger>
+                    </CardHeader>
+                    <AccordionContent className="px-4 pb-4 space-y-4">
+                        <div className="bg-accent/50 p-4 rounded-lg space-y-2">
+                            <Label>Test Toast Notification</Label>
+                            <Input name="title" placeholder="Toast Title" value={toastData.title} onChange={handleToastInputChange} />
+                            <Textarea name="description" placeholder="Toast Description" value={toastData.description} onChange={handleToastInputChange} />
+                            <Button onClick={handleShowToast} className="w-full">Show Toast</Button>
+                        </div>
+                    </AccordionContent>
+                </Card>
             </AccordionItem>
             
              <AccordionItem value="item-5" asChild>
