@@ -389,6 +389,7 @@ export default function SettingsPage() {
                                   <CardDescription>Customize your dashboard layout.</CardDescription>
                               </CardHeader>
                               <CardContent className="p-4 pt-0">
+                                <SettingRow label="Manage Dashboard Layout" icon={LayoutGrid} isLink href="/profile/manage-dashboard" />
                                 <SettingRow label="Manage Quick Access" icon={LayoutGrid} isLink href="/profile/manage-quick-access" />
                                 <SettingRow label="Manage Widgets" icon={LayoutDashboard} isLink href="/profile/manage-widgets" />
                               </CardContent>

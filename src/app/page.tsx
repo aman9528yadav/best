@@ -206,6 +206,11 @@ export default function DashboardPage() {
     return profile.dashboardWidgets.filter(w => !w.hidden);
   }, [profile.dashboardWidgets]);
 
+  const orderedLayout = useMemo(() => {
+    if (!profile.dashboardLayout) return [];
+    return profile.dashboardLayout.filter(l => !l.hidden);
+  }, [profile.dashboardLayout]);
+
 
   if (isPageLoading) {
     return (
@@ -228,19 +233,9 @@ export default function DashboardPage() {
   const whatsNewItems = (updateItems || []).slice(0, 3);
   const displayedComingSoonItems = (comingSoonItems || []);
 
-
-  return (
-    <div className="flex flex-col items-center w-full min-h-screen bg-background text-foreground pb-24">
-      <div className="w-full max-w-md mx-auto flex flex-col flex-1">
-        <div className="p-4 pt-0">
-          <Header />
-        </div>
-        <main className="flex-1 overflow-y-auto p-4 pt-0 space-y-6">
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
-            <DashboardBanner />
-          </motion.div>
-        
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="grid grid-cols-3 gap-3 text-center">
+  const dashboardSections: { [key: string]: React.ReactNode } = {
+    stats: (
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="grid grid-cols-3 gap-3 text-center">
             <Card>
               <CardContent className="p-3 space-y-1">
                 <Star className="h-5 w-5 text-yellow-500 mx-auto" />
@@ -262,9 +257,10 @@ export default function DashboardPage() {
                 <div className="text-xs text-muted-foreground">Streak</div>
               </CardContent>
             </Card>
-          </motion.div>
-
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
+        </motion.div>
+    ),
+    weeklySummary: (
+         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
             <Card>
               <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-base font-medium">
@@ -279,8 +275,9 @@ export default function DashboardPage() {
               </CardContent>
             </Card>
           </motion.div>
-          
-          <motion.section initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}>
+    ),
+    quickAccess: (
+        <motion.section initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}>
             <div className="flex justify-between items-center mb-2">
               <h2 className="font-semibold">Quick Access</h2>
               <Button asChild variant="link" size="sm" className="text-primary pr-0">
@@ -334,9 +331,10 @@ export default function DashboardPage() {
                     </motion.div>
                 )}
             </AnimatePresence>
-          </motion.section>
-          
-           <motion.section initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}>
+        </motion.section>
+    ),
+    widgets: (
+        <motion.section initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}>
             <div className="flex justify-between items-center mb-2">
               <h2 className="font-semibold">My Widgets</h2>
               <Button asChild variant="link" size="sm" className="text-primary pr-0">
@@ -349,10 +347,10 @@ export default function DashboardPage() {
                  return WidgetComponent ? <WidgetComponent key={widget.id} /> : null;
                })}
             </div>
-          </motion.section>
-
-
-           <motion.section initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}>
+        </motion.section>
+    ),
+    whatsNew: (
+        <motion.section initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}>
             <div className="flex justify-between items-center mb-2">
               <h2 className="font-semibold">What&apos;s New</h2>
               <Button asChild variant="link" size="sm" className="text-primary pr-0">
@@ -380,9 +378,10 @@ export default function DashboardPage() {
                 </motion.div>
               )})}
             </div>
-          </motion.section>
-
-          <motion.section initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6 }}>
+        </motion.section>
+    ),
+    comingSoon: (
+        <motion.section initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6 }}>
             <h2 className="font-semibold mb-2">Coming Soon</h2>
             <ScrollArea className="w-full">
               <div className="flex space-x-3 pb-4">
@@ -415,9 +414,10 @@ export default function DashboardPage() {
               </div>
               <ScrollBar orientation="horizontal" />
             </ScrollArea>
-          </motion.section>
-
-          <motion.section initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.7 }}>
+        </motion.section>
+    ),
+    about: (
+        <motion.section initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.7 }}>
             <h2 className="font-semibold mb-2">About Sutradhaar</h2>
             <motion.div whileHover={{ y: -2, scale: 1.02 }}>
               <Card>
@@ -439,7 +439,26 @@ export default function DashboardPage() {
                 </CardContent>
               </Card>
             </motion.div>
-          </motion.section>
+        </motion.section>
+    ),
+  };
+
+  return (
+    <div className="flex flex-col items-center w-full min-h-screen bg-background text-foreground pb-24">
+      <div className="w-full max-w-md mx-auto flex flex-col flex-1">
+        <div className="p-4 pt-0">
+          <Header />
+        </div>
+        <main className="flex-1 overflow-y-auto p-4 pt-0 space-y-6">
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
+            <DashboardBanner />
+          </motion.div>
+        
+          {orderedLayout.map(item => (
+            <div key={item.id}>
+              {dashboardSections[item.id]}
+            </div>
+          ))}
         </main>
       <AlertDialog open={showLoginDialog} onOpenChange={setShowLoginDialog}>
         <AlertDialogContent>

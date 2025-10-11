@@ -132,6 +132,12 @@ export type DashboardWidgetItem = {
   hidden: boolean;
 };
 
+export type DashboardLayoutItem = {
+  id: 'stats' | 'weeklySummary' | 'quickAccess' | 'widgets' | 'whatsNew' | 'comingSoon' | 'about';
+  hidden: boolean;
+};
+
+
 export type HSLColor = {
     h: number;
     s: number;
@@ -190,6 +196,7 @@ export type UserProfile = {
   activityLog: ActivityLogItem[];
   quickAccessOrder?: QuickAccessItemOrder[];
   dashboardWidgets?: DashboardWidgetItem[];
+  dashboardLayout?: DashboardLayoutItem[];
   photoUrl?: string;
   photoId?: string;
   history: HistoryItem[];
@@ -295,6 +302,17 @@ const defaultDashboardWidgets: DashboardWidgetItem[] = [
     { id: 'miniBudget', hidden: true },
 ];
 
+const defaultDashboardLayout: DashboardLayoutItem[] = [
+    { id: 'stats', hidden: false },
+    { id: 'weeklySummary', hidden: false },
+    { id: 'quickAccess', hidden: false },
+    { id: 'widgets', hidden: false },
+    { id: 'whatsNew', hidden: false },
+    { id: 'comingSoon', hidden: false },
+    { id: 'about', hidden: false },
+];
+
+
 const getInitialProfile = (): UserProfile => {
   return {
     name: "",
@@ -318,6 +336,7 @@ const getInitialProfile = (): UserProfile => {
     activityLog: [],
     quickAccessOrder: [],
     dashboardWidgets: defaultDashboardWidgets,
+    dashboardLayout: defaultDashboardLayout,
     photoUrl: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxtYW4lMjBwb3J0cmFpdHxlbnwwfHx8fDE3NTkwNzk5MTd8MA&ixlib=rb-4.1.0&q=80&w=1080",
     photoId: 'user-avatar-1',
     history: [],
@@ -349,6 +368,7 @@ const guestProfileDefault: UserProfile = {
     activityLog: [],
     quickAccessOrder: [],
     dashboardWidgets: defaultDashboardWidgets,
+    dashboardLayout: defaultDashboardLayout,
     photoUrl: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxtYW4lMjBwb3J0cmFpdHxlbnwwfHx8fDE3NTkwNzk5MTd8MA&ixlib=rb-4.1.0&q=80&w=1080",
     photoId: 'user-avatar-1',
     history: [],
@@ -396,6 +416,7 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
         todos: parsedProfile.todos || [],
         activityLog: parsedProfile.activityLog || [],
         dashboardWidgets: parsedProfile.dashboardWidgets || defaultDashboardWidgets,
+        dashboardLayout: parsedProfile.dashboardLayout || defaultDashboardLayout,
       };
     };
   
