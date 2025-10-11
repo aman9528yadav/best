@@ -42,9 +42,9 @@ export default function RootLayout({
           themes={['light', 'dark', 'theme-sutradhaar', 'theme-forest', 'theme-ocean', 'theme-sunset', 'theme-sunrise', 'theme-twilight', 'theme-aurora', 'custom']}
         >
           <AuthProvider>
-            <NotificationProvider>
-              <MaintenanceProvider>
-                <ProfileProvider>
+            <MaintenanceProvider>
+              <ProfileProvider>
+                <NotificationProvider>
                   <CustomThemeHandler />
                   <MaintenanceWrapper>
                     {children}
@@ -52,9 +52,9 @@ export default function RootLayout({
                   </MaintenanceWrapper>
                   <Toaster />
                   <BroadcastListener />
-                </ProfileProvider>
-              </MaintenanceProvider>
-            </NotificationProvider>
+                </NotificationProvider>
+              </ProfileProvider>
+            </MaintenanceProvider>
           </AuthProvider>
         </ThemeProvider>
       </body>
