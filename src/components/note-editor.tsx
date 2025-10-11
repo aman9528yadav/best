@@ -42,6 +42,7 @@ import {
 import { useRouter } from 'next/navigation';
 import type { NoteItem } from '@/context/ProfileContext';
 import { cn } from '@/lib/utils';
+import { useToast } from '@/hooks/use-toast';
 
 interface NoteEditorProps {
   note?: NoteItem;
@@ -57,6 +58,7 @@ export function NoteEditor({ note, onSave, onDelete, onDeletePermanently, onRest
   const [title, setTitle] = useState(note?.title || '');
   const [content, setContent] = useState(note?.content || '');
   const editorRef = useRef<HTMLDivElement>(null);
+  const { toast } = useToast();
   
   const isFavorite = note?.isFavorite || false;
   const isTrashed = note?.isTrashed || false;
@@ -104,6 +106,7 @@ export function NoteEditor({ note, onSave, onDelete, onDeletePermanently, onRest
 
   const handleSave = () => {
     onSave(title, content);
+    toast({ title: 'Note Saved!' });
   }
 
   // Set initial content for the editor but only when the note ID changes
