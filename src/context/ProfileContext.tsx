@@ -299,7 +299,6 @@ const defaultBudgetData: BudgetData = {
 const defaultDashboardWidgets: DashboardWidgetItem[] = [
     { id: 'recentNote', hidden: false },
     { id: 'pendingTodos', hidden: false },
-    { id: 'miniBudget', hidden: true },
 ];
 
 const defaultDashboardLayout: DashboardLayoutItem[] = [
