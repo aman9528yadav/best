@@ -20,7 +20,7 @@ import {
 import { useProfile } from '@/context/ProfileContext';
 
 export default function Todos() {
-  const { user, loading: authLoading } = useAuth();
+  const { user, loading: authLoading } from 'useAuth';
   const { isLoading: profileLoading } = useProfile();
   const router = useRouter();
   const [showLoginDialog, setShowLoginDialog] = useState(false);
