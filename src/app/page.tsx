@@ -174,10 +174,11 @@ export default function DashboardPage() {
     }
     
     // Start with a map of the default items for quick lookup
-    const defaultItemsMap = new Map(quickAccessItems.map(item => [item.id, item]));
+    const allItems = [...quickAccessItems, ...moreAccessItems];
+    const defaultItemsMap = new Map(allItems.map(item => [item.id, item]));
     
     // Create a Set of all default item IDs
-    const defaultItemIds = new Set(quickAccessItems.map(item => item.id));
+    const defaultItemIds = new Set(allItems.map(item => item.id));
 
     // Get the user's ordered and filtered items
     const orderedUserItems = profile.quickAccessOrder
@@ -188,12 +189,12 @@ export default function DashboardPage() {
         }
         return null;
       })
-      .filter(item => item !== null) as (typeof quickAccessItems);
+      .filter(item => item !== null) as (typeof allItems);
       
     const orderedUserItemIds = new Set(orderedUserItems.map(item => item.id));
 
     // Get any default items that are not in the user's order list
-    const remainingDefaultItems = quickAccessItems.filter(item => !orderedUserItemIds.has(item.id));
+    const remainingDefaultItems = allItems.filter(item => !orderedUserItemIds.has(item.id));
 
     // Combine them, so user's order is first, then any new default items are added at the end
     return [...orderedUserItems, ...remainingDefaultItems];
@@ -284,7 +285,7 @@ export default function DashboardPage() {
               </Button>
             </div>
             <div className="grid grid-cols-4 gap-4 text-center">
-              {userQuickAccessItems.map((item) => (
+              {userQuickAccessItems.slice(0, 7).map((item) => (
                 <Link 
                   href={item.href || '#'} 
                   key={item.label}
@@ -313,7 +314,7 @@ export default function DashboardPage() {
                         className="overflow-hidden"
                     >
                         <div className="grid grid-cols-4 gap-4 text-center pt-4">
-                            {moreAccessItems.map(item => (
+                            {userQuickAccessItems.slice(7).map(item => (
                                 <Link 
                                     href={item.href || '#'} 
                                     key={item.label}
