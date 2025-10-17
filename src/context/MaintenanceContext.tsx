@@ -7,6 +7,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { ref, onValue, set, remove } from 'firebase/database';
 import { rtdb } from '@/lib/firebase';
 import type { Icon as LucideIcon } from 'lucide-react';
+import { DashboardSkeleton } from '@/components/dashboard-skeleton';
 
 
 export type UpdateItem = {
@@ -373,7 +374,7 @@ export const MaintenanceWrapper = ({ children }: { children: ReactNode }) => {
     }, [maintenanceConfig, isDevMode, pathname, router, isLoading]);
 
     if (isLoading) {
-        return null;
+        return <DashboardSkeleton />;
     }
 
     const isUnderMaintenance = maintenanceConfig.globalMaintenance || maintenanceConfig.pageMaintenance?.[sanitizePathForKey(pathname)];
