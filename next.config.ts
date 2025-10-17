@@ -10,7 +10,15 @@ const nextConfig: NextConfig = {
     ignoreDuringBuilds: true,
   },
   env: {
-    NEXT_PUBLIC_ADSENSE_PUB_ID: 'ca-pub-XXXXXXXXXXXXXXXX',
+    NEXT_PUBLIC_ADSENSE_PUB_ID: 'ca-pub-5415253457910957',
+  },
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'pagead2.googlesyndication.com',
+      },
+    ],
   },
   devIndicators: {
     allowedDevOrigins: [
