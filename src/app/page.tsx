@@ -300,7 +300,7 @@ export default function DashboardPage() {
               ))}
                <div className="flex flex-col items-center gap-2" onClick={() => setShowMore(!showMore)}>
                   <div className={cn("p-4 rounded-full flex items-center justify-center cursor-pointer", showMore ? "bg-primary text-primary-foreground" : "bg-accent text-primary")}>
-                      {showMore ? <ChevronUp className="h-5 w-5"/> : <Sparkles className="h-5 w-5"/>}
+                      {showMore ? <ChevronUp className="h-5 w-5"/> : <ChevronDown className="h-5 w-5"/>}
                   </div>
                   <span className="text-xs font-medium text-muted-foreground">More</span>
               </div>
