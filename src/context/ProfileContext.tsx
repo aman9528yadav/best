@@ -3,8 +3,8 @@
 "use client";
 
 import React, { createContext, useContext, useState, ReactNode, useEffect, useRef } from 'react';
-import { ref, onValue, set, remove } from "firebase/database";
-import { rtdb } from '@/lib/firebase';
+import { doc, onSnapshot, setDoc, deleteDoc } from "firebase/firestore";
+import { db } from '@/lib/firebase';
 import { useAuth } from './AuthContext';
 import { isToday, differenceInCalendarDays, startOfDay, isYesterday } from 'date-fns';
 import { useMaintenance } from './MaintenanceContext';
@@ -428,11 +428,11 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
       }
       setIsLoading(!cachedProfileRaw);
   
-      const userRef = ref(rtdb, `users/${user.uid}/profile`);
-      unsubscribe = onValue(userRef, (snapshot) => {
+      const userDocRef = doc(db, 'users', user.uid);
+      unsubscribe = onSnapshot(userDocRef, (docSnap) => {
         let finalProfile;
-        if (snapshot.exists()) {
-          const fetchedData = snapshot.val() as Partial<UserProfile>;
+        if (docSnap.exists()) {
+          const fetchedData = docSnap.data() as Partial<UserProfile>;
           const mergedProfile = mergeWithDefaults(fetchedData);
           
           let membership = user.email === 'amanyadavyadav9458@gmail.com' ? 'owner' : (mergedProfile.membership || 'member');
@@ -455,7 +455,7 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
               membership,
               photoUrl: user.photoURL || guestProfileDefault.photoUrl,
            });
-           set(userRef, finalProfile);
+           setDoc(userDocRef, finalProfile);
         }
         setProfileState(finalProfile);
         localStorage.setItem(`sutradhaar_profile_${user.uid}`, JSON.stringify(finalProfile));
@@ -501,34 +501,8 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
         }
         
         if (user) {
-            const userRef = ref(rtdb, `users/${user.uid}/profile`);
-            const dbProfile = {...updatedProfile};
-            
-            const toObjectReducer = (acc:any, item:any) => ({...acc, [item.id]: item});
-
-            if (dbProfile.history && Array.isArray(dbProfile.history)) {
-                // @ts-ignore
-                dbProfile.history = dbProfile.history.reduce(toObjectReducer, {});
-            }
-            if (dbProfile.favorites && Array.isArray(dbProfile.favorites)) {
-                // @ts-ignore
-                dbProfile.favorites = dbProfile.favorites.reduce(toObjectReducer, {});
-            }
-            if (dbProfile.budget && dbProfile.budget.goals) {
-                const goalsArray = Array.isArray(dbProfile.budget.goals) ? dbProfile.budget.goals : Object.values(dbProfile.budget.goals);
-                 // @ts-ignore
-                dbProfile.budget.goals = goalsArray.reduce(toObjectReducer, {});
-            }
-             if (dbProfile.customUnits && Array.isArray(dbProfile.customUnits)) {
-                 // @ts-ignore
-                dbProfile.customUnits = dbProfile.customUnits.reduce(toObjectReducer, {});
-             }
-             if (dbProfile.customCategories && Array.isArray(dbProfile.customCategories)) {
-                // @ts-ignore
-                dbProfile.customCategories = dbProfile.customCategories.reduce(toObjectReducer, {});
-             }
-            
-            set(userRef, dbProfile).catch(error => console.error("Failed to save profile to Realtime DB", error));
+            const userDocRef = doc(db, `users`, user.uid);
+            setDoc(userDocRef, updatedProfile, { merge: true }).catch(error => console.error("Failed to save profile to Firestore", error));
             localStorage.setItem(`sutradhaar_profile_${user.uid}`, JSON.stringify(updatedProfile));
         } else {
             localStorage.setItem('sutradhaar_profile', JSON.stringify(updatedProfile));
@@ -788,8 +762,8 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
   
   const deleteAllUserData = async () => {
     if (user) {
-        const userRef = ref(rtdb, `users/${user.uid}`);
-        await remove(userRef);
+        const userDocRef = doc(db, 'users', user.uid);
+        await deleteDoc(userDocRef);
     }
     Object.keys(localStorage).forEach(key => {
         if(key.startsWith('sutradhaar_')) {
@@ -932,3 +906,5 @@ export const useProfile = () => {
   }
   return context;
 };
+
+    
