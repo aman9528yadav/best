@@ -4,8 +4,8 @@
 
 import React, { createContext, useContext, useState, ReactNode, useEffect, useRef } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
-import { ref, onValue, set, remove } from 'firebase/database';
-import { rtdb } from '@/lib/firebase';
+import { doc, onSnapshot, setDoc, getDoc } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
 import type { Icon as LucideIcon } from 'lucide-react';
 import { DashboardSkeleton } from '@/components/dashboard-skeleton';
 
@@ -263,12 +263,14 @@ const sanitizePathForKey = (path: string) => {
 export const MaintenanceProvider = ({ children }: { children: ReactNode }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [maintenanceConfig, setMaintenanceConfigState] = useState<MaintenanceConfig>(defaultMaintenanceConfig);
-  const configRef = ref(rtdb, 'config');
+  const configDocRef = doc(db, 'config', 'main');
 
-  const updateConfigInDb = (config: MaintenanceConfig) => {
-    return set(configRef, config).catch(error => {
-      console.error("Error updating maintenance config:", error);
-    });
+  const updateConfigInDb = async (config: MaintenanceConfig) => {
+    try {
+      await setDoc(configDocRef, config);
+    } catch (error) {
+      console.error("Error updating maintenance config in Firestore:", error);
+    }
   };
   
   const setMaintenanceConfig = (value: React.SetStateAction<MaintenanceConfig>) => {
@@ -280,11 +282,11 @@ export const MaintenanceProvider = ({ children }: { children: ReactNode }) => {
   }
 
   useEffect(() => {
-    const unsubscribe = onValue(configRef, 
-      (snapshot) => {
-        if (snapshot.exists()) {
-            const dbConfig = snapshot.val();
-            const mergedConfig = {
+    const unsubscribe = onSnapshot(configDocRef, 
+      (docSnap) => {
+        if (docSnap.exists()) {
+            const dbConfig = docSnap.data() as Partial<MaintenanceConfig>;
+             const mergedConfig = {
                 ...defaultMaintenanceConfig,
                 ...dbConfig,
                 pageMaintenance: dbConfig.pageMaintenance || defaultMaintenanceConfig.pageMaintenance,
@@ -305,6 +307,7 @@ export const MaintenanceProvider = ({ children }: { children: ReactNode }) => {
             };
             setMaintenanceConfigState(mergedConfig);
         } else {
+            // If no config exists, create it with default values
             updateConfigInDb(defaultMaintenanceConfig);
             setMaintenanceConfigState(defaultMaintenanceConfig);
         }
@@ -312,13 +315,33 @@ export const MaintenanceProvider = ({ children }: { children: ReactNode }) => {
       }, 
       (error) => {
           console.error("Error fetching maintenance config:", error);
-          setMaintenanceConfigState(defaultMaintenanceConfig); // Fallback to default
+          // Attempt to load from localStorage as a fallback
+          try {
+            const localConfig = localStorage.getItem('sutradhaar_maintenance_config');
+            if (localConfig) {
+              setMaintenanceConfigState(JSON.parse(localConfig));
+            } else {
+              setMaintenanceConfigState(defaultMaintenanceConfig);
+            }
+          } catch(e) {
+            setMaintenanceConfigState(defaultMaintenanceConfig);
+          }
           setIsLoading(false);
       });
 
     return () => unsubscribe();
   }, []);
   
+  // Save to localStorage whenever config changes
+  useEffect(() => {
+    try {
+        localStorage.setItem('sutradhaar_maintenance_config', JSON.stringify(maintenanceConfig));
+    } catch (e) {
+        console.error("Could not save maintenance config to local storage", e);
+    }
+  }, [maintenanceConfig]);
+
+
   const setDevMode = (isDev: boolean) => {
     setMaintenanceConfig(prev => ({...prev, isDevMode: isDev }));
   };
