@@ -227,7 +227,8 @@ export default function DashboardPage() {
     )
   }
 
-  const { appInfo, ownerInfo, updateItems, comingSoonItems, welcomeDialog } = maintenanceConfig;
+  const { updateItems, comingSoonItems, welcomeDialog, aboutPageContent } = maintenanceConfig;
+  const { appInfo, ownerInfo } = aboutPageContent;
   const { allTimeActivities = 0, todayActivities = 0, streak = 0 } = profile.stats || {};
 
   const whatsNewItems = (updateItems || []).slice(0, 3);
