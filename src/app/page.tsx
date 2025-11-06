@@ -135,14 +135,13 @@ export default function DashboardPage() {
       title: "Welcome to your Dashboard!",
       description: "You can find all your tools and stats here.",
     });
-    
+
     const hasSeenConfetti = sessionStorage.getItem('sutradhaar_confetti_shown');
     if (!hasSeenConfetti) {
         setShowConfetti(true);
         sessionStorage.setItem('sutradhaar_confetti_shown', 'true');
         setTimeout(() => setShowConfetti(false), 5000);
     }
-    
   }, [toast]);
 
   useEffect(() => {
