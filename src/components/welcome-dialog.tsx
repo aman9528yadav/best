@@ -14,6 +14,7 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import Image from 'next/image';
+import { PlaceHolderImages } from '@/lib/placeholder-images';
 
 interface WelcomeDialogProps {
   open: boolean;
@@ -25,6 +26,7 @@ interface WelcomeDialogProps {
 
 export function WelcomeDialog({ open, onOpenChange, onConfirm, title, description }: WelcomeDialogProps) {
   const [dontShowAgain, setDontShowAgain] = useState(false);
+  const welcomeImage = PlaceHolderImages.find(p => p.id === 'welcome-image');
   
   const handleConfirm = () => {
     onConfirm(dontShowAgain);
@@ -34,9 +36,11 @@ export function WelcomeDialog({ open, onOpenChange, onConfirm, title, descriptio
     <AlertDialog open={open} onOpenChange={onOpenChange}>
       <AlertDialogContent>
         <AlertDialogHeader className="text-center items-center">
-          <div className="relative h-40 w-40 mb-4">
-             <Image src="/sound/imgi_3_default.png" alt="Welcome" layout="fill" objectFit="contain" />
-          </div>
+          {welcomeImage && (
+            <div className="relative h-40 w-40 mb-4">
+              <Image src={welcomeImage.imageUrl} alt="Welcome" layout="fill" objectFit="contain" data-ai-hint={welcomeImage.imageHint}/>
+            </div>
+          )}
           <AlertDialogTitle>{title}</AlertDialogTitle>
           <AlertDialogDescription>
             {description}

@@ -74,6 +74,7 @@ import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import { RecentNoteWidget } from '@/components/widgets/recent-note-widget';
 import { PendingTodosWidget } from '@/components/widgets/pending-todos-widget';
+import { Confetti } from '@/components/confetti';
 
 export const quickAccessItems = [
   {
@@ -127,12 +128,21 @@ export default function DashboardPage() {
   const [showLoginDialog, setShowLoginDialog] = useState(false);
   const [showWelcomeDialog, setShowWelcomeDialog] = useState(false);
   const [showMore, setShowMore] = useState(false);
+  const [showConfetti, setShowConfetti] = useState(false);
 
   useEffect(() => {
     toast({
       title: "Welcome to your Dashboard!",
       description: "You can find all your tools and stats here.",
     });
+    
+    const hasSeenConfetti = sessionStorage.getItem('sutradhaar_confetti_shown');
+    if (!hasSeenConfetti) {
+        setShowConfetti(true);
+        sessionStorage.setItem('sutradhaar_confetti_shown', 'true');
+        setTimeout(() => setShowConfetti(false), 5000);
+    }
+    
   }, [toast]);
 
   useEffect(() => {
@@ -446,6 +456,7 @@ export default function DashboardPage() {
 
   return (
     <div className="flex flex-col items-center w-full min-h-screen bg-background text-foreground pb-24">
+      {showConfetti && <Confetti />}
       <div className="w-full max-w-md mx-auto flex flex-col flex-1">
         <div className="p-4 pt-0">
           <Header />
