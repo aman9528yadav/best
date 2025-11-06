@@ -136,13 +136,11 @@ export default function DashboardPage() {
       description: "You can find all your tools and stats here.",
     });
 
-    const hasSeenConfetti = sessionStorage.getItem('sutradhaar_confetti_shown');
-    if (!hasSeenConfetti) {
-        setShowConfetti(true);
-        sessionStorage.setItem('sutradhaar_confetti_shown', 'true');
-        setTimeout(() => setShowConfetti(false), 5000);
-    }
-  }, [toast]);
+    setShowConfetti(true);
+    const timer = setTimeout(() => setShowConfetti(false), 5000);
+    
+    return () => clearTimeout(timer);
+  }, []);
 
   useEffect(() => {
     const welcomeSetting = localStorage.getItem('sutradhaar_show_welcome');
