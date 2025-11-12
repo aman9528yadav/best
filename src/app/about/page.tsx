@@ -2,14 +2,14 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { AboutPage } from '@/components/about-page';
+import { AboutPage as AboutPageComponent } from '@/components/about-page';
 import { AboutPageSkeleton } from '@/components/about-page-skeleton';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useMaintenance } from '@/context/MaintenanceContext';
 
-export default function About() {
+export default function AboutPage() {
   const { isLoading } = useMaintenance();
   const router = useRouter();
 
@@ -26,7 +26,7 @@ export default function About() {
           </div>
       </div>
       <main className="flex-1 overflow-y-auto p-4 pt-2 space-y-4">
-        {isLoading ? <AboutPageSkeleton /> : <AboutPage />}
+        {isLoading ? <AboutPageSkeleton /> : <AboutPageComponent />}
       </main>
     </>
   );

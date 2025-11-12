@@ -49,6 +49,7 @@ import {
     Wallet,
     Home,
     BarChart2,
+    Gem,
 } from 'lucide-react';
 import Link from 'next/link';
 import { AdMobBanner } from '@/components/admob-banner';
@@ -86,6 +87,10 @@ import { DateCalculator } from '@/components/date-calculator';
 import { Timer as TimerComponent } from '@/components/timer';
 import { Stopwatch as StopwatchComponent } from '@/components/stopwatch';
 import { BudgetTrackerPage } from '@/components/budget-tracker-page';
+import { NotesPage } from '@/components/notes-page';
+import { HistoryPage } from '@/components/history-page';
+import { AboutPage } from '@/components/about-page';
+import MembershipPage from '@/app/membership/page';
 
 export const quickAccessItems = [
   {
@@ -138,11 +143,8 @@ function Dashboard() {
   const [showLoginDialog, setShowLoginDialog] = useState(false);
   const [showWelcomeDialog, setShowWelcomeDialog] = useState(false);
   const [showMore, setShowMore] = useState(false);
-  const [showConfetti, setShowConfetti] = useState(false);
-
+  
   useEffect(() => {
-    setShowConfetti(true);
-    
     const welcomeSetting = localStorage.getItem('sutradhaar_show_welcome');
     if (welcomeSetting === null || welcomeSetting === 'true') {
         setShowWelcomeDialog(true);
@@ -485,7 +487,11 @@ export default function DashboardPage() {
             <TabsTrigger value="timer"><Timer className="h-5 w-5" /></TabsTrigger>
             <TabsTrigger value="stopwatch"><Hourglass className="h-5 w-5" /></TabsTrigger>
             <TabsTrigger value="budget-tracker"><Wallet className="h-5 w-5" /></TabsTrigger>
+            <TabsTrigger value="notes"><BookText className="h-5 w-5" /></TabsTrigger>
+            <TabsTrigger value="history"><History className="h-5 w-5" /></TabsTrigger>
             <TabsTrigger value="analytics"><BarChart2 className="h-5 w-5" /></TabsTrigger>
+            <TabsTrigger value="membership"><Gem className="h-5 w-5" /></TabsTrigger>
+            <TabsTrigger value="about"><Info className="h-5 w-5" /></TabsTrigger>
             <TabsTrigger value="settings"><Settings className="h-5 w-5" /></TabsTrigger>
         </TabsList>
         <ScrollBar orientation="horizontal" />
@@ -511,8 +517,20 @@ export default function DashboardPage() {
         <TabsContent value="budget-tracker" className="flex-1 overflow-y-auto p-4 pt-4 space-y-4">
             <BudgetTrackerPage />
         </TabsContent>
+        <TabsContent value="notes" className="flex-1 overflow-y-auto p-4 pt-4 space-y-4">
+            <NotesPage />
+        </TabsContent>
+        <TabsContent value="history" className="flex-1 overflow-y-auto p-4 pt-4 space-y-4">
+            <HistoryPage />
+        </TabsContent>
         <TabsContent value="analytics" className="flex-1 overflow-y-auto p-4 pt-4 space-y-4">
             <AnalyticsPage />
+        </TabsContent>
+         <TabsContent value="membership" className="flex-1 overflow-y-auto p-4 pt-4 space-y-4">
+            <MembershipPage />
+        </TabsContent>
+         <TabsContent value="about" className="flex-1 overflow-y-auto p-4 pt-4 space-y-4">
+            <AboutPage />
         </TabsContent>
         <TabsContent value="settings" className="flex-1 overflow-y-auto p-4 pt-4 space-y-4">
             <SettingsPage />
