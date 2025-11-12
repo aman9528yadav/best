@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import React, { createContext, useContext, useState, ReactNode, useEffect, useRef } from 'react';
@@ -245,6 +244,7 @@ type ProfileContextType = {
   addTransaction: (transaction: Omit<Transaction, 'id'>) => void;
   updateTransaction: (transaction: Transaction) => void;
   deleteTransaction: (id: string) => void;
+  transferBetweenAccounts: (fromAccountId: string, toAccountId: string, amount: number) => void;
   addAccount: (account: Omit<Account, 'id'>) => void;
   updateAccount: (account: Account) => void;
   deleteAccount: (id: string) => void;
@@ -419,8 +419,10 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
       const cachedProfileRaw = localStorage.getItem(`sutradhaar_profile_${user.uid}`);
       if (cachedProfileRaw) {
         setProfileState(mergeWithDefaults(JSON.parse(cachedProfileRaw)));
+        setIsLoading(false); // Load immediately from cache
+      } else {
+        setIsLoading(true);
       }
-      setIsLoading(!cachedProfileRaw);
   
       const userDocRef = doc(db, 'users', user.uid);
       unsubscribe = onSnapshot(userDocRef, (docSnap) => {
@@ -453,10 +455,10 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
         }
         setProfileState(finalProfile);
         localStorage.setItem(`sutradhaar_profile_${user.uid}`, JSON.stringify(finalProfile));
-        setIsLoading(false);
+        if (isLoading) setIsLoading(false); // Only set loading to false if it was true
       }, (error) => {
         console.error("Error fetching profile:", error);
-        setIsLoading(false);
+        if (isLoading) setIsLoading(false);
       });
     } else {
       const savedProfileRaw = localStorage.getItem('sutradhaar_profile');
@@ -471,7 +473,7 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
     return () => {
       if (unsubscribe) unsubscribe();
     };
-  }, [user, authLoading, maintenanceConfig.premiumCriteria]);
+  }, [user, authLoading, maintenanceConfig.premiumCriteria, isLoading]);
 
   useEffect(() => {
     if (!isLoading && profile.membership !== prevMembershipRef.current) {
@@ -769,6 +771,30 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
     });
   };
   
+    const transferBetweenAccounts = (fromAccountId: string, toAccountId: string, amount: number) => {
+    const date = new Date().toISOString();
+    // Create an expense from the source account
+    addTransaction({
+      type: 'expense',
+      amount,
+      description: `Transfer to account`,
+      categoryId: 'cat-bills', // A generic category for transfers
+      accountId: fromAccountId,
+      date,
+      recurring: 'none'
+    });
+    // Create an income to the destination account
+    addTransaction({
+      type: 'income',
+      amount,
+      description: `Transfer from account`,
+      categoryId: 'cat-income',
+      accountId: toAccountId,
+      date,
+      recurring: 'none'
+    });
+  };
+  
   const addAccount = (account: Omit<Account, 'id'>) => {
     const newAccount: Account = { ...account, id: new Date().getTime().toString() };
     setProfile(p => ({ ...p, budget: { ...p.budget, accounts: [...p.budget.accounts, newAccount] }}));
@@ -869,6 +895,7 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
         addTransaction,
         updateTransaction,
         deleteTransaction,
+        transferBetweenAccounts,
         addAccount,
         updateAccount,
         deleteAccount,
@@ -892,5 +919,3 @@ export const useProfile = () => {
   }
   return context;
 };
-
-    
