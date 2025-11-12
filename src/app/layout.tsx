@@ -56,7 +56,6 @@ export default function RootLayout({
                   <CustomThemeHandler />
                   <MaintenanceWrapper>
                     {children}
-                    <ConditionalBottomNavigation />
                   </MaintenanceWrapper>
                   <Toaster />
                   <BroadcastListener />

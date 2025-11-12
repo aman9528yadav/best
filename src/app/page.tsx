@@ -46,6 +46,8 @@ import {
     Info,
     Download,
     Wallet,
+    Home,
+    BarChart2,
 } from 'lucide-react';
 import Link from 'next/link';
 import { AdMobBanner } from '@/components/admob-banner';
@@ -75,6 +77,10 @@ import { useToast } from '@/hooks/use-toast';
 import { RecentNoteWidget } from '@/components/widgets/recent-note-widget';
 import { PendingTodosWidget } from '@/components/widgets/pending-todos-widget';
 import { Confetti } from '@/components/confetti';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { AnalyticsPage } from '@/components/analytics-page';
+import { Calculator as CalculatorComponent } from '@/components/calculator';
+import { SettingsPage } from '@/components/settings-page';
 
 export const quickAccessItems = [
   {
@@ -118,9 +124,9 @@ const widgetComponents = {
     // miniBudget: MiniBudgetWidget,
 };
 
-export default function DashboardPage() {
-  const { maintenanceConfig, isLoading: isMaintenanceLoading } = useMaintenance();
-  const { profile, isLoading: isProfileLoading, checkAndUpdateStreak } = useProfile();
+function Dashboard() {
+  const { maintenanceConfig } = useMaintenance();
+  const { profile, checkAndUpdateStreak } = useProfile();
   const { user } = useAuth();
   const router = useRouter();
   const { toast } = useToast();
@@ -137,10 +143,10 @@ export default function DashboardPage() {
     });
 
     setShowConfetti(true);
-    const timer = setTimeout(() => setShowConfetti(false), 5000);
+    const timer = setTimeout(() => setShowConfetti(false), 3000); // Extended duration
     
     return () => clearTimeout(timer);
-  }, []);
+  }, [toast]);
 
   useEffect(() => {
     const welcomeSetting = localStorage.getItem('sutradhaar_show_welcome');
@@ -148,7 +154,6 @@ export default function DashboardPage() {
         setShowWelcomeDialog(true);
     }
   }, []);
-
 
   const handleWelcomeConfirm = (dontShowAgain: boolean) => {
     setShowWelcomeDialog(false);
@@ -159,12 +164,9 @@ export default function DashboardPage() {
     }
   };
 
-
   useEffect(() => {
-    if (!isProfileLoading) {
       checkAndUpdateStreak();
-    }
-  }, [isProfileLoading, checkAndUpdateStreak]);
+  }, [checkAndUpdateStreak]);
 
   const handleQuickAccessClick = (e: React.MouseEvent, item: { requiresAuth: boolean }) => {
     if (item.requiresAuth && !user) {
@@ -173,21 +175,14 @@ export default function DashboardPage() {
     }
   };
 
-  const isPageLoading = isMaintenanceLoading || isProfileLoading;
-  
   const userQuickAccessItems = useMemo(() => {
     if (!profile.quickAccessOrder || profile.quickAccessOrder.length === 0) {
       return quickAccessItems;
     }
     
-    // Start with a map of the default items for quick lookup
     const allItems = [...quickAccessItems, ...moreAccessItems];
     const defaultItemsMap = new Map(allItems.map(item => [item.id, item]));
     
-    // Create a Set of all default item IDs
-    const defaultItemIds = new Set(allItems.map(item => item.id));
-
-    // Get the user's ordered and filtered items
     const orderedUserItems = profile.quickAccessOrder
       .map(orderItem => {
         const itemDetails = defaultItemsMap.get(orderItem.id);
@@ -199,11 +194,7 @@ export default function DashboardPage() {
       .filter(item => item !== null) as (typeof allItems);
       
     const orderedUserItemIds = new Set(orderedUserItems.map(item => item.id));
-
-    // Get any default items that are not in the user's order list
     const remainingDefaultItems = allItems.filter(item => !orderedUserItemIds.has(item.id));
-
-    // Combine them, so user's order is first, then any new default items are added at the end
     return [...orderedUserItems, ...remainingDefaultItems];
 
   }, [profile.quickAccessOrder]);
@@ -218,26 +209,9 @@ export default function DashboardPage() {
     return profile.dashboardLayout.filter(l => !l.hidden);
   }, [profile.dashboardLayout]);
 
-
-  if (isPageLoading) {
-    return (
-      <div className="flex flex-col items-center w-full min-h-screen bg-background text-foreground">
-        <div className="w-full max-w-md mx-auto flex flex-col flex-1">
-          <div className="p-4 pt-0">
-            <Header />
-          </div>
-          <main className="flex-1 overflow-y-auto p-4 pt-0 space-y-4">
-            <DashboardSkeleton />
-          </main>
-        </div>
-      </div>
-    )
-  }
-
   const { updateItems, comingSoonItems, welcomeDialog, aboutPageContent } = maintenanceConfig;
   const { appInfo, ownerInfo } = aboutPageContent;
   const { allTimeActivities = 0, todayActivities = 0, streak = 0 } = profile.stats || {};
-
   const whatsNewItems = (updateItems || []).slice(0, 3);
   const displayedComingSoonItems = (comingSoonItems || []);
 
@@ -452,23 +426,17 @@ export default function DashboardPage() {
   };
 
   return (
-    <div className="flex flex-col items-center w-full min-h-screen bg-background text-foreground pb-24">
+    <>
       {showConfetti && <Confetti />}
-      <div className="w-full max-w-md mx-auto flex flex-col flex-1">
-        <div className="p-4 pt-0">
-          <Header />
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
+        <DashboardBanner />
+      </motion.div>
+    
+      {orderedLayout.map(item => (
+        <div key={item.id}>
+          {dashboardSections[item.id]}
         </div>
-        <main className="flex-1 overflow-y-auto p-4 pt-0 space-y-6">
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
-            <DashboardBanner />
-          </motion.div>
-        
-          {orderedLayout.map(item => (
-            <div key={item.id}>
-              {dashboardSections[item.id]}
-            </div>
-          ))}
-        </main>
+      ))}
       <AlertDialog open={showLoginDialog} onOpenChange={setShowLoginDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -490,6 +458,54 @@ export default function DashboardPage() {
         title={welcomeDialog.title}
         description={welcomeDialog.description}
       />
+    </>
+  )
+}
+
+
+export default function DashboardPage() {
+  const { isLoading: isMaintenanceLoading } = useMaintenance();
+  const { isLoading: isProfileLoading } = useProfile();
+  const [isCalculatorFullScreen, setIsCalculatorFullScreen] = useState(false);
+
+  const isPageLoading = isMaintenanceLoading || isProfileLoading;
+
+  if (isCalculatorFullScreen) {
+    return (
+      <div className="fixed inset-0 z-50 bg-background flex items-center justify-center">
+        <div className="w-full max-w-[412px] h-full flex flex-col justify-center p-4">
+           <CalculatorComponent isFullScreen={isCalculatorFullScreen} onToggleFullScreen={() => setIsCalculatorFullScreen(false)} />
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="flex flex-col items-center w-full min-h-screen bg-background text-foreground">
+      <div className="w-full max-w-md mx-auto flex flex-col flex-1">
+        <div className="p-4 pt-0">
+          <Header />
+        </div>
+        <Tabs defaultValue="dashboard" className="w-full flex-1 flex flex-col">
+            <TabsList className="grid w-full grid-cols-4 sticky top-0 z-40 bg-background/80 backdrop-blur-sm">
+                <TabsTrigger value="dashboard"><Home className="h-5 w-5" /></TabsTrigger>
+                <TabsTrigger value="calculator"><Calculator className="h-5 w-5" /></TabsTrigger>
+                <TabsTrigger value="analytics"><BarChart2 className="h-5 w-5" /></TabsTrigger>
+                <TabsTrigger value="settings"><Settings className="h-5 w-5" /></TabsTrigger>
+            </TabsList>
+            <TabsContent value="dashboard" className="flex-1 overflow-y-auto p-4 pt-4 space-y-6">
+                {isPageLoading ? <DashboardSkeleton /> : <Dashboard />}
+            </TabsContent>
+            <TabsContent value="calculator" className="flex-1 overflow-y-auto p-4 pt-4 space-y-4">
+                <CalculatorComponent onToggleFullScreen={() => setIsCalculatorFullScreen(true)} />
+            </TabsContent>
+            <TabsContent value="analytics" className="flex-1 overflow-y-auto p-4 pt-4 space-y-4">
+                <AnalyticsPage />
+            </TabsContent>
+            <TabsContent value="settings" className="flex-1 overflow-y-auto p-4 pt-4 space-y-4">
+                <SettingsPage />
+            </TabsContent>
+        </Tabs>
       </div>
     </div>
   );
