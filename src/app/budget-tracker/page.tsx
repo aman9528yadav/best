@@ -2,7 +2,6 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { Header } from '@/components/header';
 import { BudgetTrackerPage } from '@/components/budget-tracker-page';
 import { BudgetTrackerPageSkeleton } from '@/components/budget-tracker-page-skeleton';
 import { useAuth } from '@/context/AuthContext';
@@ -42,32 +41,27 @@ export default function BudgetTracker() {
   const isPageLoading = authLoading || profileLoading;
 
   return (
-    <div className="flex flex-col items-center w-full min-h-screen bg-background text-foreground">
-      <div className="w-full max-w-[412px] flex flex-col flex-1">
-        
-        <main className="flex-1 overflow-y-auto p-4 pt-0 space-y-4">
-          {isPageLoading ? (
-            <BudgetTrackerPageSkeleton />
-          ) : user ? (
-            <BudgetTrackerPage />
-          ) : (
-            <AlertDialog open={showLoginDialog} onOpenChange={setShowLoginDialog}>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>Authentication Required</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    You need to be logged in to manage your budget. Please log in to continue.
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel onClick={handleCancel}>Cancel</AlertDialogCancel>
-                  <AlertDialogAction onClick={handleGoToLogin}>Go to Login</AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
-          )}
-        </main>
-      </div>
-    </div>
+    <main className="flex-1 overflow-y-auto p-4 pt-0 space-y-4">
+      {isPageLoading ? (
+        <BudgetTrackerPageSkeleton />
+      ) : user ? (
+        <BudgetTrackerPage />
+      ) : (
+        <AlertDialog open={showLoginDialog} onOpenChange={setShowLoginDialog}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Authentication Required</AlertDialogTitle>
+              <AlertDialogDescription>
+                You need to be logged in to manage your budget. Please log in to continue.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel onClick={handleCancel}>Cancel</AlertDialogCancel>
+              <AlertDialogAction onClick={handleGoToLogin}>Go to Login</AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      )}
+    </main>
   );
 }
