@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import React, { useMemo, useState, useEffect } from 'react';
@@ -80,6 +81,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { AnalyticsPage } from '@/components/analytics-page';
 import { Calculator as CalculatorComponent } from '@/components/calculator';
 import { SettingsPage } from '@/components/settings-page';
+import { Confetti } from '@/components/confetti';
 
 export const quickAccessItems = [
   {
@@ -95,6 +97,7 @@ export const quickAccessItems = [
   { id: 'history', icon: History, label: 'History', href: '/history', requiresAuth: true },
   { id: 'news', icon: Newspaper, label: 'News', href: 'https://aman9528.wixstudio.com/my-site-3', requiresAuth: false },
   { id: 'translator', icon: Languages, label: 'Translator', href: '#', requiresAuth: true },
+  { id: 'budget', icon: Wallet, label: 'Budget', href: '/budget-tracker', requiresAuth: true },
 ];
 
 export const moreAccessItems = [
@@ -132,20 +135,23 @@ function Dashboard() {
   const [showLoginDialog, setShowLoginDialog] = useState(false);
   const [showWelcomeDialog, setShowWelcomeDialog] = useState(false);
   const [showMore, setShowMore] = useState(false);
+  const [showConfetti, setShowConfetti] = useState(false);
 
   useEffect(() => {
-    toast({
-      title: "Welcome to your Dashboard!",
-      description: "You can find all your tools and stats here.",
-    });
-  }, [toast]);
-
-  useEffect(() => {
+    // Only run this on the client
     const welcomeSetting = localStorage.getItem('sutradhaar_show_welcome');
     if (welcomeSetting === null || welcomeSetting === 'true') {
         setShowWelcomeDialog(true);
     }
+    
+    // Confetti logic
+    const hasSeenConfetti = sessionStorage.getItem('sutradhaar_has_seen_confetti');
+    if (!hasSeenConfetti) {
+        setShowConfetti(true);
+        sessionStorage.setItem('sutradhaar_has_seen_confetti', 'true');
+    }
   }, []);
+
 
   const handleWelcomeConfirm = (dontShowAgain: boolean) => {
     setShowWelcomeDialog(false);
@@ -419,6 +425,7 @@ function Dashboard() {
 
   return (
     <>
+      {showConfetti && <Confetti />}
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
         <DashboardBanner />
       </motion.div>

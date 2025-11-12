@@ -69,6 +69,11 @@ const sidebarNavItems = [
     label: 'Todo',
     href: '/todo',
   },
+   {
+    icon: Wallet,
+    label: 'Budget Tracker',
+    href: '/budget-tracker',
+  },
   {
     icon: Calendar,
     label: 'Date Calc',

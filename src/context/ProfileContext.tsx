@@ -137,6 +137,45 @@ export type CustomCategory = {
     name: string;
 }
 
+export type Account = {
+    id: string;
+    name: string;
+    balance: number;
+};
+
+export type Category = {
+    id: string;
+    name: string;
+    icon: string;
+};
+
+export type Transaction = {
+    id: string;
+    type: 'income' | 'expense';
+    amount: number;
+    description: string;
+    categoryId: string;
+    accountId: string;
+    date: string; // ISO string
+    recurring?: 'none' | 'daily' | 'weekly' | 'monthly';
+};
+
+export type SavingsGoal = {
+  id: string;
+  name: string;
+  targetAmount: number;
+  currentAmount: number;
+};
+
+
+export type Budget = {
+    transactions: Transaction[];
+    accounts: Account[];
+    categories: Category[];
+    goals: SavingsGoal[];
+};
+
+
 export type UserProfile = {
   name: string;
   email: string;
@@ -165,6 +204,7 @@ export type UserProfile = {
   favorites: FavoriteItem[];
   customUnits: CustomUnit[];
   customCategories: CustomCategory[];
+  budget: Budget;
 };
 
 type ProfileContextType = {
@@ -201,6 +241,20 @@ type ProfileContextType = {
   addCustomCategory: (name: string) => void;
   updateCustomCategory: (category: CustomCategory) => void;
   deleteCustomCategory: (id: string) => void;
+  // Budget functions
+  addTransaction: (transaction: Omit<Transaction, 'id'>) => void;
+  updateTransaction: (transaction: Transaction) => void;
+  deleteTransaction: (id: string) => void;
+  addAccount: (account: Omit<Account, 'id'>) => void;
+  updateAccount: (account: Account) => void;
+  deleteAccount: (id: string) => void;
+  addCategory: (category: Omit<Category, 'id'>) => void;
+  updateCategory: (category: Category) => void;
+  deleteCategory: (id: string) => void;
+  addSavingsGoal: (goal: Omit<SavingsGoal, 'id'| 'currentAmount'>) => void;
+  updateSavingsGoal: (goal: SavingsGoal) => void;
+  deleteSavingsGoal: (id: string) => void;
+  contributeToGoal: (goalId: string, amount: number, accountId: string) => void;
 };
 
 const ProfileContext = createContext<ProfileContextType | undefined>(undefined);
@@ -241,6 +295,21 @@ const defaultDashboardLayout: DashboardLayoutItem[] = [
     { id: 'about', hidden: false },
 ];
 
+const defaultBudget: Budget = {
+    transactions: [],
+    accounts: [{ id: 'acc-cash', name: 'Cash', balance: 0 }],
+    categories: [
+        { id: 'cat-income', name: 'Income', icon: 'Briefcase' },
+        { id: 'cat-food', name: 'Food', icon: 'Utensils' },
+        { id: 'cat-transport', name: 'Transport', icon: 'Bus' },
+        { id: 'cat-shopping', name: 'Shopping', icon: 'ShoppingBag' },
+        { id: 'cat-bills', name: 'Bills', icon: 'FileText' },
+        { id: 'cat-health', name: 'Health', icon: 'HeartPulse' },
+        { id: 'cat-entertainment', name: 'Entertainment', icon: 'Ticket' },
+    ],
+    goals: [],
+};
+
 
 const getInitialProfile = (): UserProfile => {
   return {
@@ -271,6 +340,7 @@ const getInitialProfile = (): UserProfile => {
     favorites: [],
     customUnits: [],
     customCategories: [],
+    budget: defaultBudget,
   };
 };
 
@@ -302,6 +372,7 @@ const guestProfileDefault: UserProfile = {
     favorites: [],
     customUnits: [],
     customCategories: [],
+    budget: defaultBudget,
 }
 
 export const ProfileProvider = ({ children }: { children: ReactNode }) => {
@@ -338,6 +409,7 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
         activityLog: parsedProfile.activityLog || [],
         dashboardWidgets: parsedProfile.dashboardWidgets || defaultDashboardWidgets,
         dashboardLayout: parsedProfile.dashboardLayout || defaultDashboardLayout,
+        budget: { ...defaultBudget, ...(parsedProfile.budget || {}) },
       };
     };
   
@@ -642,6 +714,122 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
   const deleteCustomCategory = (id: string) => {
     setProfile(p => ({ ...p, customCategories: (p.customCategories || []).filter(c => c.id !== id) }));
   }
+  
+    // Budget Functions
+  const addTransaction = (transaction: Omit<Transaction, 'id'>) => {
+    const newTransaction: Transaction = { ...transaction, id: new Date().getTime().toString() };
+    setProfile(p => {
+        const newAccounts = p.budget.accounts.map(acc => {
+            if(acc.id === newTransaction.accountId) {
+                const newBalance = newTransaction.type === 'income' ? acc.balance + newTransaction.amount : acc.balance - newTransaction.amount;
+                return { ...acc, balance: newBalance };
+            }
+            return acc;
+        });
+        return { ...p, budget: { ...p.budget, transactions: [newTransaction, ...p.budget.transactions], accounts: newAccounts }};
+    });
+  };
+
+  const updateTransaction = (transactionToUpdate: Transaction) => {
+    setProfile(p => {
+        const oldTransaction = p.budget.transactions.find(t => t.id === transactionToUpdate.id);
+        if (!oldTransaction) return p;
+
+        const newAccounts = p.budget.accounts.map(acc => {
+            if(acc.id === oldTransaction.accountId) {
+                 const oldAmount = oldTransaction.type === 'income' ? oldTransaction.amount : -oldTransaction.amount;
+                 acc.balance -= oldAmount;
+            }
+            if(acc.id === transactionToUpdate.accountId) {
+                const newAmount = transactionToUpdate.type === 'income' ? transactionToUpdate.amount : -transactionToUpdate.amount;
+                acc.balance += newAmount;
+            }
+            return acc;
+        });
+
+        const newTransactions = p.budget.transactions.map(t => t.id === transactionToUpdate.id ? transactionToUpdate : t);
+        return { ...p, budget: { ...p.budget, transactions: newTransactions, accounts: newAccounts }};
+    });
+  };
+
+  const deleteTransaction = (id: string) => {
+    setProfile(p => {
+        const transactionToDelete = p.budget.transactions.find(t => t.id === id);
+        if(!transactionToDelete) return p;
+        
+        const newAccounts = p.budget.accounts.map(acc => {
+            if(acc.id === transactionToDelete.accountId) {
+                const amountChange = transactionToDelete.type === 'income' ? -transactionToDelete.amount : transactionToDelete.amount;
+                return { ...acc, balance: acc.balance + amountChange };
+            }
+            return acc;
+        });
+        
+        return { ...p, budget: { ...p.budget, transactions: p.budget.transactions.filter(t => t.id !== id), accounts: newAccounts }};
+    });
+  };
+  
+  const addAccount = (account: Omit<Account, 'id'>) => {
+    const newAccount: Account = { ...account, id: new Date().getTime().toString() };
+    setProfile(p => ({ ...p, budget: { ...p.budget, accounts: [...p.budget.accounts, newAccount] }}));
+  };
+
+  const updateAccount = (accountToUpdate: Account) => {
+    setProfile(p => ({...p, budget: {...p.budget, accounts: p.budget.accounts.map(a => a.id === accountToUpdate.id ? accountToUpdate : a)}}));
+  };
+  
+  const deleteAccount = (id: string) => {
+    setProfile(p => ({ ...p, budget: { ...p.budget, accounts: p.budget.accounts.filter(a => a.id !== id) }}));
+  }
+  
+  const addCategory = (category: Omit<Category, 'id'>) => {
+    const newCategory: Category = { ...category, id: new Date().getTime().toString() };
+    setProfile(p => ({...p, budget: { ...p.budget, categories: [...p.budget.categories, newCategory]}}));
+  };
+  
+  const updateCategory = (categoryToUpdate: Category) => {
+    setProfile(p => ({...p, budget: {...p.budget, categories: p.budget.categories.map(c => c.id === categoryToUpdate.id ? categoryToUpdate : c)}}));
+  };
+  
+  const deleteCategory = (id: string) => {
+    setProfile(p => ({...p, budget: {...p.budget, categories: p.budget.categories.filter(c => c.id !== id)}}));
+  };
+  
+  const addSavingsGoal = (goal: Omit<SavingsGoal, 'id' | 'currentAmount'>) => {
+    const newGoal: SavingsGoal = { ...goal, id: new Date().getTime().toString(), currentAmount: 0 };
+    setProfile(p => ({...p, budget: {...p.budget, goals: [...p.budget.goals, newGoal]}}));
+  };
+  
+  const updateSavingsGoal = (goalToUpdate: SavingsGoal) => {
+    setProfile(p => ({...p, budget: {...p.budget, goals: p.budget.goals.map(g => g.id === goalToUpdate.id ? goalToUpdate : g)}}));
+  };
+  
+  const deleteSavingsGoal = (id: string) => {
+    setProfile(p => ({...p, budget: {...p.budget, goals: p.budget.goals.filter(g => g.id !== id)}}));
+  };
+  
+  const contributeToGoal = (goalId: string, amount: number, accountId: string) => {
+     addTransaction({
+        type: 'expense',
+        amount,
+        description: `Contribution to goal`,
+        categoryId: 'cat-bills', // Or a dedicated 'Savings' category
+        accountId,
+        date: new Date().toISOString(),
+        recurring: 'none'
+     });
+
+     setProfile(p => {
+        const newGoals = p.budget.goals.map(g => {
+            if(g.id === goalId) {
+                return { ...g, currentAmount: g.currentAmount + amount };
+            }
+            return g;
+        });
+        return { ...p, budget: { ...p.budget, goals: newGoals }};
+     });
+  };
+
 
   return (
     <ProfileContext.Provider value={{ 
@@ -678,6 +866,19 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
         addCustomCategory,
         updateCustomCategory,
         deleteCustomCategory,
+        addTransaction,
+        updateTransaction,
+        deleteTransaction,
+        addAccount,
+        updateAccount,
+        deleteAccount,
+        addCategory,
+        updateCategory,
+        deleteCategory,
+        addSavingsGoal,
+        updateSavingsGoal,
+        deleteSavingsGoal,
+        contributeToGoal
     }}>
       {children}
     </ProfileContext.Provider>
