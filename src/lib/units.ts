@@ -221,17 +221,17 @@ const conversionFactors: Record<string, Record<string, number>> = {
   Bar: 100000,
   Atmosphere: 101325,
   PSI: 6894.76,
-  // Currency - These are placeholders, a real app would use an API
-  USD: 1, // Base
-  EUR: 0.92,
-  GBP: 0.79,
-  JPY: 157.2,
-  INR: 83.5,
-  CAD: 1.37,
-  AUD: 1.51,
-  CHF: 0.90,
-  CNY: 7.25,
-  RUB: 88.23,
+  // Currency to base (INR)
+  INR: 1,
+  USD: 83.5,
+  EUR: 90.7,
+  GBP: 105.2,
+  JPY: 0.53,
+  CAD: 61.0,
+  AUD: 55.3,
+  CHF: 92.5,
+  CNY: 11.5,
+  RUB: 0.95,
 };
 
 export function convert(
