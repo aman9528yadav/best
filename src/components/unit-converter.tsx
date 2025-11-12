@@ -30,7 +30,7 @@ import {
 } from '@/components/ui/select';
 import { CATEGORIES, convert, Unit } from '@/lib/units';
 import { useToast } from '@/hooks/use-toast';
-import { cn } from '@/lib/utils';
+import { cn, formatIndianNumber } from '@/lib/utils';
 import { AdMobBanner } from '@/components/admob-banner';
 import { useProfile, ConversionHistoryItem, FavoriteItem } from '@/context/ProfileContext';
 import Link from 'next/link';
@@ -325,7 +325,7 @@ export function UnitConverter() {
           </div>
 
           <div className="bg-accent p-4 rounded-lg flex items-center justify-between">
-            <span className="text-3xl font-bold tracking-tight text-accent-foreground">{result || '0'}</span>
+            <span className="text-3xl font-bold tracking-tight text-accent-foreground">{result ? formatIndianNumber(parseFloat(result)) : '0'}</span>
             <div className="flex items-center gap-1 text-accent-foreground">
                 <Button variant="ghost" size="icon" onClick={handleFavoriteToggle}>
                   <Star className={cn("h-5 w-5", isFavorited && "fill-current text-primary")} />
