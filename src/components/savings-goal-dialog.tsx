@@ -16,6 +16,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import type { SavingsGoal } from '@/context/ProfileContext';
+import { formatIndianNumber } from '@/lib/utils';
 
 interface SavingsGoalDialogProps {
   open: boolean;

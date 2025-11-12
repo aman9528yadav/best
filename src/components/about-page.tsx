@@ -33,7 +33,7 @@ import {
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { useMaintenance } from '@/context/MaintenanceContext';
 import { Badge } from '@/components/ui/badge';
-import { cn } from '@/lib/utils';
+import { cn, formatIndianNumber } from '@/lib/utils';
 
 const roadmapIconMap: { [key: string]: LucideIcon } = {
   GitBranch,

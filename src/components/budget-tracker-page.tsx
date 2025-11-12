@@ -5,7 +5,7 @@
 import React, { useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Plus, MoreVertical, ArrowUp, ArrowDown, Landmark, Utensils, Bus, ShoppingBag, FileText, HeartPulse, Ticket, Icon, Edit, Trash2, Settings, Wallet, PiggyBank, Briefcase, Coins, Home, Car, Filter, Target, Gem, School, LineChart, Repeat } from 'lucide-react';
+import { Plus, MoreVertical, ArrowUp, ArrowDown, Landmark, Utensils, Bus, ShoppingBag, FileText, HeartPulse, Ticket, Icon, Edit, Trash2, Settings, Wallet, PiggyBank, Briefcase, Coins, Home, Car, Filter, Target, Gem, School, LineChart, Repeat, ArrowRightLeft } from 'lucide-react';
 import { useProfile, Transaction, Account, Category, SavingsGoal } from '@/context/ProfileContext';
 import { format, parseISO, isSameMonth, subMonths, startOfMonth, formatDistanceToNow } from 'date-fns';
 import { BudgetTransactionDialog } from './budget-transaction-dialog';
@@ -35,6 +35,9 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { BudgetBreakdownChart } from './budget-breakdown-chart';
+import { formatIndianNumber } from '@/lib/utils';
+import { TransferDialog } from './transfer-dialog';
+
 
 const iconMap: { [key: string]: Icon } = {
     Landmark, Utensils, Bus, ShoppingBag, FileText, HeartPulse, Ticket, Briefcase, Coins, Home, Car, School
@@ -53,12 +56,12 @@ const TransactionItem = ({ transaction, categoryName, categoryIcon, onEdit, onDe
             <div className="flex justify-between items-baseline">
                 <p className="font-semibold">{transaction.description}</p>
                 <p className={`font-bold text-lg ${isIncome ? 'text-green-500' : 'text-red-500'}`}>
-                    {isIncome ? '+' : '-'}₹{transaction.amount.toFixed(2)}
+                    {isIncome ? '+' : '-'}₹{formatIndianNumber(transaction.amount)}
                 </p>
             </div>
             <div className="flex justify-between items-baseline text-sm text-muted-foreground">
                 <p>{accountName}</p>
-                <p>Balance: ₹{remainingBalance.toFixed(2)}</p>
+                <p>Balance: ₹{formatIndianNumber(remainingBalance)}</p>
             </div>
              <div className="flex justify-between items-baseline text-xs text-muted-foreground">
                 <p>{format(parseISO(transaction.date), 'dd-MMM-yyyy')}</p>
@@ -80,7 +83,7 @@ const TransactionItem = ({ transaction, categoryName, categoryIcon, onEdit, onDe
 };
 
 export function BudgetTrackerPage() {
-  const { profile, addTransaction, updateTransaction, deleteTransaction, addAccount, updateAccount, deleteAccount, addCategory, updateCategory, deleteCategory, addSavingsGoal, updateSavingsGoal, deleteSavingsGoal, contributeToGoal } = useProfile();
+  const { profile, addTransaction, updateTransaction, deleteTransaction, addAccount, updateAccount, deleteAccount, addCategory, updateCategory, deleteCategory, addSavingsGoal, updateSavingsGoal, deleteSavingsGoal, contributeToGoal, transferBetweenAccounts } = useProfile();
   const { accounts, transactions, categories } = profile.budget;
   const goals = useMemo(() => {
     const budgetGoals = profile.budget.goals;
@@ -98,6 +101,7 @@ export function BudgetTrackerPage() {
   const [isCategoryDialogOpen, setIsCategoryDialogOpen] = useState(false);
   const [isGoalDialogOpen, setIsGoalDialogOpen] = useState(false);
   const [isContributeDialogOpen, setIsContributeDialogOpen] = useState(false);
+  const [isTransferDialogOpen, setIsTransferDialogOpen] = useState(false);
   
   const [editingTransaction, setEditingTransaction] = useState<Transaction | undefined>();
   const [editingAccount, setEditingAccount] = useState<Account | undefined>();
@@ -212,14 +216,14 @@ export function BudgetTrackerPage() {
       <Card className="bg-gradient-to-br from-primary/90 to-primary/70 text-primary-foreground">
         <CardContent className="p-6">
           <div className="text-sm text-primary-foreground/80">Total Balance</div>
-          <div className="text-4xl font-bold">₹{totalBalance.toFixed(2)}</div>
+          <div className="text-4xl font-bold">₹{formatIndianNumber(totalBalance)}</div>
           <div className="flex justify-between mt-4">
             <div className="flex items-center gap-2">
               <ArrowDown className="h-5 w-5 text-red-300" />
               <div>
                 <div className="text-xs">Expenses (This Month)</div>
                 <div className="font-semibold flex items-center">
-                    ₹{monthlyStats.expenses.total.toFixed(2)}
+                    ₹{formatIndianNumber(monthlyStats.expenses.total)}
                     <ChangeIndicator value={monthlyStats.expenses.change} />
                 </div>
               </div>
@@ -229,7 +233,7 @@ export function BudgetTrackerPage() {
               <div>
                 <div className="text-xs">Income (This Month)</div>
                 <div className="font-semibold flex items-center">
-                    ₹{monthlyStats.income.total.toFixed(2)}
+                    ₹{formatIndianNumber(monthlyStats.income.total)}
                     <ChangeIndicator value={monthlyStats.income.change} />
                 </div>
               </div>
@@ -270,9 +274,14 @@ export function BudgetTrackerPage() {
                         </DropdownMenuContent>
                     </DropdownMenu>
                 </div>
-              <Button onClick={() => { setEditingTransaction(undefined); setIsTxDialogOpen(true); }} className="gap-2" size="sm">
-                <Plus className="h-4 w-4" /> Add
-              </Button>
+                <div className="flex gap-2">
+                    <Button onClick={() => setIsTransferDialogOpen(true)} className="gap-2" size="sm" variant="outline">
+                        <ArrowRightLeft className="h-4 w-4" /> Transfer
+                    </Button>
+                    <Button onClick={() => { setEditingTransaction(undefined); setIsTxDialogOpen(true); }} className="gap-2" size="sm">
+                        <Plus className="h-4 w-4" /> Add
+                    </Button>
+                </div>
             </CardHeader>
             <CardContent>
                 {recentTransactions.length > 0 ? (
@@ -311,7 +320,7 @@ export function BudgetTrackerPage() {
                         <div key={acc.id} className="flex items-center gap-4 py-2">
                             <div className="p-2 bg-accent rounded-full"><Wallet className="h-4 w-4 text-primary"/></div>
                             <div className="flex-1 font-medium">{acc.name}</div>
-                            <div className="font-semibold">₹{acc.balance.toFixed(2)}</div>
+                            <div className="font-semibold">₹{formatIndianNumber(acc.balance)}</div>
                             <div className="opacity-100 transition-opacity">
                                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { setEditingAccount(acc); setIsAccountDialogOpen(true); }}><Edit className="h-4 w-4" /></Button>
                             </div>
@@ -370,8 +379,8 @@ export function BudgetTrackerPage() {
                                 </div>
                                 <Progress value={progress} className="h-2" />
                                 <div className="flex justify-between text-sm text-muted-foreground mt-1">
-                                    <span>₹{goal.currentAmount.toFixed(2)}</span>
-                                    <span>₹{goal.targetAmount.toFixed(2)}</span>
+                                    <span>₹{formatIndianNumber(goal.currentAmount)}</span>
+                                    <span>₹{formatIndianNumber(goal.targetAmount)}</span>
                                 </div>
                             </div>
                         )
@@ -392,7 +401,7 @@ export function BudgetTrackerPage() {
                                 <CardTitle className="text-sm font-medium">This Month's Income</CardTitle>
                              </CardHeader>
                              <CardContent className="p-3 pt-0">
-                                <p className="text-2xl font-bold">₹{monthlyStats.income.total.toFixed(2)}</p>
+                                <p className="text-2xl font-bold">₹{formatIndianNumber(monthlyStats.income.total)}</p>
                              </CardContent>
                          </Card>
                           <Card>
@@ -400,7 +409,7 @@ export function BudgetTrackerPage() {
                                 <CardTitle className="text-sm font-medium">This Month's Expenses</CardTitle>
                              </CardHeader>
                              <CardContent className="p-3 pt-0">
-                                <p className="text-2xl font-bold">₹{monthlyStats.expenses.total.toFixed(2)}</p>
+                                <p className="text-2xl font-bold">₹{formatIndianNumber(monthlyStats.expenses.total)}</p>
                              </CardContent>
                          </Card>
                     </div>
@@ -480,6 +489,12 @@ export function BudgetTrackerPage() {
         onOpenChange={setIsGoalDialogOpen}
         onSave={editingGoal ? updateSavingsGoal : addSavingsGoal}
         goal={editingGoal}
+      />
+       <TransferDialog
+        open={isTransferDialogOpen}
+        onOpenChange={setIsTransferDialogOpen}
+        onTransfer={transferBetweenAccounts}
+        accounts={accounts}
       />
       {goalToContribute && (
         <ContributeToGoalDialog

@@ -23,6 +23,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import type { Account } from '@/context/ProfileContext';
+import { formatIndianNumber } from '@/lib/utils';
 
 interface ContributeToGoalDialogProps {
   open: boolean;
@@ -79,7 +80,7 @@ export function ContributeToGoalDialog({
                 <SelectTrigger><SelectValue placeholder="Select an account" /></SelectTrigger>
                 <SelectContent>
                     {accounts.map(acc => (
-                        <SelectItem key={acc.id} value={acc.id}>{acc.name} (Balance: ₹{acc.balance.toFixed(2)})</SelectItem>
+                        <SelectItem key={acc.id} value={acc.id}>{acc.name} (Balance: ₹{formatIndianNumber(acc.balance)})</SelectItem>
                     ))}
                 </SelectContent>
             </Select>

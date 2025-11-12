@@ -15,6 +15,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import type { Account } from '@/context/ProfileContext';
+import { formatIndianNumber } from '@/lib/utils';
 
 interface AccountDialogProps {
   open: boolean;
