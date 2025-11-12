@@ -82,6 +82,8 @@ import { AnalyticsPage } from '@/components/analytics-page';
 import { Calculator as CalculatorComponent } from '@/components/calculator';
 import { SettingsPage } from '@/components/settings-page';
 import { Confetti } from '@/components/confetti';
+import { UnitConverter } from '@/components/unit-converter';
+import { DateCalculator } from '@/components/date-calculator';
 
 export const quickAccessItems = [
   {
@@ -97,7 +99,6 @@ export const quickAccessItems = [
   { id: 'history', icon: History, label: 'History', href: '/history', requiresAuth: true },
   { id: 'news', icon: Newspaper, label: 'News', href: 'https://aman9528.wixstudio.com/my-site-3', requiresAuth: false },
   { id: 'translator', icon: Languages, label: 'Translator', href: '#', requiresAuth: true },
-  { id: 'budget', icon: Wallet, label: 'Budget', href: '/budget-tracker', requiresAuth: true },
 ];
 
 export const moreAccessItems = [
@@ -144,12 +145,7 @@ function Dashboard() {
         setShowWelcomeDialog(true);
     }
     
-    // Confetti logic
-    const hasSeenConfetti = sessionStorage.getItem('sutradhaar_has_seen_confetti');
-    if (!hasSeenConfetti) {
-        setShowConfetti(true);
-        sessionStorage.setItem('sutradhaar_has_seen_confetti', 'true');
-    }
+    setShowConfetti(true);
   }, []);
 
 
@@ -481,21 +477,26 @@ export default function DashboardPage() {
   return (
     <div className="flex flex-col items-center w-full min-h-screen bg-background text-foreground">
       <div className="w-full max-w-md mx-auto flex flex-col flex-1">
-        <div className="p-4 pt-0">
-          <Header />
-        </div>
         <Tabs defaultValue="dashboard" className="w-full flex-1 flex flex-col">
-            <TabsList className="grid w-full grid-cols-4 sticky top-0 z-40 bg-background/80 backdrop-blur-sm">
+            <TabsList className="grid w-full grid-cols-6 sticky top-0 z-40 bg-background/80 backdrop-blur-sm">
                 <TabsTrigger value="dashboard"><Home className="h-5 w-5" /></TabsTrigger>
+                <TabsTrigger value="converter"><ArrowRightLeft className="h-5 w-5" /></TabsTrigger>
                 <TabsTrigger value="calculator"><Calculator className="h-5 w-5" /></TabsTrigger>
+                <TabsTrigger value="date-calculator"><Calendar className="h-5 w-5" /></TabsTrigger>
                 <TabsTrigger value="analytics"><BarChart2 className="h-5 w-5" /></TabsTrigger>
                 <TabsTrigger value="settings"><Settings className="h-5 w-5" /></TabsTrigger>
             </TabsList>
             <TabsContent value="dashboard" className="flex-1 overflow-y-auto p-4 pt-4 space-y-6">
                 {isPageLoading ? <DashboardSkeleton /> : <Dashboard />}
             </TabsContent>
+             <TabsContent value="converter" className="flex-1 overflow-y-auto p-4 pt-4 space-y-4">
+                <UnitConverter />
+            </TabsContent>
             <TabsContent value="calculator" className="flex-1 overflow-y-auto p-4 pt-4 space-y-4">
                 <CalculatorComponent onToggleFullScreen={() => setIsCalculatorFullScreen(true)} />
+            </TabsContent>
+             <TabsContent value="date-calculator" className="flex-1 overflow-y-auto p-4 pt-4 space-y-4">
+                <DateCalculator />
             </TabsContent>
             <TabsContent value="analytics" className="flex-1 overflow-y-auto p-4 pt-4 space-y-4">
                 <AnalyticsPage />
