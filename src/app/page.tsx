@@ -76,7 +76,6 @@ import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import { RecentNoteWidget } from '@/components/widgets/recent-note-widget';
 import { PendingTodosWidget } from '@/components/widgets/pending-todos-widget';
-import { Confetti } from '@/components/confetti';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { AnalyticsPage } from '@/components/analytics-page';
 import { Calculator as CalculatorComponent } from '@/components/calculator';
@@ -93,7 +92,6 @@ export const quickAccessItems = [
   { id: 'calculator', icon: Calculator, label: 'Calculator', href: '/calculator', requiresAuth: false },
   { id: 'notes', icon: BookText, label: 'Notes', href: '/notes', requiresAuth: true },
   { id: 'todo', icon: CheckSquare, label: 'Todo', href: '/todo', requiresAuth: true },
-  { id: 'budget', icon: Wallet, label: 'Budget', href: '/budget-tracker', requiresAuth: true },
   { id: 'history', icon: History, label: 'History', href: '/history', requiresAuth: true },
   { id: 'news', icon: Newspaper, label: 'News', href: 'https://aman9528.wixstudio.com/my-site-3', requiresAuth: false },
   { id: 'translator', icon: Languages, label: 'Translator', href: '#', requiresAuth: true },
@@ -134,18 +132,12 @@ function Dashboard() {
   const [showLoginDialog, setShowLoginDialog] = useState(false);
   const [showWelcomeDialog, setShowWelcomeDialog] = useState(false);
   const [showMore, setShowMore] = useState(false);
-  const [showConfetti, setShowConfetti] = useState(false);
 
   useEffect(() => {
     toast({
       title: "Welcome to your Dashboard!",
       description: "You can find all your tools and stats here.",
     });
-
-    setShowConfetti(true);
-    const timer = setTimeout(() => setShowConfetti(false), 3000); // Extended duration
-    
-    return () => clearTimeout(timer);
   }, [toast]);
 
   useEffect(() => {
@@ -427,7 +419,6 @@ function Dashboard() {
 
   return (
     <>
-      {showConfetti && <Confetti />}
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
         <DashboardBanner />
       </motion.div>

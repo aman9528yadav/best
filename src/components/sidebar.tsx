@@ -55,11 +55,6 @@ const sidebarNavItems = [
     href: '/calculator',
   },
   {
-    icon: Wallet,
-    label: 'Budget',
-    href: '/budget-tracker',
-  },
-  {
     icon: History,
     label: 'History',
     href: '/history',

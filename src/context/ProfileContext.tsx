@@ -10,7 +10,7 @@ import { isToday, differenceInCalendarDays, startOfDay, isYesterday } from 'date
 import { useMaintenance } from './MaintenanceContext';
 import { useToast } from '@/hooks/use-toast';
 
-export type ActivityType = 'conversion' | 'calculator' | 'date_calculation' | 'note' | 'todo' | 'budget';
+export type ActivityType = 'conversion' | 'calculator' | 'date_calculation' | 'note' | 'todo';
 
 export type ActivityLogItem = {
     timestamp: string;
@@ -85,50 +85,13 @@ export type TodoItem = {
   recurring?: 'none' | 'daily' | 'weekly' | 'monthly';
 };
 
-export type Transaction = {
-  id: string;
-  type: 'income' | 'expense';
-  amount: number;
-  description: string;
-  categoryId: string;
-  accountId: string;
-  date: string;
-  recurring: 'none' | 'daily' | 'weekly' | 'monthly';
-};
-
-export type Account = {
-  id: string;
-  name: string;
-  balance: number;
-};
-
-export type Category = {
-  id: string;
-  name: string;
-  icon: string; // Lucide icon name
-};
-
-export type SavingsGoal = {
-  id: string;
-  name: string;
-  targetAmount: number;
-  currentAmount: number;
-};
-
-export type BudgetData = {
-    transactions: Transaction[];
-    accounts: Account[];
-    categories: Category[];
-    goals: SavingsGoal[];
-}
-
 export type QuickAccessItemOrder = {
   id: string;
   hidden: boolean;
 };
 
 export type DashboardWidgetItem = {
-  id: 'recentNote' | 'pendingTodos' | 'miniBudget';
+  id: 'recentNote' | 'pendingTodos';
   hidden: boolean;
 };
 
@@ -192,7 +155,6 @@ export type UserProfile = {
   stats: UserStats;
   notes: NoteItem[];
   todos: TodoItem[];
-  budget: BudgetData;
   activityLog: ActivityLogItem[];
   quickAccessOrder?: QuickAccessItemOrder[];
   dashboardWidgets?: DashboardWidgetItem[];
@@ -221,19 +183,6 @@ type ProfileContextType = {
   updateTodo: (todo: TodoItem) => void;
   toggleTodo: (id: string) => void;
   deleteTodo: (id: string) => void;
-  addTransaction: (transaction: Omit<Transaction, 'id'>) => void;
-  updateTransaction: (transaction: Transaction) => void;
-  deleteTransaction: (id: string) => void;
-  addAccount: (account: Omit<Account, 'id'>) => void;
-  updateAccount: (account: Account) => void;
-  deleteAccount: (id: string) => void;
-  addCategory: (category: Omit<Category, 'id'>) => void;
-  updateCategory: (category: Category) => void;
-  deleteCategory: (id: string) => void;
-  addSavingsGoal: (goal: Omit<SavingsGoal, 'id' | 'currentAmount'>) => void;
-  updateSavingsGoal: (goal: SavingsGoal) => void;
-  deleteSavingsGoal: (id: string) => void;
-  contributeToGoal: (goalId: string, amount: number, accountId: string) => void;
   deleteAllUserData: () => Promise<void>;
   updateStats: (type: ActivityType) => void;
   history: HistoryItem[];
@@ -277,25 +226,6 @@ const defaultSettings: UserSettings = {
     enableSounds: true,
 };
 
-const defaultBudgetData: BudgetData = {
-    accounts: [{ id: 'default-cash', name: 'Cash', balance: 0 }, { id: 'default-bank', name: 'Bank', balance: 1000 }],
-    categories: [
-        { id: 'cat-income', name: 'Income', icon: 'Landmark' },
-        { id: 'cat-food', name: 'Food & Drink', icon: 'Utensils' },
-        { id: 'cat-transport', name: 'Transport', icon: 'Bus' },
-        { id: 'cat-shopping', name: 'Shopping', icon: 'ShoppingBag' },
-        { id: 'cat-bills', name: 'Bills & Utilities', icon: 'FileText' },
-        { id: 'cat-health', name: 'Health', icon: 'HeartPulse' },
-        { id: 'cat-fun', name: 'Entertainment', icon: 'Ticket' },
-        { id: 'cat-housing', name: 'Housing', icon: 'Home' },
-        { id: 'cat-personal', name: 'Personal Care', icon: 'Coins' },
-        { id: 'cat-work', name: 'Work', icon: 'Briefcase' },
-        { id: 'cat-education', name: 'Education', icon: 'School'},
-    ],
-    transactions: [],
-    goals: [],
-};
-
 const defaultDashboardWidgets: DashboardWidgetItem[] = [
     { id: 'recentNote', hidden: false },
     { id: 'pendingTodos', hidden: false },
@@ -331,7 +261,6 @@ const getInitialProfile = (): UserProfile => {
     stats: defaultStats,
     notes: [],
     todos: [],
-    budget: defaultBudgetData,
     activityLog: [],
     quickAccessOrder: [],
     dashboardWidgets: defaultDashboardWidgets,
@@ -363,7 +292,6 @@ const guestProfileDefault: UserProfile = {
     stats: defaultStats,
     notes: [],
     todos: [],
-    budget: defaultBudgetData,
     activityLog: [],
     quickAccessOrder: [],
     dashboardWidgets: defaultDashboardWidgets,
@@ -390,12 +318,7 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
     const mergeWithDefaults = (parsedProfile: Partial<UserProfile>): UserProfile => {
       const stats = { ...defaultStats, ...(parsedProfile.stats || {}) };
       const settings = { ...defaultSettings, ...(parsedProfile.settings || {}), customTheme: { ...defaultSettings.customTheme, ...(parsedProfile.settings?.customTheme || {}) } };
-      const budgetData = parsedProfile.budget || defaultBudgetData;
-      const budget = {
-        ...defaultBudgetData,
-        ...budgetData,
-        goals: budgetData.goals ? (Array.isArray(budgetData.goals) ? budgetData.goals : Object.values(budgetData.goals)) : [],
-      };
+      
       const history = parsedProfile.history ? (Array.isArray(parsedProfile.history) ? parsedProfile.history : Object.values(parsedProfile.history)) : [];
       const favorites = parsedProfile.favorites ? (Array.isArray(parsedProfile.favorites) ? parsedProfile.favorites : Object.values(parsedProfile.favorites)) : [];
       const customUnits = parsedProfile.customUnits ? (Array.isArray(parsedProfile.customUnits) ? parsedProfile.customUnits : Object.values(parsedProfile.customUnits)) : [];
@@ -406,7 +329,6 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
         ...parsedProfile,
         settings,
         stats,
-        budget,
         history,
         favorites,
         customUnits,
@@ -607,130 +529,6 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
   const deleteTodo = (id: string) => {
     setProfile(p => ({ ...p, todos: (p.todos || []).filter(t => t.id !== id) }));
   };
-  
-  const addTransaction = (transaction: Omit<Transaction, 'id'>) => {
-    setProfile(p => {
-        const newTransaction: Transaction = {
-            ...transaction,
-            id: new Date().getTime().toString(),
-        };
-        const newTransactions = [newTransaction, ...p.budget.transactions];
-        
-        const account = p.budget.accounts.find(acc => acc.id === transaction.accountId);
-        if (!account) return p;
-
-        const newBalance = transaction.type === 'income' ? account.balance + transaction.amount : account.balance - transaction.amount;
-        const newAccounts = p.budget.accounts.map(acc => acc.id === transaction.accountId ? { ...acc, balance: newBalance } : acc);
-
-        return { ...p, budget: { ...p.budget, transactions: newTransactions, accounts: newAccounts } };
-    });
-    updateStats('budget');
-  };
-
-  const updateTransaction = (transaction: Transaction) => {
-    setProfile(p => {
-        const oldTransaction = p.budget.transactions.find(t => t.id === transaction.id);
-        if (!oldTransaction) return p;
-
-        const newTransactions = p.budget.transactions.map(t => t.id === transaction.id ? transaction : t);
-
-        // Revert old transaction amount from its account
-        const oldAccount = p.budget.accounts.find(acc => acc.id === oldTransaction.accountId);
-        if (!oldAccount) return p; // Should not happen
-
-        let intermediateAccounts = p.budget.accounts;
-        const oldAccountBalance = oldTransaction.type === 'income' ? oldAccount.balance - oldTransaction.amount : oldAccount.balance + oldTransaction.amount;
-        intermediateAccounts = intermediateAccounts.map(acc => acc.id === oldTransaction.accountId ? { ...acc, balance: oldAccountBalance } : acc);
-
-        // Apply new transaction amount to its account
-        const newAccount = intermediateAccounts.find(acc => acc.id === transaction.accountId);
-        if (!newAccount) return p;
-
-        const newAccountBalance = transaction.type === 'income' ? newAccount.balance + transaction.amount : newAccount.balance - transaction.amount;
-        const finalAccounts = intermediateAccounts.map(acc => acc.id === transaction.accountId ? { ...acc, balance: newAccountBalance } : acc);
-
-        return { ...p, budget: { ...p.budget, transactions: newTransactions, accounts: finalAccounts }};
-    });
-  };
-
-  const deleteTransaction = (id: string) => {
-    setProfile(p => {
-        const transactionToDelete = p.budget.transactions.find(t => t.id === id);
-        if (!transactionToDelete) return p;
-
-        const newTransactions = p.budget.transactions.filter(t => t.id !== id);
-
-        const account = p.budget.accounts.find(acc => acc.id === transactionToDelete.accountId);
-        if (!account) return p;
-
-        const newBalance = transactionToDelete.type === 'income' ? account.balance - transactionToDelete.amount : account.balance + transactionToDelete.amount;
-        const newAccounts = p.budget.accounts.map(acc => acc.id === transactionToDelete.accountId ? { ...acc, balance: newBalance } : acc);
-
-        return { ...p, budget: { ...p.budget, transactions: newTransactions, accounts: newAccounts } };
-    });
-  };
-
-  const addAccount = (account: Omit<Account, 'id'>) => {
-    const newAccount: Account = { ...account, id: new Date().getTime().toString() };
-    setProfile(p => ({ ...p, budget: { ...p.budget, accounts: [...p.budget.accounts, newAccount] }}));
-  };
-
-  const updateAccount = (accountToUpdate: Account) => {
-    setProfile(p => ({ ...p, budget: { ...p.budget, accounts: p.budget.accounts.map(acc => acc.id === accountToUpdate.id ? accountToUpdate : acc) }}));
-  };
-
-  const deleteAccount = (id: string) => {
-    setProfile(p => ({ ...p, budget: { ...p.budget, accounts: p.budget.accounts.filter(acc => acc.id !== id), transactions: p.budget.transactions.filter(t => t.accountId !== id) }}));
-  };
-  
-  const addCategory = (category: Omit<Category, 'id'>) => {
-    const newCategory: Category = { ...category, id: new Date().getTime().toString() };
-    setProfile(p => ({ ...p, budget: { ...p.budget, categories: [...p.budget.categories, newCategory] }}));
-  };
-
-  const updateCategory = (categoryToUpdate: Category) => {
-    setProfile(p => ({ ...p, budget: { ...p.budget, categories: p.budget.categories.map(cat => cat.id === categoryToUpdate.id ? categoryToUpdate : cat) }}));
-  };
-
-  const deleteCategory = (id: string) => {
-    setProfile(p => ({ ...p, budget: { ...p.budget, categories: p.budget.categories.filter(cat => cat.id !== id), transactions: p.budget.transactions.map(t => t.categoryId === id ? { ...t, categoryId: '' } : t) }}));
-  };
-
-  const addSavingsGoal = (goal: Omit<SavingsGoal, 'id' | 'currentAmount'>) => {
-    const newGoal: SavingsGoal = { ...goal, id: new Date().getTime().toString(), currentAmount: 0 };
-    setProfile(p => ({ ...p, budget: { ...p.budget, goals: [...p.budget.goals, newGoal] }}));
-  };
-
-  const updateSavingsGoal = (goalToUpdate: SavingsGoal) => {
-    setProfile(p => ({ ...p, budget: { ...p.budget, goals: p.budget.goals.map(g => g.id === goalToUpdate.id ? goalToUpdate : g) }}));
-  };
-
-  const deleteSavingsGoal = (id: string) => {
-    setProfile(p => {
-        const goalsArray = Array.isArray(p.budget.goals) ? p.budget.goals : Object.values(p.budget.goals);
-        const updatedGoals = goalsArray.filter(g => g.id !== id);
-        return { ...p, budget: { ...p.budget, goals: updatedGoals }};
-    });
-  };
-
-  const contributeToGoal = (goalId: string, amount: number, accountId: string) => {
-    addTransaction({
-      type: 'expense',
-      amount,
-      description: `Contribution to goal`,
-      categoryId: '', // or a specific "Savings" category
-      accountId,
-      date: new Date().toISOString(),
-      recurring: 'none',
-    });
-    setProfile(p => {
-        const goalsArray = Array.isArray(p.budget.goals) ? p.budget.goals : Object.values(p.budget.goals);
-        const newGoals = goalsArray.map(g => 
-            g.id === goalId ? { ...g, currentAmount: g.currentAmount + amount } : g
-        );
-        return { ...p, budget: { ...p.budget, goals: newGoals }};
-    });
-  };
 
 
   const checkAndUpdateStreak = () => {
@@ -862,19 +660,6 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
         updateTodo,
         toggleTodo,
         deleteTodo,
-        addTransaction,
-        updateTransaction,
-        deleteTransaction,
-        addAccount,
-        updateAccount,
-        deleteAccount,
-        addCategory,
-        updateCategory,
-        deleteCategory,
-        addSavingsGoal,
-        updateSavingsGoal,
-        deleteSavingsGoal,
-        contributeToGoal,
         deleteAllUserData,
         updateStats,
         history: profile.history,
