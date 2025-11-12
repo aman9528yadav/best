@@ -5,7 +5,7 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { ChevronUp, Divide, Equal, Minus, Plus, X, Percent, Baseline, History, Undo2, Trash2, Volume2, VolumeX, Delete } from 'lucide-react';
+import { ChevronUp, Divide, Equal, Minus, Plus, X, Percent, Baseline, History, Undo2, Trash2, Volume2, VolumeX, Delete, Maximize, Minimize } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useProfile, CalculatorHistoryItem } from '@/context/ProfileContext';
 import Link from 'next/link';
@@ -58,7 +58,7 @@ const CalculatorButton = ({
   );
 };
 
-export function Calculator() {
+export function Calculator({ onToggleFullScreen, isFullScreen }: { onToggleFullScreen: () => void, isFullScreen?: boolean }) {
   const [display, setDisplay] = useState('0');
   const [expression, setExpression] = useState('');
   const [isSci, setIsSci] = useState(false);
@@ -299,9 +299,14 @@ export function Calculator() {
         <CardContent className="p-4 space-y-4">
           <div className="bg-muted p-4 rounded-lg text-right relative">
             <div className='flex justify-between items-center'>
-                <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground" onClick={toggleSounds}>
-                  {calculatorSounds ? <Volume2 className="h-5 w-5"/> : <VolumeX className="h-5 w-5"/>}
-                </Button>
+                <div className="flex gap-1">
+                    <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground" onClick={toggleSounds}>
+                      {calculatorSounds ? <Volume2 className="h-5 w-5"/> : <VolumeX className="h-5 w-5"/>}
+                    </Button>
+                     <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground" onClick={onToggleFullScreen}>
+                      {isFullScreen ? <Minimize className="h-5 w-5" /> : <Maximize className="h-5 w-5" />}
+                    </Button>
+                </div>
                 <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground" onClick={handleBackspace}>
                     <Delete className="h-5 w-5" />
                 </Button>
@@ -345,7 +350,7 @@ export function Calculator() {
         </CardContent>
       </Card>
       
-      {calculatorHistory.length > 0 && (
+      {!isFullScreen && calculatorHistory.length > 0 && (
         <Card>
           <CardContent className="p-4 space-y-2">
             <div className="flex justify-between items-center">
