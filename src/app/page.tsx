@@ -81,9 +81,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { AnalyticsPage } from '@/components/analytics-page';
 import { Calculator as CalculatorComponent } from '@/components/calculator';
 import { SettingsPage } from '@/components/settings-page';
-import { Confetti } from '@/components/confetti';
 import { UnitConverter } from '@/components/unit-converter';
 import { DateCalculator } from '@/components/date-calculator';
+import { Timer as TimerComponent } from '@/components/timer';
+import { Stopwatch as StopwatchComponent } from '@/components/stopwatch';
+import { BudgetTrackerPage } from '@/components/budget-tracker-page';
 
 export const quickAccessItems = [
   {
@@ -139,7 +141,6 @@ function Dashboard() {
   const [showConfetti, setShowConfetti] = useState(false);
 
   useEffect(() => {
-    // Only run this on the client
     setShowConfetti(true);
     
     const welcomeSetting = localStorage.getItem('sutradhaar_show_welcome');
@@ -421,7 +422,6 @@ function Dashboard() {
 
   return (
     <>
-      {showConfetti && <Confetti />}
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
         <DashboardBanner />
       </motion.div>
@@ -476,14 +476,20 @@ export default function DashboardPage() {
 
   return (
     <Tabs defaultValue="dashboard" className="w-full flex-1 flex flex-col">
-        <TabsList className="grid w-full grid-cols-6 sticky top-0 z-40 bg-background/80 backdrop-blur-sm">
+      <ScrollArea className="w-full whitespace-nowrap">
+        <TabsList className="inline-flex h-auto p-1 sticky top-0 z-40 bg-background/80 backdrop-blur-sm">
             <TabsTrigger value="dashboard"><Home className="h-5 w-5" /></TabsTrigger>
             <TabsTrigger value="converter"><ArrowRightLeft className="h-5 w-5" /></TabsTrigger>
             <TabsTrigger value="calculator"><Calculator className="h-5 w-5" /></TabsTrigger>
             <TabsTrigger value="date-calculator"><Calendar className="h-5 w-5" /></TabsTrigger>
+            <TabsTrigger value="timer"><Timer className="h-5 w-5" /></TabsTrigger>
+            <TabsTrigger value="stopwatch"><Hourglass className="h-5 w-5" /></TabsTrigger>
+            <TabsTrigger value="budget-tracker"><Wallet className="h-5 w-5" /></TabsTrigger>
             <TabsTrigger value="analytics"><BarChart2 className="h-5 w-5" /></TabsTrigger>
             <TabsTrigger value="settings"><Settings className="h-5 w-5" /></TabsTrigger>
         </TabsList>
+        <ScrollBar orientation="horizontal" />
+      </ScrollArea>
         <TabsContent value="dashboard" className="flex-1 overflow-y-auto p-4 pt-4 space-y-6">
             {isPageLoading ? <DashboardSkeleton /> : <Dashboard />}
         </TabsContent>
@@ -495,6 +501,15 @@ export default function DashboardPage() {
         </TabsContent>
          <TabsContent value="date-calculator" className="flex-1 overflow-y-auto p-4 pt-4 space-y-4">
             <DateCalculator />
+        </TabsContent>
+         <TabsContent value="timer" className="flex-1 overflow-y-auto p-4 pt-4 space-y-4">
+            <TimerComponent />
+        </TabsContent>
+        <TabsContent value="stopwatch" className="flex-1 overflow-y-auto p-4 pt-4 space-y-4">
+            <StopwatchComponent />
+        </TabsContent>
+        <TabsContent value="budget-tracker" className="flex-1 overflow-y-auto p-4 pt-4 space-y-4">
+            <BudgetTrackerPage />
         </TabsContent>
         <TabsContent value="analytics" className="flex-1 overflow-y-auto p-4 pt-4 space-y-4">
             <AnalyticsPage />
