@@ -129,6 +129,7 @@ export function Header() {
                         )}
                     </DropdownMenuContent>
                 </DropdownMenu>
+                <Sidebar />
               </div>
             </div>
         </Card>
