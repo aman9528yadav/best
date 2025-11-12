@@ -38,13 +38,9 @@ export default function Profile() {
   
   if (authLoading) {
     return (
-       <div className="flex flex-col items-center w-full min-h-screen bg-background text-foreground">
-        <div className="w-full max-w-[412px] flex flex-col flex-1">
-          <main className="flex-1 overflow-y-auto p-4 pt-2 space-y-4">
-            <ProfilePageSkeleton />
-          </main>
-        </div>
-      </div>
+       <main className="flex-1 overflow-y-auto p-4 pt-2 space-y-4">
+        <ProfilePageSkeleton />
+      </main>
     )
   }
   
@@ -68,12 +64,8 @@ export default function Profile() {
   }
 
   return (
-    <div className="flex flex-col items-center w-full min-h-screen bg-background text-foreground">
-      <div className="w-full max-w-[412px] flex flex-col flex-1">
-        <main className="flex-1 overflow-y-auto p-4 pt-2 space-y-4">
-          <ProfilePage />
-        </main>
-      </div>
-    </div>
+    <main className="flex-1 overflow-y-auto p-4 pt-2 space-y-4">
+      <ProfilePage />
+    </main>
   );
 }

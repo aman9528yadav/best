@@ -43,15 +43,11 @@ export default function History() {
   
   if (isLoading) {
      return (
-      <div className="flex flex-col items-center w-full min-h-screen bg-background text-foreground">
-        <div className="w-full max-w-[412px] flex flex-col flex-1">
-          <main className="flex-1 overflow-y-auto p-4 pt-0 space-y-4">
-            <AdMobBanner className="mb-4 w-full" />
-            <HistoryPageSkeleton />
-            <AdMobBanner className="mt-4 w-full" />
-          </main>
-        </div>
-      </div>
+        <main className="flex-1 overflow-y-auto p-4 pt-0 space-y-4">
+          <AdMobBanner className="mb-4 w-full" />
+          <HistoryPageSkeleton />
+          <AdMobBanner className="mt-4 w-full" />
+        </main>
     );
   }
 
@@ -76,14 +72,10 @@ export default function History() {
 
 
   return (
-    <div className="flex flex-col items-center w-full min-h-screen bg-background text-foreground">
-      <div className="w-full max-w-[412px] flex flex-col flex-1">
-        <main className="flex-1 overflow-y-auto p-4 pt-0 space-y-4">
-          <AdMobBanner className="mb-4 w-full" />
-          <HistoryPage />
-          <AdMobBanner className="mt-4 w-full" />
-        </main>
-      </div>
-    </div>
+    <main className="flex-1 overflow-y-auto p-4 pt-0 space-y-4">
+      <AdMobBanner className="mb-4 w-full" />
+      <HistoryPage />
+      <AdMobBanner className="mt-4 w-full" />
+    </main>
   );
 }

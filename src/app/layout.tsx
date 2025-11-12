@@ -54,10 +54,14 @@ export default function RootLayout({
               <ProfileProvider>
                 <NotificationProvider>
                   <CustomThemeHandler />
-                  <MaintenanceWrapper>
-                    <ConditionalHeader />
-                    {children}
-                  </MaintenanceWrapper>
+                  <div className="flex flex-col items-center w-full min-h-screen bg-background text-foreground">
+                    <div className="w-full max-w-[412px] flex flex-col flex-1">
+                      <MaintenanceWrapper>
+                        <ConditionalHeader />
+                        {children}
+                      </MaintenanceWrapper>
+                    </div>
+                  </div>
                   <Toaster />
                   <BroadcastListener />
                 </NotificationProvider>
