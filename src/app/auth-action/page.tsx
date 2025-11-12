@@ -4,7 +4,6 @@
 import React, { useEffect, useMemo } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { Header } from '@/components/header';
 import { LogIn, LogOut, UserPlus, CheckCircle } from 'lucide-react';
 
 const actionDetails = {
@@ -56,9 +55,6 @@ export default function AuthActionPage() {
   return (
     <div className="flex flex-col items-center w-full min-h-screen bg-gradient-to-br from-pink-100 via-purple-100 to-blue-100 text-foreground">
       <div className="w-full max-w-[412px] flex flex-col flex-1">
-        <div className="p-4 pt-0">
-          <Header />
-        </div>
         <main className="flex-1 flex flex-col items-center justify-center text-center p-4 space-y-8">
             <motion.div
                 initial={{ opacity: 0, y: 20 }}
