@@ -267,7 +267,7 @@ export function BudgetTrackerPage() {
             <TabsTrigger value="goals">Goals</TabsTrigger>
         </TabsList>
         <TabsContent value="overview" className="mt-4 space-y-4">
-             <Card>
+            <Card>
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2"><Trophy className="h-5 w-5" />Achievements</CardTitle>
                     <CardDescription>Your financial milestones</CardDescription>
@@ -340,6 +340,15 @@ export function BudgetTrackerPage() {
                     </div>
                 </CardContent>
            </Card>
+           <Card>
+                <CardHeader>
+                    <CardTitle className="flex items-center gap-2">Spending Breakdown</CardTitle>
+                    <CardDescription>This month's expenses by category.</CardDescription>
+                </CardHeader>
+                <CardContent className="h-[250px] flex justify-center items-center">
+                    <BudgetBreakdownChart />
+                </CardContent>
+            </Card>
         </TabsContent>
         <TabsContent value="transactions" className="mt-4">
            <Card>
@@ -419,7 +428,7 @@ export function BudgetTrackerPage() {
                     </div>
                 </CardHeader>
                 <CardContent className="space-y-3">
-                     <div className="grid grid-cols-2 gap-2">
+                    <div className="grid grid-cols-2 gap-2">
                         <Button onClick={() => setIsTransferDialogOpen(true)} className="w-full gap-2" size="sm" variant="outline">
                             <ArrowRightLeft className="h-4 w-4" /> Transfer
                         </Button>
