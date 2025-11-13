@@ -1,11 +1,10 @@
 
-
 "use client";
 
 import React, { useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Plus, MoreVertical, ArrowUp, ArrowDown, Landmark, Utensils, Bus, ShoppingBag, FileText, HeartPulse, Ticket, Icon, Edit, Trash2, Settings, Wallet, PiggyBank, Briefcase, Coins, Home, Car, Filter, Target, Gem, School, LineChart, Repeat, ArrowRightLeft } from 'lucide-react';
+import { Plus, MoreVertical, ArrowUp, ArrowDown, Landmark, Utensils, Bus, ShoppingBag, FileText, HeartPulse, Ticket, Icon, Edit, Trash2, Settings, Wallet, PiggyBank, Briefcase, Coins, Home, Car, Filter, Target, Gem, School, LineChart, Repeat, ArrowRightLeft, Calendar, Trophy, Sparkles } from 'lucide-react';
 import { useProfile, Transaction, Account, Category, SavingsGoal } from '@/context/ProfileContext';
 import { format, parseISO, isSameMonth, subMonths, startOfMonth, formatDistanceToNow } from 'date-fns';
 import { BudgetTransactionDialog } from './budget-transaction-dialog';
@@ -37,10 +36,11 @@ import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { BudgetBreakdownChart } from './budget-breakdown-chart';
 import { formatIndianNumber } from '@/lib/utils';
 import { TransferDialog } from './transfer-dialog';
+import { cn } from '@/lib/utils';
 
 
 const iconMap: { [key: string]: Icon } = {
-    Landmark, Utensils, Bus, ShoppingBag, FileText, HeartPulse, Ticket, Briefcase, Coins, Home, Car, School
+    Landmark, Utensils, Bus, ShoppingBag, FileText, HeartPulse, Ticket, Briefcase, Coins, Home, Car, School, Wallet, Gem, Sparkles
 };
 
 const TransactionItem = ({ transaction, categoryName, categoryIcon, onEdit, onDelete, accountName, remainingBalance }: { transaction: Transaction, categoryName: string, categoryIcon: Icon, onEdit: () => void, onDelete: () => void, accountName: string, remainingBalance: number }) => {
@@ -81,6 +81,28 @@ const TransactionItem = ({ transaction, categoryName, categoryIcon, onEdit, onDe
     </div>
   );
 };
+
+
+const StatCard = ({ title, value, change, color, icon: Icon }: { title: string; value: string; change?: number; color: string, icon: Icon }) => {
+    const isPositive = change !== undefined && change >= 0;
+    return (
+        <Card className={cn("text-white", color)}>
+            <CardContent className="p-4">
+                <div className="flex justify-between items-start">
+                    <span className="text-sm font-medium">{title}</span>
+                    <Icon className="h-5 w-5 opacity-80" />
+                </div>
+                <div className="text-3xl font-bold mt-2">{value}</div>
+                {change !== undefined && (
+                     <div className="flex items-center text-xs opacity-90 mt-1">
+                        {isPositive ? <ArrowUp className="h-3 w-3 mr-1"/> : <ArrowDown className="h-3 w-3 mr-1"/>}
+                        {Math.abs(change).toFixed(1)}% from last month
+                    </div>
+                )}
+            </CardContent>
+        </Card>
+    );
+}
 
 export function BudgetTrackerPage() {
   const { profile, addTransaction, updateTransaction, deleteTransaction, addAccount, updateAccount, deleteAccount, addCategory, updateCategory, deleteCategory, addSavingsGoal, updateSavingsGoal, deleteSavingsGoal, contributeToGoal, transferBetweenAccounts } = useProfile();
@@ -123,6 +145,8 @@ export function BudgetTrackerPage() {
     
     const currentMonthExpenses = transactions.filter(t => t.type === 'expense' && isSameMonth(parseISO(t.date), now)).reduce((sum, t) => sum + t.amount, 0);
     const lastMonthExpenses = transactions.filter(t => t.type === 'expense' && isSameMonth(parseISO(t.date), lastMonth)).reduce((sum, t) => sum + t.amount, 0);
+    
+    const savingsRate = currentMonthIncome > 0 ? ((currentMonthIncome - currentMonthExpenses) / currentMonthIncome) * 100 : 0;
 
     const calcChange = (current: number, previous: number) => {
         if (previous === 0) return current > 0 ? 100 : 0;
@@ -137,7 +161,8 @@ export function BudgetTrackerPage() {
         expenses: {
             total: currentMonthExpenses,
             change: calcChange(currentMonthExpenses, lastMonthExpenses),
-        }
+        },
+        savingsRate: savingsRate
     }
   }, [transactions]);
   
@@ -151,7 +176,6 @@ export function BudgetTrackerPage() {
     const accountBalances = new Map(accounts.map(acc => [acc.id, acc.balance]));
     const transactionWithBalance: (Transaction & { remainingBalance: number })[] = [];
 
-    // To calculate running balance correctly, we need to iterate from oldest to newest
     const reversedSorted = [...sorted].reverse();
     const futureBalances: { [key: string]: number } = {};
 
@@ -197,64 +221,139 @@ export function BudgetTrackerPage() {
     if (itemToDelete.type === 'goal') deleteSavingsGoal(itemToDelete.id);
     setItemToDelete(null);
   };
-  
-  const ChangeIndicator = ({ value }: { value: number }) => {
-    const isPositive = value >= 0;
-    if (value === 0 || !isFinite(value)) return null;
-
-    return (
-        <span className={`flex items-center text-xs ml-2 ${isPositive ? 'text-green-300' : 'text-red-300'}`}>
-           {isPositive ? <ArrowUp className="h-3 w-3" /> : <ArrowDown className="h-3 w-3" />}
-           {Math.abs(value).toFixed(0)}%
-        </span>
-    )
-  };
 
 
   return (
     <div className="space-y-6 pb-12">
-      <Card className="bg-gradient-to-br from-primary/90 to-primary/70 text-primary-foreground">
-        <CardContent className="p-6">
-          <div className="text-sm text-primary-foreground/80">Total Balance</div>
-          <div className="text-4xl font-bold">₹{formatIndianNumber(totalBalance)}</div>
-          <div className="flex justify-between mt-4">
-            <div className="flex items-center gap-2">
-              <ArrowDown className="h-5 w-5 text-red-300" />
-              <div>
-                <div className="text-xs">Expenses (This Month)</div>
-                <div className="font-semibold flex items-center">
-                    ₹{formatIndianNumber(monthlyStats.expenses.total)}
-                    <ChangeIndicator value={monthlyStats.expenses.change} />
-                </div>
-              </div>
-            </div>
-            <div className="flex items-center gap-2">
-              <ArrowUp className="h-5 w-5 text-green-300" />
-              <div>
-                <div className="text-xs">Income (This Month)</div>
-                <div className="font-semibold flex items-center">
-                    ₹{formatIndianNumber(monthlyStats.income.total)}
-                    <ChangeIndicator value={monthlyStats.income.change} />
-                </div>
-              </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+      <div>
+        <h1 className="text-2xl font-bold">Budget Manager</h1>
+        <p className="text-muted-foreground">Take control of your finances with clarity and confidence</p>
+      </div>
+
+      <div className="flex justify-between items-center">
+        <Button variant="outline" size="sm" className="gap-2"><Calendar className="h-4 w-4" />This Month</Button>
+        <div className="flex gap-2">
+          <Button variant="outline" size="sm" className="gap-2" onClick={() => setIsCategoryDialogOpen(true)}><Plus className="h-4 w-4" />Add Category</Button>
+          <Button size="sm" className="gap-2" onClick={() => setIsTxDialogOpen(true)}><Plus className="h-4 w-4" />Add Transaction</Button>
+        </div>
+      </div>
       
-      <Tabs defaultValue="transactions" className="w-full">
-        <ScrollArea className="w-full whitespace-nowrap rounded-md">
-          <TabsList className="inline-flex h-auto p-1 mb-4">
+       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <StatCard title="Total Balance" value={`₹${formatIndianNumber(totalBalance)}`} change={monthlyStats.income.change - monthlyStats.expenses.change} color="bg-blue-500" icon={Wallet} />
+            <StatCard title="Monthly Income" value={`₹${formatIndianNumber(monthlyStats.income.total)}`} change={monthlyStats.income.change} color="bg-green-500" icon={ArrowDown} />
+            <StatCard title="Monthly Expenses" value={`₹${formatIndianNumber(monthlyStats.expenses.total)}`} change={monthlyStats.expenses.change} color="bg-red-500" icon={ArrowUp} />
+            <StatCard title="Savings Rate" value={`${monthlyStats.savingsRate.toFixed(1)}%`} color="bg-purple-500" icon={PiggyBank} />
+      </div>
+
+      <Tabs defaultValue="overview" className="w-full">
+        <TabsList className="grid w-full grid-cols-4">
+            <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="transactions">Transactions</TabsTrigger>
-            <TabsTrigger value="accounts">Accounts</TabsTrigger>
-            <TabsTrigger value="categories">Categories</TabsTrigger>
+            <TabsTrigger value="budgets">Budgets</TabsTrigger>
             <TabsTrigger value="goals">Goals</TabsTrigger>
-            <TabsTrigger value="analytics">Analytics</TabsTrigger>
-          </TabsList>
-          <ScrollBar orientation="horizontal" />
-        </ScrollArea>
+        </TabsList>
+        <TabsContent value="overview" className="mt-4 space-y-6">
+           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <Card>
+                 <CardHeader>
+                    <CardTitle className="flex items-center gap-2"><Target className="h-5 w-5" />Savings Goals</CardTitle>
+                    <CardDescription>Track your progress towards financial goals</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                    {goals.map(goal => {
+                        const progress = goal.targetAmount > 0 ? (goal.currentAmount / goal.targetAmount) * 100 : 0;
+                        return (
+                            <div key={goal.id} className="p-4 border rounded-lg">
+                                <div className="flex justify-between items-center mb-2">
+                                    <span className="font-semibold flex items-center gap-2"><Target className="h-4 w-4 text-primary"/>{goal.name}</span>
+                                    <span className="text-sm font-semibold">{progress.toFixed(0)}%</span>
+                                </div>
+                                <Progress value={progress} className="h-2" />
+                                <div className="flex justify-between text-xs text-muted-foreground mt-1">
+                                    <span>₹{formatIndianNumber(goal.currentAmount)} of ₹{formatIndianNumber(goal.targetAmount)}</span>
+                                </div>
+                            </div>
+                        )
+                    })}
+                </CardContent>
+            </Card>
+             <Card>
+                 <CardHeader>
+                    <CardTitle className="flex items-center gap-2"><Trophy className="h-5 w-5" />Achievements</CardTitle>
+                    <CardDescription>Your financial milestones</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                   <div className="p-3 rounded-lg bg-green-500/10 flex items-center justify-between">
+                     <div className="flex items-center gap-3">
+                        <Sparkles className="h-5 w-5 text-green-600"/>
+                        <div>
+                            <p className="font-semibold">First Budget</p>
+                            <p className="text-xs text-muted-foreground">Create your first budget</p>
+                        </div>
+                     </div>
+                     <CheckSquare className="h-5 w-5 text-green-600" />
+                   </div>
+                   <div className="p-3 rounded-lg bg-green-500/10 flex items-center justify-between">
+                     <div className="flex items-center gap-3">
+                        <Gem className="h-5 w-5 text-green-600"/>
+                        <div>
+                            <p className="font-semibold">Saver</p>
+                            <p className="text-xs text-muted-foreground">Save ₹10,000</p>
+                        </div>
+                     </div>
+                     <CheckSquare className="h-5 w-5 text-green-600" />
+                   </div>
+                    <div className="p-3 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-between">
+                     <div className="flex items-center gap-3">
+                        <Calendar className="h-5 w-5 text-gray-500"/>
+                        <div>
+                            <p className="font-semibold">Consistent</p>
+                            <p className="text-xs text-muted-foreground">Log expenses for 7 days straight</p>
+                        </div>
+                     </div>
+                   </div>
+                </CardContent>
+            </Card>
+           </div>
+           <Card>
+                <CardHeader>
+                    <CardTitle className="flex items-center gap-2"><Wallet className="h-5 w-5" />Budget Overview</CardTitle>
+                    <CardDescription>Monthly budget status by category</CardDescription>
+                </CardHeader>
+                <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+                     <div className="space-y-2">
+                        <div className="flex justify-between items-center text-sm">
+                            <span className="font-medium flex items-center gap-2"><Utensils className="h-4 w-4 text-muted-foreground"/>Food & Dining</span>
+                            <span className="text-muted-foreground">₹12,876 / ₹15,000</span>
+                        </div>
+                        <Progress value={85} />
+                    </div>
+                     <div className="space-y-2">
+                        <div className="flex justify-between items-center text-sm">
+                            <span className="font-medium flex items-center gap-2"><Bus className="h-4 w-4 text-muted-foreground"/>Transportation</span>
+                            <span className="text-muted-foreground">₹6,200 / ₹8,000</span>
+                        </div>
+                        <Progress value={77} />
+                    </div>
+                    <div className="space-y-2">
+                        <div className="flex justify-between items-center text-sm">
+                            <span className="font-medium flex items-center gap-2"><ShoppingBag className="h-4 w-4 text-muted-foreground"/>Entertainment</span>
+                            <span className="text-muted-foreground">₹2,850 / ₹5,000</span>
+                        </div>
+                        <Progress value={57} />
+                    </div>
+                    <div className="space-y-2">
+                        <div className="flex justify-between items-center text-sm">
+                            <span className="font-medium flex items-center gap-2"><HeartPulse className="h-4 w-4 text-muted-foreground"/>Healthcare</span>
+                            <span className="text-muted-foreground">₹1,200 / ₹3,000</span>
+                        </div>
+                        <Progress value={40} />
+                    </div>
+                </CardContent>
+           </Card>
+        </TabsContent>
         <TabsContent value="transactions" className="mt-4">
-          <Card>
+           <Card>
             <CardHeader className="flex flex-row items-center justify-between">
                 <div className='flex items-center gap-2'>
                   <CardTitle>Recent Activity</CardTitle>
@@ -277,9 +376,6 @@ export function BudgetTrackerPage() {
                 <div className="flex gap-2">
                     <Button onClick={() => setIsTransferDialogOpen(true)} className="gap-2" size="sm" variant="outline">
                         <ArrowRightLeft className="h-4 w-4" /> Transfer
-                    </Button>
-                    <Button onClick={() => { setEditingTransaction(undefined); setIsTxDialogOpen(true); }} className="gap-2" size="sm">
-                        <Plus className="h-4 w-4" /> Add
                     </Button>
                 </div>
             </CardHeader>
@@ -308,158 +404,6 @@ export function BudgetTrackerPage() {
                 )}
             </CardContent>
           </Card>
-        </TabsContent>
-        <TabsContent value="accounts" className="mt-4">
-            <Card>
-                <CardHeader className="flex flex-row items-center justify-between">
-                    <CardTitle>Accounts</CardTitle>
-                    <Button variant="ghost" size="sm" className="gap-2" onClick={() => { setEditingAccount(undefined); setIsAccountDialogOpen(true); }}><Plus className="h-4 w-4"/>Add</Button>
-                </CardHeader>
-                <CardContent>
-                     {accounts.map(acc => (
-                        <div key={acc.id} className="flex items-center gap-4 py-2">
-                            <div className="p-2 bg-accent rounded-full"><Wallet className="h-4 w-4 text-primary"/></div>
-                            <div className="flex-1 font-medium">{acc.name}</div>
-                            <div className="font-semibold">₹{formatIndianNumber(acc.balance)}</div>
-                            <div className="opacity-100 transition-opacity">
-                                 <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { setEditingAccount(acc); setIsAccountDialogOpen(true); }}><Edit className="h-4 w-4" /></Button>
-                            </div>
-                        </div>
-                     ))}
-                </CardContent>
-            </Card>
-        </TabsContent>
-        <TabsContent value="categories" className="mt-4">
-             <Card>
-                <CardHeader className="flex flex-row items-center justify-between">
-                    <CardTitle>Spending Categories</CardTitle>
-                    <Button variant="ghost" size="sm" className="gap-2" onClick={() => { setEditingCategory(undefined); setIsCategoryDialogOpen(true); }}><Plus className="h-4 w-4"/>Add</Button>
-                </CardHeader>
-                <CardContent>
-                     {categories.filter(c => c.id !== 'cat-income').map(cat => {
-                        const CategoryIcon = iconMap[cat.icon] || Utensils;
-                        const isDefault = cat.id.startsWith('cat-');
-                        return (
-                            <div key={cat.id} className="flex items-center gap-4 py-2">
-                                <div className="p-2 bg-accent rounded-full"><CategoryIcon className="h-4 w-4 text-primary"/></div>
-                                <div className="flex-1 font-medium">{cat.name}</div>
-                                {!isDefault && (
-                                    <div className="opacity-100 transition-opacity">
-                                        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { setEditingCategory(cat); setIsCategoryDialogOpen(true); }}><Edit className="h-4 w-4" /></Button>
-                                        <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => setItemToDelete({ id: cat.id, type: 'category' })}><Trash2 className="h-4 w-4" /></Button>
-                                    </div>
-                                )}
-                            </div>
-                        )
-                     })}
-                </CardContent>
-              </Card>
-        </TabsContent>
-        <TabsContent value="goals" className="mt-4">
-            <Card>
-                 <CardHeader className="flex flex-row items-center justify-between">
-                    <CardTitle>Savings Goals</CardTitle>
-                    <Button variant="ghost" size="sm" className="gap-2" onClick={() => { setEditingGoal(undefined); setIsGoalDialogOpen(true); }}><Plus className="h-4 w-4"/>Add</Button>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                    {goals.map(goal => {
-                        const progress = goal.targetAmount > 0 ? (goal.currentAmount / goal.targetAmount) * 100 : 0;
-                        return (
-                            <div key={goal.id} className="p-4 border rounded-lg">
-                                <div className="flex justify-between items-center mb-2">
-                                    <span className="font-semibold flex items-center gap-2"><Target className="h-4 w-4 text-primary"/>{goal.name}</span>
-                                    <DropdownMenu>
-                                        <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-8 w-8"><MoreVertical className="h-4 w-4" /></Button></DropdownMenuTrigger>
-                                        <DropdownMenuContent>
-                                            <DropdownMenuItem onSelect={() => {setGoalToContribute(goal); setIsContributeDialogOpen(true);}}><Gem className="mr-2 h-4 w-4" />Contribute</DropdownMenuItem>
-                                            <DropdownMenuItem onClick={() => { setEditingGoal(goal); setIsGoalDialogOpen(true); }}><Edit className="mr-2 h-4 w-4" />Edit</DropdownMenuItem>
-                                            <DropdownMenuItem onClick={() => setItemToDelete({ id: goal.id, type: 'goal' })} className="text-destructive"><Trash2 className="mr-2 h-4 w-4" />Delete</DropdownMenuItem>
-                                        </DropdownMenuContent>
-                                    </DropdownMenu>
-                                </div>
-                                <Progress value={progress} className="h-2" />
-                                <div className="flex justify-between text-sm text-muted-foreground mt-1">
-                                    <span>₹{formatIndianNumber(goal.currentAmount)}</span>
-                                    <span>₹{formatIndianNumber(goal.targetAmount)}</span>
-                                </div>
-                            </div>
-                        )
-                    })}
-                </CardContent>
-            </Card>
-        </TabsContent>
-         <TabsContent value="analytics" className="mt-4">
-            <Card>
-                <CardHeader>
-                    <CardTitle className="flex items-center gap-2"><LineChart className="h-5 w-5" />Budget Analytics</CardTitle>
-                    <CardDescription>Visualize your income and spending habits.</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                    <div className="grid grid-cols-2 gap-4">
-                         <Card>
-                             <CardHeader className="p-3">
-                                <CardTitle className="text-sm font-medium">This Month's Income</CardTitle>
-                             </CardHeader>
-                             <CardContent className="p-3 pt-0">
-                                <p className="text-2xl font-bold">₹{formatIndianNumber(monthlyStats.income.total)}</p>
-                             </CardContent>
-                         </Card>
-                          <Card>
-                             <CardHeader className="p-3">
-                                <CardTitle className="text-sm font-medium">This Month's Expenses</CardTitle>
-                             </CardHeader>
-                             <CardContent className="p-3 pt-0">
-                                <p className="text-2xl font-bold">₹{formatIndianNumber(monthlyStats.expenses.total)}</p>
-                             </CardContent>
-                         </Card>
-                    </div>
-                     <Card>
-                        <CardHeader>
-                            <CardTitle>Spending Breakdown</CardTitle>
-                        </CardHeader>
-                        <CardContent className="h-[250px] flex justify-center items-center">
-                            <BudgetBreakdownChart />
-                        </CardContent>
-                    </Card>
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Transactions by Account</CardTitle>
-                            <CardDescription>Recent activity for each account.</CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                            <Tabs defaultValue={accounts[0]?.id || 'no-accounts'}>
-                                <TabsList className="grid w-full grid-cols-2">
-                                {accounts.map(account => (
-                                    <TabsTrigger key={account.id} value={account.id}>{account.name}</TabsTrigger>
-                                ))}
-                                </TabsList>
-                            {accounts.map(account => (
-                                    <TabsContent key={account.id} value={account.id}>
-                                        {(transactionsByAccount[account.id] || []).slice(0, 5).map(t => {
-                                            const category = categoryMap.get(t.categoryId);
-                                            return (
-                                                <TransactionItem
-                                                    key={t.id}
-                                                    transaction={t}
-                                                    categoryName={category?.name || 'Uncategorized'}
-                                                    categoryIcon={iconMap[category?.icon || ''] || Utensils}
-                                                    onEdit={() => { setEditingTransaction(t); setIsTxDialogOpen(true); }}
-                                                    onDelete={() => setItemToDelete({ id: t.id, type: 'transaction'})}
-                                                    accountName={accountMap.get(t.accountId)?.name || 'Unknown'}
-                                                    remainingBalance={accountMap.get(t.accountId)?.balance || 0}
-                                                />
-                                            );
-                                        })}
-                                        {(transactionsByAccount[account.id] || []).length === 0 && (
-                                            <p className="text-muted-foreground text-center py-4">No transactions for this account.</p>
-                                        )}
-                                    </TabsContent>
-                            ))}
-                            </Tabs>
-                        </CardContent>
-                    </Card>
-                </CardContent>
-            </Card>
         </TabsContent>
       </Tabs>
 
