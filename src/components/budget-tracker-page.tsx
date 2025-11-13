@@ -249,7 +249,7 @@ export function BudgetTrackerPage() {
             <TabsTrigger value="budgets">Accounts</TabsTrigger>
             <TabsTrigger value="goals">Goals</TabsTrigger>
         </TabsList>
-        <TabsContent value="overview" className="mt-4 space-y-6">
+        <TabsContent value="overview" className="mt-4 space-y-4">
             <Card>
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2"><Trophy className="h-5 w-5" />Achievements</CardTitle>
@@ -345,11 +345,6 @@ export function BudgetTrackerPage() {
                         </DropdownMenuContent>
                     </DropdownMenu>
                 </div>
-                <div className="flex gap-2">
-                    <Button onClick={() => setIsTransferDialogOpen(true)} className="gap-2" size="sm" variant="outline">
-                        <ArrowRightLeft className="h-4 w-4" /> Transfer
-                    </Button>
-                </div>
             </CardHeader>
             <CardContent>
                 {recentTransactions.length > 0 ? (
@@ -384,7 +379,12 @@ export function BudgetTrackerPage() {
                         <CardTitle className="flex items-center gap-2"><Wallet className="h-5 w-5" />Manage Accounts</CardTitle>
                         <CardDescription>Your cash, bank, and other wallets.</CardDescription>
                     </div>
-                    <Button size="sm" variant="outline" className="gap-2" onClick={() => {setEditingAccount(undefined); setIsAccountDialogOpen(true)}}><Plus className="h-4 w-4"/>Add Account</Button>
+                    <div className="flex gap-2">
+                        <Button onClick={() => setIsTransferDialogOpen(true)} className="gap-2" size="sm" variant="outline">
+                            <ArrowRightLeft className="h-4 w-4" /> Transfer
+                        </Button>
+                        <Button size="sm" variant="outline" className="gap-2" onClick={() => {setEditingAccount(undefined); setIsAccountDialogOpen(true)}}><Plus className="h-4 w-4"/>Add Account</Button>
+                    </div>
                 </CardHeader>
                 <CardContent className="space-y-3">
                     {accounts.map(account => (
