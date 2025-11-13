@@ -37,13 +37,14 @@ import { BudgetBreakdownChart } from './budget-breakdown-chart';
 import { formatIndianNumber } from '@/lib/utils';
 import { TransferDialog } from './transfer-dialog';
 import { cn } from '@/lib/utils';
+import { TransactionDetailsDialog } from './transaction-details-dialog';
 
 
 const iconMap: { [key: string]: Icon } = {
     Landmark, Utensils, Bus, ShoppingBag, FileText, HeartPulse, Ticket, Briefcase, Coins, Home, Car, School, Wallet, Gem, Sparkles
 };
 
-const TransactionItem = ({ transaction, categoryName, categoryIcon, onEdit, onDelete, accountName, remainingBalance }: { transaction: Transaction, categoryName: string, categoryIcon: Icon, onEdit: () => void, onDelete: () => void, accountName: string, remainingBalance: number }) => {
+const TransactionItem = ({ transaction, categoryName, categoryIcon, onEdit, onDelete, onDetails, accountName, remainingBalance }: { transaction: Transaction, categoryName: string, categoryIcon: Icon, onEdit: () => void, onDelete: () => void, onDetails: () => void, accountName: string, remainingBalance: number }) => {
   const isIncome = transaction.type === 'income';
   const CategoryIcon = categoryIcon;
 
@@ -71,6 +72,7 @@ const TransactionItem = ({ transaction, categoryName, categoryIcon, onEdit, onDe
                             <Button variant="ghost" size="icon" className="h-6 w-6"><MoreVertical className="h-4 w-4" /></Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={onDetails}><FileText className="mr-2 h-4 w-4" />Details</DropdownMenuItem>
                             <DropdownMenuItem onClick={onEdit}><Edit className="mr-2 h-4 w-4" />Edit</DropdownMenuItem>
                             <DropdownMenuItem onClick={onDelete} className="text-destructive"><Trash2 className="mr-2 h-4 w-4" />Delete</DropdownMenuItem>
                         </DropdownMenuContent>
@@ -130,6 +132,9 @@ export function BudgetTrackerPage() {
   const [editingCategory, setEditingCategory] = useState<Category | undefined>();
   const [editingGoal, setEditingGoal] = useState<SavingsGoal | undefined>();
   const [goalToContribute, setGoalToContribute] = useState<SavingsGoal | undefined>();
+  const [viewingTransaction, setViewingTransaction] = useState<Transaction & { beforeBalance: number; afterBalance: number } | undefined>();
+  const [isDetailsDialogOpen, setIsDetailsDialogOpen] = useState(false);
+
 
   const [itemToDelete, setItemToDelete] = useState<{ id: string; type: 'transaction' | 'account' | 'category' | 'goal' } | null>(null);
   const [transactionFilter, setTransactionFilter] = useState<'all' | 'income' | 'expense'>('all');
@@ -173,25 +178,32 @@ export function BudgetTrackerPage() {
     const filtered = transactions.filter(t => transactionFilter === 'all' || t.type === transactionFilter);
     const sorted = [...filtered].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
     
-    const accountBalances = new Map(accounts.map(acc => [acc.id, acc.balance]));
-    const transactionWithBalance: (Transaction & { remainingBalance: number })[] = [];
-
-    const reversedSorted = [...sorted].reverse();
-    const futureBalances: { [key: string]: number } = {};
-
-    for (const tx of reversedSorted) {
-        const balance = accountBalances.get(tx.accountId) ?? 0;
-        const amountChange = tx.type === 'income' ? -tx.amount : tx.amount;
-        accountBalances.set(tx.accountId, balance + amountChange);
-        futureBalances[tx.id] = accountBalances.get(tx.accountId) ?? 0;
-    }
-
-    return sorted.slice(0, 15).map(tx => ({
-        ...tx,
-        remainingBalance: futureBalances[tx.id] ?? (accountMap.get(tx.accountId)?.balance || 0),
-    }));
+    let balances = new Map(accounts.map(acc => [acc.id, acc.balance]));
+    const transactionsWithBalance = [];
     
-  }, [transactions, transactionFilter, accounts, accountMap]);
+    for (const tx of sorted) {
+      const currentBalance = balances.get(tx.accountId) ?? 0;
+      transactionsWithBalance.push({ ...tx, remainingBalance: currentBalance });
+
+      const newBalance = tx.type === 'income' 
+        ? currentBalance - tx.amount 
+        : currentBalance + tx.amount;
+      balances.set(tx.accountId, newBalance);
+    }
+    
+    return transactionsWithBalance.slice(0, 15);
+    
+  }, [transactions, transactionFilter, accounts]);
+  
+   const handleViewDetails = (transaction: Transaction, remainingBalance: number) => {
+    const beforeBalance = transaction.type === 'income' 
+        ? remainingBalance - transaction.amount 
+        : remainingBalance + transaction.amount;
+    
+    setViewingTransaction({ ...transaction, afterBalance: remainingBalance, beforeBalance });
+    setIsDetailsDialogOpen(true);
+  };
+
 
   const transactionsByAccount = useMemo(() => {
       const grouped: { [key: string]: Transaction[] } = {};
@@ -250,7 +262,7 @@ export function BudgetTrackerPage() {
             <TabsTrigger value="goals">Goals</TabsTrigger>
         </TabsList>
         <TabsContent value="overview" className="mt-4 space-y-4">
-            <Card>
+             <Card>
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2"><Trophy className="h-5 w-5" />Achievements</CardTitle>
                     <CardDescription>Your financial milestones</CardDescription>
@@ -360,6 +372,7 @@ export function BudgetTrackerPage() {
                                     categoryIcon={iconMap[category?.icon || ''] || Utensils}
                                     onEdit={() => { setEditingTransaction(t); setIsTxDialogOpen(true); }}
                                     onDelete={() => setItemToDelete({ id: t.id, type: 'transaction'})}
+                                    onDetails={() => handleViewDetails(t, t.remainingBalance)}
                                     accountName={account?.name || 'Unknown Account'}
                                     remainingBalance={t.remainingBalance}
                                 />
@@ -381,11 +394,11 @@ export function BudgetTrackerPage() {
                     </div>
                 </CardHeader>
                 <CardContent className="space-y-3">
-                    <div className="flex gap-2">
-                        <Button onClick={() => setIsTransferDialogOpen(true)} className="gap-2" size="sm" variant="outline">
+                     <div className="grid grid-cols-2 gap-2">
+                        <Button onClick={() => setIsTransferDialogOpen(true)} className="w-full gap-2" size="sm" variant="outline">
                             <ArrowRightLeft className="h-4 w-4" /> Transfer
                         </Button>
-                        <Button size="sm" variant="outline" className="gap-2" onClick={() => {setEditingAccount(undefined); setIsAccountDialogOpen(true)}}><Plus className="h-4 w-4"/>Add Account</Button>
+                        <Button size="sm" variant="outline" className="w-full gap-2" onClick={() => {setEditingAccount(undefined); setIsAccountDialogOpen(true)}}><Plus className="h-4 w-4"/>Add Account</Button>
                     </div>
                     {accounts.map(account => (
                          <div key={account.id} className="p-4 border rounded-lg flex justify-between items-center">
@@ -502,6 +515,15 @@ export function BudgetTrackerPage() {
             accounts={accounts}
             goalName={goalToContribute.name}
         />
+      )}
+      {viewingTransaction && (
+          <TransactionDetailsDialog
+            open={isDetailsDialogOpen}
+            onOpenChange={setIsDetailsDialogOpen}
+            transaction={viewingTransaction}
+            category={categoryMap.get(viewingTransaction.categoryId)}
+            account={accountMap.get(viewingTransaction.accountId)}
+          />
       )}
       <AlertDialog open={!!itemToDelete} onOpenChange={(open) => !open && setItemToDelete(null)}>
         <AlertDialogContent>
