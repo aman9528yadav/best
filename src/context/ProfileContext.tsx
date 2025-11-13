@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import React, { createContext, useContext, useState, ReactNode, useEffect, useRef } from 'react';
@@ -771,26 +772,28 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
     });
   };
   
-    const transferBetweenAccounts = (fromAccountId: string, toAccountId: string, amount: number) => {
-    const date = new Date().toISOString();
-    // Create an expense from the source account
+  const transferBetweenAccounts = (fromAccountId: string, toAccountId: string, amount: number) => {
+    const timestamp = new Date().getTime();
+    
     addTransaction({
+      id: `${timestamp}-from`,
       type: 'expense',
       amount,
       description: `Transfer to account`,
       categoryId: 'cat-bills', // A generic category for transfers
       accountId: fromAccountId,
-      date,
+      date: new Date(timestamp).toISOString(),
       recurring: 'none'
     });
-    // Create an income to the destination account
+    
     addTransaction({
+      id: `${timestamp}-to`,
       type: 'income',
       amount,
       description: `Transfer from account`,
       categoryId: 'cat-income',
       accountId: toAccountId,
-      date,
+      date: new Date(timestamp).toISOString(),
       recurring: 'none'
     });
   };
