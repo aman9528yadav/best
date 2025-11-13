@@ -26,7 +26,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Calendar } from '@/components/ui/calendar';
 import { useToast } from '@/hooks/use-toast';
 import type { Account, Category, Transaction } from '@/context/ProfileContext';
-import { TrendingDown, TrendingUp, CalendarIcon, BrainCircuit } from 'lucide-react';
+import { TrendingDown, TrendingUp, CalendarIcon, Plus } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { format, parseISO } from 'date-fns';
 
@@ -37,6 +37,7 @@ interface BudgetTransactionDialogProps {
   transaction?: Transaction;
   accounts: Account[];
   categories: Category[];
+  onAddCategory: () => void;
 }
 
 export function BudgetTransactionDialog({
@@ -46,6 +47,7 @@ export function BudgetTransactionDialog({
   transaction,
   accounts,
   categories,
+  onAddCategory,
 }: BudgetTransactionDialogProps) {
   const { toast } = useToast();
   const [type, setType] = useState<'income' | 'expense'>('expense');
@@ -173,7 +175,9 @@ export function BudgetTransactionDialog({
             <div className="space-y-2">
                  <div className="flex justify-between items-center">
                     <Label htmlFor="category">Category</Label>
-                    <Button variant="outline" size="sm" className="gap-1.5 text-xs"><BrainCircuit className="h-3.5 w-3.5"/>AI Categorize</Button>
+                    <Button variant="outline" size="sm" className="gap-1.5 text-xs" onClick={onAddCategory}>
+                        <Plus className="h-3.5 w-3.5"/>Add New
+                    </Button>
                  </div>
                 <Select value={categoryId} onValueChange={setCategoryId}>
                     <SelectTrigger><SelectValue placeholder="Select a category" /></SelectTrigger>

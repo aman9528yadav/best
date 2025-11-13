@@ -232,10 +232,7 @@ export function BudgetTrackerPage() {
 
       <div className="flex justify-between items-center">
         <Button variant="outline" size="sm" className="gap-2"><Calendar className="h-4 w-4" />This Month</Button>
-        <div className="flex gap-2">
-          <Button variant="outline" size="sm" className="gap-2" onClick={() => setIsCategoryDialogOpen(true)}><Plus className="h-4 w-4" />Add Category</Button>
-          <Button size="sm" className="gap-2" onClick={() => setIsTxDialogOpen(true)}><Plus className="h-4 w-4" />Add Transaction</Button>
-        </div>
+        <Button size="sm" className="gap-2" onClick={() => setIsTxDialogOpen(true)}><Plus className="h-4 w-4" />Add Transaction</Button>
       </div>
       
        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
@@ -471,6 +468,7 @@ export function BudgetTrackerPage() {
         transaction={editingTransaction}
         accounts={accounts}
         categories={categories}
+        onAddCategory={() => setIsCategoryDialogOpen(true)}
       />
       <AccountDialog
         open={isAccountDialogOpen}
@@ -520,7 +518,3 @@ export function BudgetTrackerPage() {
     </div>
   );
 }
-
-    
-
-    
