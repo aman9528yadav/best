@@ -374,19 +374,19 @@ export function BudgetTrackerPage() {
         </TabsContent>
          <TabsContent value="budgets" className="mt-4 space-y-4">
              <Card>
-                <CardHeader className="flex flex-row items-center justify-between">
+                <CardHeader>
                     <div>
                         <CardTitle className="flex items-center gap-2"><Wallet className="h-5 w-5" />Manage Accounts</CardTitle>
                         <CardDescription>Your cash, bank, and other wallets.</CardDescription>
                     </div>
+                </CardHeader>
+                <CardContent className="space-y-3">
                     <div className="flex gap-2">
                         <Button onClick={() => setIsTransferDialogOpen(true)} className="gap-2" size="sm" variant="outline">
                             <ArrowRightLeft className="h-4 w-4" /> Transfer
                         </Button>
                         <Button size="sm" variant="outline" className="gap-2" onClick={() => {setEditingAccount(undefined); setIsAccountDialogOpen(true)}}><Plus className="h-4 w-4"/>Add Account</Button>
                     </div>
-                </CardHeader>
-                <CardContent className="space-y-3">
                     {accounts.map(account => (
                          <div key={account.id} className="p-4 border rounded-lg flex justify-between items-center">
                              <div>
@@ -518,3 +518,5 @@ export function BudgetTrackerPage() {
     </div>
   );
 }
+
+    
