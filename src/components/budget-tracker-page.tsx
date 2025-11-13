@@ -30,6 +30,8 @@ import {
   DropdownMenuTrigger,
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
@@ -138,6 +140,7 @@ export function BudgetTrackerPage() {
 
   const [itemToDelete, setItemToDelete] = useState<{ id: string; type: 'transaction' | 'account' | 'category' | 'goal' } | null>(null);
   const [transactionFilter, setTransactionFilter] = useState<'all' | 'income' | 'expense'>('all');
+  const [accountFilter, setAccountFilter] = useState<string>('all');
 
   const totalBalance = useMemo(() => accounts.reduce((sum, acc) => sum + acc.balance, 0), [accounts]);
 
@@ -175,8 +178,10 @@ export function BudgetTrackerPage() {
   const accountMap = useMemo(() => new Map(accounts.map(a => [a.id, a])), [accounts]);
 
   const recentTransactions = useMemo(() => {
-    const filtered = transactions.filter(t => transactionFilter === 'all' || t.type === transactionFilter);
-    const sorted = [...filtered].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    const filteredByType = transactions.filter(t => transactionFilter === 'all' || t.type === transactionFilter);
+    const filteredByAccount = filteredByType.filter(t => accountFilter === 'all' || t.accountId === accountFilter);
+
+    const sorted = [...filteredByAccount].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
     
     let balances = new Map(accounts.map(acc => [acc.id, acc.balance]));
     const transactionsWithBalance = [];
@@ -193,7 +198,7 @@ export function BudgetTrackerPage() {
     
     return transactionsWithBalance.slice(0, 15);
     
-  }, [transactions, transactionFilter, accounts]);
+  }, [transactions, transactionFilter, accountFilter, accounts]);
   
    const handleViewDetails = (transaction: Transaction, remainingBalance: number) => {
     const beforeBalance = transaction.type === 'income' 
@@ -341,11 +346,31 @@ export function BudgetTrackerPage() {
             <CardHeader className="flex flex-row items-center justify-between">
                 <div className='flex items-center gap-2'>
                   <CardTitle>Recent Activity</CardTitle>
+                </div>
+                 <div className='flex items-center gap-2'>
                    <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                             <Button variant="ghost" size="sm" className="gap-2 text-muted-foreground">
+                             <Button variant="outline" size="sm" className="gap-2">
+                                <Wallet className="h-4 w-4" />
+                                <span>{accountFilter === 'all' ? 'All Accounts' : accountMap.get(accountFilter)?.name}</span>
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent>
+                             <DropdownMenuLabel>Filter by Account</DropdownMenuLabel>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuRadioGroup value={accountFilter} onValueChange={setAccountFilter}>
+                                <DropdownMenuRadioItem value="all">All Accounts</DropdownMenuRadioItem>
+                                {accounts.map(acc => (
+                                    <DropdownMenuRadioItem key={acc.id} value={acc.id}>{acc.name}</DropdownMenuRadioItem>
+                                ))}
+                            </DropdownMenuRadioGroup>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                   <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                             <Button variant="outline" size="sm" className="gap-2">
                                 <Filter className="h-4 w-4" />
-                                <span>Filter</span>
+                                <span>{transactionFilter.charAt(0).toUpperCase() + transactionFilter.slice(1)}</span>
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent>
@@ -540,5 +565,3 @@ export function BudgetTrackerPage() {
     </div>
   );
 }
-
-    
