@@ -717,7 +717,8 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
   
     // Budget Functions
   const addTransaction = (transaction: Omit<Transaction, 'id'>) => {
-    const newTransaction: Transaction = { ...transaction, id: new Date().getTime().toString() };
+    const newId = `${new Date().getTime()}-${Math.random().toString(36).slice(2, 7)}`;
+    const newTransaction: Transaction = { ...transaction, id: newId };
     setProfile(p => {
         const newAccounts = p.budget.accounts.map(acc => {
             if(acc.id === newTransaction.accountId) {
@@ -770,26 +771,41 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
   };
   
   const transferBetweenAccounts = (fromAccountId: string, toAccountId: string, amount: number) => {
-    const timestamp = new Date().getTime();
-    
-    addTransaction({
-      id: `${timestamp}-from`,
-      type: 'expense',
-      amount,
-      description: `Transfer to account`,
-      categoryId: 'cat-bills', // A generic category for transfers
-      accountId: fromAccountId,
-      date: new Date(timestamp).toISOString(),
-    });
-    
-    addTransaction({
-      id: `${timestamp}-to`,
-      type: 'income',
-      amount,
-      description: `Transfer from account`,
-      categoryId: 'cat-income',
-      accountId: toAccountId,
-      date: new Date(timestamp).toISOString(),
+    setProfile(p => {
+        const timestamp = new Date().getTime();
+        const fromAccount = p.budget.accounts.find(a => a.id === fromAccountId);
+        const toAccount = p.budget.accounts.find(a => a.id === toAccountId);
+        if (!fromAccount || !toAccount) return p;
+
+        const fromTransaction: Transaction = {
+          id: `${timestamp}-from`,
+          type: 'expense',
+          amount,
+          description: `Transfer to ${toAccount.name}`,
+          categoryId: 'cat-bills', // A generic category for transfers
+          accountId: fromAccountId,
+          date: new Date(timestamp).toISOString(),
+        };
+
+        const toTransaction: Transaction = {
+          id: `${timestamp}-to`,
+          type: 'income',
+          amount,
+          description: `Transfer from ${fromAccount.name}`,
+          categoryId: 'cat-income',
+          accountId: toAccountId,
+          date: new Date(timestamp).toISOString(),
+        };
+        
+        const newAccounts = p.budget.accounts.map(acc => {
+            if (acc.id === fromAccountId) return { ...acc, balance: acc.balance - amount };
+            if (acc.id === toAccountId) return { ...acc, balance: acc.balance + amount };
+            return acc;
+        });
+
+        const newTransactions = [fromTransaction, toTransaction, ...p.budget.transactions];
+        
+        return { ...p, budget: { ...p.budget, accounts: newAccounts, transactions: newTransactions } };
     });
   };
   
@@ -916,3 +932,6 @@ export const useProfile = () => {
   }
   return context;
 };
+
+
+    
