@@ -4,11 +4,13 @@
 
 import React, { createContext, useContext, useState, ReactNode, useEffect, useRef } from 'react';
 import { doc, onSnapshot, setDoc, deleteDoc } from "firebase/firestore";
-import { db } from '@/lib/firebase';
+import { db, rtdb } from '@/lib/firebase';
 import { useAuth } from './AuthContext';
 import { isToday, differenceInCalendarDays, startOfDay, isYesterday } from 'date-fns';
 import { useMaintenance } from './MaintenanceContext';
 import { useToast } from '@/hooks/use-toast';
+import { ref, onValue, off, set, update, remove } from 'firebase/database';
+
 
 export type ActivityType = 'conversion' | 'calculator' | 'date_calculation' | 'note' | 'todo';
 
@@ -415,8 +417,9 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
       };
     };
   
-    let unsubscribe: (() => void) | undefined;
-  
+    let unsubscribeFirestore: (() => void) | undefined;
+    let unsubscribeRtdb: (() => void) | undefined;
+
     if (user) {
       const cachedProfileRaw = localStorage.getItem(`sutradhaar_profile_${user.uid}`);
       if (cachedProfileRaw) {
@@ -425,7 +428,7 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
       setIsLoading(false);
   
       const userDocRef = doc(db, 'users', user.uid);
-      unsubscribe = onSnapshot(userDocRef, (docSnap) => {
+      unsubscribeFirestore = onSnapshot(userDocRef, (docSnap) => {
         let finalProfile;
         if (docSnap.exists()) {
           const fetchedData = docSnap.data() as Partial<UserProfile>;
@@ -453,11 +456,19 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
            });
            setDoc(userDocRef, finalProfile);
         }
-        setProfileState(finalProfile);
+        setProfileState(prev => ({...finalProfile, budget: {...finalProfile.budget, transactions: prev.budget.transactions }}));
         localStorage.setItem(`sutradhaar_profile_${user.uid}`, JSON.stringify(finalProfile));
       }, (error) => {
         console.error("Error fetching profile:", error);
       });
+
+      const transactionsRef = ref(rtdb, `users/${user.uid}/budget/transactions`);
+      unsubscribeRtdb = onValue(transactionsRef, (snapshot) => {
+          const transactionsData = snapshot.val();
+          const transactionsArray = transactionsData ? Object.values(transactionsData) as Transaction[] : [];
+          setProfileState(prev => ({ ...prev, budget: { ...prev.budget, transactions: transactionsArray } }));
+      });
+
     } else {
       const savedProfileRaw = localStorage.getItem('sutradhaar_profile');
       if (savedProfileRaw) {
@@ -469,7 +480,8 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
     }
   
     return () => {
-      if (unsubscribe) unsubscribe();
+      if (unsubscribeFirestore) unsubscribeFirestore();
+      if (unsubscribeRtdb) unsubscribeRtdb();
     };
   }, [user, authLoading, maintenanceConfig.premiumCriteria]);
 
@@ -495,8 +507,10 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
         }
         
         if (user) {
+            const { transactions, ...budgetToSave } = updatedProfile.budget;
+            const profileToSave = { ...updatedProfile, budget: budgetToSave };
             const userDocRef = doc(db, `users`, user.uid);
-            setDoc(userDocRef, updatedProfile, { merge: true }).catch(error => console.error("Failed to save profile to Firestore", error));
+            setDoc(userDocRef, profileToSave, { merge: true }).catch(error => console.error("Failed to save profile to Firestore", error));
             localStorage.setItem(`sutradhaar_profile_${user.uid}`, JSON.stringify(updatedProfile));
         } else {
             localStorage.setItem('sutradhaar_profile', JSON.stringify(updatedProfile));
@@ -634,6 +648,8 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
     if (user) {
         const userDocRef = doc(db, 'users', user.uid);
         await deleteDoc(userDocRef);
+        const rtdbRef = ref(rtdb, `users/${user.uid}`);
+        await remove(rtdbRef);
     }
     Object.keys(localStorage).forEach(key => {
         if(key.startsWith('sutradhaar_')) {
@@ -716,60 +732,78 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
   }
   
     // Budget Functions
-  const addTransaction = (transaction: Omit<Transaction, 'id'>) => {
-    setProfile(p => {
-        const newId = `${new Date().getTime()}-${Math.random().toString(36).slice(2, 7)}`;
+    const addTransaction = (transaction: Omit<Transaction, 'id'>) => {
+        if (!user) {
+            // Handle guest user case (local storage or state)
+            console.warn("Guest user trying to add transaction. This should be handled locally.");
+            return;
+        }
+        const newId = `${new Date().getTime()}-${Math.random().toString(36).slice(2, 9)}`;
         const newTransaction: Transaction = { ...transaction, id: newId };
         
-        const newAccounts = p.budget.accounts.map(acc => {
-            if(acc.id === newTransaction.accountId) {
-                const newBalance = newTransaction.type === 'income' ? acc.balance + newTransaction.amount : acc.balance - newTransaction.amount;
-                return { ...acc, balance: newBalance };
-            }
-            return acc;
+        const transactionRef = ref(rtdb, `users/${user.uid}/budget/transactions/${newId}`);
+        set(transactionRef, newTransaction);
+    
+        setProfile(p => {
+            const newAccounts = p.budget.accounts.map(acc => {
+                if(acc.id === newTransaction.accountId) {
+                    const newBalance = newTransaction.type === 'income' ? acc.balance + newTransaction.amount : acc.balance - newTransaction.amount;
+                    return { ...acc, balance: newBalance };
+                }
+                return acc;
+            });
+            return { ...p, budget: { ...p.budget, accounts: newAccounts }};
         });
-        return { ...p, budget: { ...p.budget, transactions: [newTransaction, ...p.budget.transactions], accounts: newAccounts }};
-    });
-  };
-
-  const updateTransaction = (transactionToUpdate: Transaction) => {
-    setProfile(p => {
-        const oldTransaction = p.budget.transactions.find(t => t.id === transactionToUpdate.id);
-        if (!oldTransaction) return p;
-
-        const newAccounts = p.budget.accounts.map(acc => {
-            if(acc.id === oldTransaction.accountId) {
-                 const oldAmount = oldTransaction.type === 'income' ? oldTransaction.amount : -oldTransaction.amount;
-                 acc.balance -= oldAmount;
-            }
-            if(acc.id === transactionToUpdate.accountId) {
-                const newAmount = transactionToUpdate.type === 'income' ? transactionToUpdate.amount : -transactionToUpdate.amount;
-                acc.balance += newAmount;
-            }
-            return acc;
+      };
+    
+      const updateTransaction = (transactionToUpdate: Transaction) => {
+        if (!user) return;
+    
+        const oldTransaction = profile.budget.transactions.find(t => t.id === transactionToUpdate.id);
+        if (!oldTransaction) return;
+    
+        const transactionRef = ref(rtdb, `users/${user.uid}/budget/transactions/${transactionToUpdate.id}`);
+        update(transactionRef, transactionToUpdate);
+    
+        setProfile(p => {
+            const newAccounts = p.budget.accounts.map(acc => {
+                let balance = acc.balance;
+                // Revert old transaction effect
+                if(acc.id === oldTransaction.accountId) {
+                     const oldAmount = oldTransaction.type === 'income' ? -oldTransaction.amount : oldTransaction.amount;
+                     balance += oldAmount;
+                }
+                // Apply new transaction effect
+                if(acc.id === transactionToUpdate.accountId) {
+                    const newAmount = transactionToUpdate.type === 'income' ? transactionToUpdate.amount : -transactionToUpdate.amount;
+                    balance += newAmount;
+                }
+                return { ...acc, balance };
+            });
+            return { ...p, budget: { ...p.budget, accounts: newAccounts }};
         });
-
-        const newTransactions = p.budget.transactions.map(t => t.id === transactionToUpdate.id ? transactionToUpdate : t);
-        return { ...p, budget: { ...p.budget, transactions: newTransactions, accounts: newAccounts }};
-    });
-  };
-
-  const deleteTransaction = (id: string) => {
-    setProfile(p => {
-        const transactionToDelete = p.budget.transactions.find(t => t.id === id);
-        if(!transactionToDelete) return p;
+      };
+    
+      const deleteTransaction = (id: string) => {
+        if (!user) return;
+    
+        const transactionToDelete = profile.budget.transactions.find(t => t.id === id);
+        if(!transactionToDelete) return;
+    
+        const transactionRef = ref(rtdb, `users/${user.uid}/budget/transactions/${id}`);
+        remove(transactionRef);
         
-        const newAccounts = p.budget.accounts.map(acc => {
-            if(acc.id === transactionToDelete.accountId) {
-                const amountChange = transactionToDelete.type === 'income' ? -transactionToDelete.amount : transactionToDelete.amount;
-                return { ...acc, balance: acc.balance + amountChange };
-            }
-            return acc;
+        setProfile(p => {
+            const newAccounts = p.budget.accounts.map(acc => {
+                if(acc.id === transactionToDelete.accountId) {
+                    const amountChange = transactionToDelete.type === 'income' ? -transactionToDelete.amount : transactionToDelete.amount;
+                    return { ...acc, balance: acc.balance + amountChange };
+                }
+                return acc;
+            });
+            return { ...p, budget: { ...p.budget, accounts: newAccounts }};
         });
-        
-        return { ...p, budget: { ...p.budget, transactions: p.budget.transactions.filter(t => t.id !== id), accounts: newAccounts }};
-    });
-  };
+      };
   
   const transferBetweenAccounts = (fromAccountId: string, toAccountId: string, amount: number) => {
     const timestamp = new Date().getTime();
