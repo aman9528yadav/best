@@ -249,61 +249,10 @@ export function BudgetTrackerPage() {
         <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="transactions">Transactions</TabsTrigger>
-            <TabsTrigger value="budgets">Budgets</TabsTrigger>
+            <TabsTrigger value="budgets">Accounts</TabsTrigger>
             <TabsTrigger value="goals">Goals</TabsTrigger>
         </TabsList>
         <TabsContent value="overview" className="mt-4 space-y-6">
-            <Card>
-                <CardHeader className="flex flex-row items-center justify-between">
-                    <div>
-                        <CardTitle className="flex items-center gap-2"><Target className="h-5 w-5" />Savings Goals</CardTitle>
-                        <CardDescription>Track your progress towards financial goals</CardDescription>
-                    </div>
-                    <Button size="sm" variant="outline" className="gap-2" onClick={() => {setEditingGoal(undefined); setIsGoalDialogOpen(true)}}><Plus className="h-4 w-4"/>Add Goal</Button>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                    {goals.map(goal => {
-                        const progress = goal.targetAmount > 0 ? (goal.currentAmount / goal.targetAmount) * 100 : 0;
-                        const remaining = goal.targetAmount - goal.currentAmount;
-                        return (
-                            <div key={goal.id} className="p-4 border rounded-lg">
-                                <div className="flex justify-between items-start mb-2">
-                                    <div className="flex items-center gap-3">
-                                        <div className="p-2 bg-blue-100 dark:bg-blue-900/50 rounded-lg"><PiggyBank className="h-5 w-5 text-blue-600 dark:text-blue-400"/></div>
-                                        <div>
-                                            <p className="font-semibold flex items-center gap-2">{goal.name}</p>
-                                            <p className="text-xs text-muted-foreground">Target: ₹{formatIndianNumber(goal.targetAmount)}</p>
-                                        </div>
-                                    </div>
-                                    <DropdownMenu>
-                                        <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-8 w-8"><MoreVertical className="h-4 w-4"/></Button></DropdownMenuTrigger>
-                                        <DropdownMenuContent align="end">
-                                            <DropdownMenuItem onClick={() => {setEditingGoal(goal); setIsGoalDialogOpen(true);}}><Edit className="h-4 w-4 mr-2"/>Edit Goal</DropdownMenuItem>
-                                            <DropdownMenuItem className="text-destructive" onClick={() => setItemToDelete({id: goal.id, type: 'goal'})}><Trash2 className="h-4 w-4 mr-2"/>Delete Goal</DropdownMenuItem>
-                                        </DropdownMenuContent>
-                                    </DropdownMenu>
-                                </div>
-                                <div className="space-y-2">
-                                     <div className="flex justify-between items-center text-sm">
-                                        <span className="font-medium">Progress</span>
-                                        <span className="text-muted-foreground">{progress.toFixed(1)}%</span>
-                                    </div>
-                                    <Progress value={progress} className="h-2" />
-                                    <div className="flex justify-between text-sm">
-                                        <span className="text-muted-foreground">Current</span>
-                                        <span className="font-semibold">₹{formatIndianNumber(goal.currentAmount)}</span>
-                                    </div>
-                                    <div className="flex justify-between text-sm">
-                                        <span className="text-muted-foreground">Remaining</span>
-                                        <span className="font-semibold">₹{formatIndianNumber(remaining)}</span>
-                                    </div>
-                                </div>
-                                <Button className="w-full mt-4" onClick={() => {setGoalToContribute(goal); setIsContributeDialogOpen(true)}}>Add Funds</Button>
-                            </div>
-                        )
-                    })}
-                </CardContent>
-            </Card>
             <Card>
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2"><Trophy className="h-5 w-5" />Achievements</CardTitle>
@@ -346,7 +295,7 @@ export function BudgetTrackerPage() {
                     <CardTitle className="flex items-center gap-2"><Wallet className="h-5 w-5" />Budget Overview</CardTitle>
                     <CardDescription>Monthly budget status by category</CardDescription>
                 </CardHeader>
-                <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+                <CardContent className="space-y-4">
                      <div className="space-y-2">
                         <div className="flex justify-between items-center text-sm">
                             <span className="font-medium flex items-center gap-2"><Utensils className="h-4 w-4 text-muted-foreground"/>Food & Dining</span>
@@ -430,6 +379,87 @@ export function BudgetTrackerPage() {
                 )}
             </CardContent>
           </Card>
+        </TabsContent>
+         <TabsContent value="budgets" className="mt-4 space-y-4">
+             <Card>
+                <CardHeader className="flex flex-row items-center justify-between">
+                    <div>
+                        <CardTitle className="flex items-center gap-2"><Wallet className="h-5 w-5" />Manage Accounts</CardTitle>
+                        <CardDescription>Your cash, bank, and other wallets.</CardDescription>
+                    </div>
+                    <Button size="sm" variant="outline" className="gap-2" onClick={() => {setEditingAccount(undefined); setIsAccountDialogOpen(true)}}><Plus className="h-4 w-4"/>Add Account</Button>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                    {accounts.map(account => (
+                         <div key={account.id} className="p-4 border rounded-lg flex justify-between items-center">
+                             <div>
+                                <p className="font-semibold">{account.name}</p>
+                                <p className="text-sm text-muted-foreground">Balance: ₹{formatIndianNumber(account.balance)}</p>
+                             </div>
+                             <DropdownMenu>
+                                <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-8 w-8"><MoreVertical className="h-4 w-4"/></Button></DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                    <DropdownMenuItem onClick={() => {setEditingAccount(account); setIsAccountDialogOpen(true);}}><Edit className="h-4 w-4 mr-2"/>Edit Account</DropdownMenuItem>
+                                    <DropdownMenuItem className="text-destructive" onClick={() => setItemToDelete({id: account.id, type: 'account'})}><Trash2 className="h-4 w-4 mr-2"/>Delete Account</DropdownMenuItem>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                         </div>
+                    ))}
+                </CardContent>
+             </Card>
+        </TabsContent>
+        <TabsContent value="goals" className="mt-4">
+            <Card>
+                <CardHeader className="flex flex-row items-center justify-between">
+                    <div>
+                        <CardTitle className="flex items-center gap-2"><Target className="h-5 w-5" />Savings Goals</CardTitle>
+                        <CardDescription>Track your progress towards financial goals</CardDescription>
+                    </div>
+                    <Button size="sm" variant="outline" className="gap-2" onClick={() => {setEditingGoal(undefined); setIsGoalDialogOpen(true)}}><Plus className="h-4 w-4"/>Add Goal</Button>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                    {goals.map(goal => {
+                        const progress = goal.targetAmount > 0 ? (goal.currentAmount / goal.targetAmount) * 100 : 0;
+                        const remaining = goal.targetAmount - goal.currentAmount;
+                        return (
+                            <div key={goal.id} className="p-4 border rounded-lg">
+                                <div className="flex justify-between items-start mb-2">
+                                    <div className="flex items-center gap-3">
+                                        <div className="p-2 bg-blue-100 dark:bg-blue-900/50 rounded-lg"><PiggyBank className="h-5 w-5 text-blue-600 dark:text-blue-400"/></div>
+                                        <div>
+                                            <p className="font-semibold flex items-center gap-2">{goal.name}</p>
+                                            <p className="text-xs text-muted-foreground">Target: ₹{formatIndianNumber(goal.targetAmount)}</p>
+                                        </div>
+                                    </div>
+                                    <DropdownMenu>
+                                        <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-8 w-8"><MoreVertical className="h-4 w-4"/></Button></DropdownMenuTrigger>
+                                        <DropdownMenuContent align="end">
+                                            <DropdownMenuItem onClick={() => {setEditingGoal(goal); setIsGoalDialogOpen(true);}}><Edit className="h-4 w-4 mr-2"/>Edit Goal</DropdownMenuItem>
+                                            <DropdownMenuItem className="text-destructive" onClick={() => setItemToDelete({id: goal.id, type: 'goal'})}><Trash2 className="h-4 w-4 mr-2"/>Delete Goal</DropdownMenuItem>
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
+                                </div>
+                                <div className="space-y-2">
+                                     <div className="flex justify-between items-center text-sm">
+                                        <span className="font-medium">Progress</span>
+                                        <span className="text-muted-foreground">{progress.toFixed(1)}%</span>
+                                    </div>
+                                    <Progress value={progress} className="h-2" />
+                                    <div className="flex justify-between text-sm">
+                                        <span className="text-muted-foreground">Current</span>
+                                        <span className="font-semibold">₹{formatIndianNumber(goal.currentAmount)}</span>
+                                    </div>
+                                    <div className="flex justify-between text-sm">
+                                        <span className="text-muted-foreground">Remaining</span>
+                                        <span className="font-semibold">₹{formatIndianNumber(remaining)}</span>
+                                    </div>
+                                </div>
+                                <Button className="w-full mt-4" onClick={() => {setGoalToContribute(goal); setIsContributeDialogOpen(true)}}>Add Funds</Button>
+                            </div>
+                        )
+                    })}
+                </CardContent>
+            </Card>
         </TabsContent>
       </Tabs>
 
