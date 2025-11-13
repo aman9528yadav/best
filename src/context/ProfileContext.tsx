@@ -157,7 +157,8 @@ export type Transaction = {
     categoryId: string;
     accountId: string;
     date: string; // ISO string
-    recurring?: 'none' | 'daily' | 'weekly' | 'monthly';
+    notes?: string;
+    tags?: string[];
 };
 
 export type SavingsGoal = {
@@ -420,10 +421,8 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
       const cachedProfileRaw = localStorage.getItem(`sutradhaar_profile_${user.uid}`);
       if (cachedProfileRaw) {
         setProfileState(mergeWithDefaults(JSON.parse(cachedProfileRaw)));
-        setIsLoading(false); // Load immediately from cache
-      } else {
-        setIsLoading(true);
       }
+      setIsLoading(false);
   
       const userDocRef = doc(db, 'users', user.uid);
       unsubscribe = onSnapshot(userDocRef, (docSnap) => {
@@ -456,10 +455,8 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
         }
         setProfileState(finalProfile);
         localStorage.setItem(`sutradhaar_profile_${user.uid}`, JSON.stringify(finalProfile));
-        if (isLoading) setIsLoading(false); // Only set loading to false if it was true
       }, (error) => {
         console.error("Error fetching profile:", error);
-        if (isLoading) setIsLoading(false);
       });
     } else {
       const savedProfileRaw = localStorage.getItem('sutradhaar_profile');
@@ -474,7 +471,7 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
     return () => {
       if (unsubscribe) unsubscribe();
     };
-  }, [user, authLoading, maintenanceConfig.premiumCriteria, isLoading]);
+  }, [user, authLoading, maintenanceConfig.premiumCriteria]);
 
   useEffect(() => {
     if (!isLoading && profile.membership !== prevMembershipRef.current) {
@@ -783,7 +780,6 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
       categoryId: 'cat-bills', // A generic category for transfers
       accountId: fromAccountId,
       date: new Date(timestamp).toISOString(),
-      recurring: 'none'
     });
     
     addTransaction({
@@ -794,7 +790,6 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
       categoryId: 'cat-income',
       accountId: toAccountId,
       date: new Date(timestamp).toISOString(),
-      recurring: 'none'
     });
   };
   
@@ -845,7 +840,6 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
         categoryId: 'cat-bills', // Or a dedicated 'Savings' category
         accountId,
         date: new Date().toISOString(),
-        recurring: 'none'
      });
 
      setProfile(p => {
