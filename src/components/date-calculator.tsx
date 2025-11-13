@@ -33,7 +33,7 @@ import {
 } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
 import { Input } from './ui/input';
-import { ScrollArea } from './ui/scroll-area';
+import { ScrollArea, ScrollBar } from './ui/scroll-area';
 import { Label } from './ui/label';
 import { useProfile } from '@/context/ProfileContext';
 
@@ -500,6 +500,7 @@ export function DateCalculator() {
                 <TabsTrigger value="work-days">Work Days</TabsTrigger>
                 <TabsTrigger value="countdown">Countdown</TabsTrigger>
             </TabsList>
+             <ScrollBar orientation="horizontal" />
         </ScrollArea>
         <TabsContent value="difference">
           <DateDifferenceCalculator />
