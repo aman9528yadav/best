@@ -4,7 +4,7 @@
 import React, { useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Plus, MoreVertical, ArrowUp, ArrowDown, Landmark, Utensils, Bus, ShoppingBag, FileText, HeartPulse, Ticket, Icon, Edit, Trash2, Settings, Wallet, PiggyBank, Briefcase, Coins, Home, Car, Filter, Target, Gem, School, LineChart, Repeat, ArrowRightLeft, Calendar, Trophy, Sparkles } from 'lucide-react';
+import { Plus, MoreVertical, ArrowUp, ArrowDown, Landmark, Utensils, Bus, ShoppingBag, FileText, HeartPulse, Ticket, Icon, Edit, Trash2, Settings, Wallet, PiggyBank, Briefcase, Coins, Home, Car, Filter, Target, Gem, School, LineChart, Repeat, ArrowRightLeft, Calendar, Trophy, Sparkles, CheckSquare } from 'lucide-react';
 import { useProfile, Transaction, Account, Category, SavingsGoal } from '@/context/ProfileContext';
 import { format, parseISO, isSameMonth, subMonths, startOfMonth, formatDistanceToNow } from 'date-fns';
 import { BudgetTransactionDialog } from './budget-transaction-dialog';
