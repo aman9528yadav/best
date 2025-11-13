@@ -253,9 +253,8 @@ export function BudgetTrackerPage() {
             <TabsTrigger value="goals">Goals</TabsTrigger>
         </TabsList>
         <TabsContent value="overview" className="mt-4 space-y-6">
-           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <Card>
-                 <CardHeader>
+                <CardHeader>
                     <CardTitle className="flex items-center gap-2"><Target className="h-5 w-5" />Savings Goals</CardTitle>
                     <CardDescription>Track your progress towards financial goals</CardDescription>
                 </CardHeader>
@@ -277,44 +276,43 @@ export function BudgetTrackerPage() {
                     })}
                 </CardContent>
             </Card>
-             <Card>
-                 <CardHeader>
+            <Card>
+                <CardHeader>
                     <CardTitle className="flex items-center gap-2"><Trophy className="h-5 w-5" />Achievements</CardTitle>
                     <CardDescription>Your financial milestones</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-3">
-                   <div className="p-3 rounded-lg bg-green-500/10 flex items-center justify-between">
-                     <div className="flex items-center gap-3">
+                    <div className="p-3 rounded-lg bg-green-500/10 flex items-center justify-between">
+                        <div className="flex items-center gap-3">
                         <Sparkles className="h-5 w-5 text-green-600"/>
                         <div>
                             <p className="font-semibold">First Budget</p>
                             <p className="text-xs text-muted-foreground">Create your first budget</p>
                         </div>
-                     </div>
-                     <CheckSquare className="h-5 w-5 text-green-600" />
-                   </div>
-                   <div className="p-3 rounded-lg bg-green-500/10 flex items-center justify-between">
-                     <div className="flex items-center gap-3">
+                        </div>
+                        <CheckSquare className="h-5 w-5 text-green-600" />
+                    </div>
+                    <div className="p-3 rounded-lg bg-green-500/10 flex items-center justify-between">
+                        <div className="flex items-center gap-3">
                         <Gem className="h-5 w-5 text-green-600"/>
                         <div>
                             <p className="font-semibold">Saver</p>
                             <p className="text-xs text-muted-foreground">Save ₹10,000</p>
                         </div>
-                     </div>
-                     <CheckSquare className="h-5 w-5 text-green-600" />
-                   </div>
+                        </div>
+                        <CheckSquare className="h-5 w-5 text-green-600" />
+                    </div>
                     <div className="p-3 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-between">
-                     <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-3">
                         <Calendar className="h-5 w-5 text-gray-500"/>
                         <div>
                             <p className="font-semibold">Consistent</p>
                             <p className="text-xs text-muted-foreground">Log expenses for 7 days straight</p>
                         </div>
-                     </div>
-                   </div>
+                        </div>
+                    </div>
                 </CardContent>
             </Card>
-           </div>
            <Card>
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2"><Wallet className="h-5 w-5" />Budget Overview</CardTitle>
@@ -464,3 +462,5 @@ export function BudgetTrackerPage() {
     </div>
   );
 }
+
+    
