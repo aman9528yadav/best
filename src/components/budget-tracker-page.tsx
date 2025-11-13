@@ -46,28 +46,30 @@ const iconMap: { [key: string]: Icon } = {
     Landmark, Utensils, Bus, ShoppingBag, FileText, HeartPulse, Ticket, Briefcase, Coins, Home, Car, School, Wallet, Gem, Sparkles
 };
 
-const TransactionItem = ({ transaction, categoryName, categoryIcon, onEdit, onDelete, onDetails, accountName, remainingBalance }: { transaction: Transaction, categoryName: string, categoryIcon: Icon, onEdit: () => void, onDelete: () => void, onDetails: () => void, accountName: string, remainingBalance: number }) => {
+const TransactionItem = ({ transaction, categoryName, categoryIcon, onEdit, onDelete, onDetails, accountName, remainingBalance }: { transaction: Transaction, categoryName: string, categoryIcon: Icon, onEdit: (e: React.MouseEvent) => void, onDelete: (e: React.MouseEvent) => void, onDetails: () => void, accountName: string, remainingBalance: number }) => {
   const isIncome = transaction.type === 'income';
   const CategoryIcon = categoryIcon;
 
   return (
     <div className="flex items-center gap-4 py-4 border-b">
-        <div className="p-3 bg-accent rounded-full">
+        <div className="p-3 bg-accent rounded-full cursor-pointer" onClick={onDetails}>
             <CategoryIcon className="h-5 w-5 text-primary" />
         </div>
         <div className="flex-1 space-y-1">
-            <div className="flex justify-between items-baseline">
-                <p className="font-semibold">{transaction.description}</p>
-                <p className={`font-bold text-lg ${isIncome ? 'text-green-500' : 'text-red-500'}`}>
-                    {isIncome ? '+' : '-'}₹{formatIndianNumber(transaction.amount)}
-                </p>
-            </div>
-            <div className="flex justify-between items-baseline text-sm text-muted-foreground">
-                <p>{accountName}</p>
-                <p>Balance: ₹{formatIndianNumber(remainingBalance)}</p>
+            <div className="cursor-pointer" onClick={onDetails}>
+                <div className="flex justify-between items-baseline">
+                    <p className="font-semibold">{transaction.description}</p>
+                    <p className={`font-bold text-lg ${isIncome ? 'text-green-500' : 'text-red-500'}`}>
+                        {isIncome ? '+' : '-'}₹{formatIndianNumber(transaction.amount)}
+                    </p>
+                </div>
+                <div className="flex justify-between items-baseline text-sm text-muted-foreground">
+                    <p>{accountName}</p>
+                    <p>Balance: ₹{formatIndianNumber(remainingBalance)}</p>
+                </div>
             </div>
              <div className="flex justify-between items-baseline text-xs text-muted-foreground">
-                <p>{format(parseISO(transaction.date), 'dd-MMM-yyyy')}</p>
+                <p className="cursor-pointer" onClick={onDetails}>{format(parseISO(transaction.date), 'dd-MMM-yyyy')}</p>
                  <div className="opacity-100 transition-opacity">
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
@@ -263,7 +265,7 @@ export function BudgetTrackerPage() {
         <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="transactions">Transactions</TabsTrigger>
-            <TabsTrigger value="budgets">Accounts</TabsTrigger>
+            <TabsTrigger value="accounts">Accounts</TabsTrigger>
             <TabsTrigger value="goals">Goals</TabsTrigger>
         </TabsList>
         <TabsContent value="overview" className="mt-4 space-y-4">
@@ -404,8 +406,8 @@ export function BudgetTrackerPage() {
                                     transaction={t}
                                     categoryName={category?.name || 'Uncategorized'}
                                     categoryIcon={iconMap[category?.icon || ''] || Utensils}
-                                    onEdit={() => { setEditingTransaction(t); setIsTxDialogOpen(true); }}
-                                    onDelete={() => setItemToDelete({ id: t.id, type: 'transaction'})}
+                                    onEdit={(e) => { e.stopPropagation(); setEditingTransaction(t); setIsTxDialogOpen(true); }}
+                                    onDelete={(e) => { e.stopPropagation(); setItemToDelete({ id: t.id, type: 'transaction'}); }}
                                     onDetails={() => handleViewDetails(t, t.remainingBalance)}
                                     accountName={account?.name || 'Unknown Account'}
                                     remainingBalance={t.remainingBalance}
@@ -419,7 +421,7 @@ export function BudgetTrackerPage() {
             </CardContent>
           </Card>
         </TabsContent>
-         <TabsContent value="budgets" className="mt-4 space-y-4">
+         <TabsContent value="accounts" className="mt-4 space-y-4">
              <Card>
                 <CardHeader>
                     <div>
@@ -428,7 +430,7 @@ export function BudgetTrackerPage() {
                     </div>
                 </CardHeader>
                 <CardContent className="space-y-3">
-                    <div className="grid grid-cols-2 gap-2">
+                     <div className="grid grid-cols-2 gap-2">
                         <Button onClick={() => setIsTransferDialogOpen(true)} className="w-full gap-2" size="sm" variant="outline">
                             <ArrowRightLeft className="h-4 w-4" /> Transfer
                         </Button>
