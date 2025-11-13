@@ -254,23 +254,51 @@ export function BudgetTrackerPage() {
         </TabsList>
         <TabsContent value="overview" className="mt-4 space-y-6">
             <Card>
-                <CardHeader>
-                    <CardTitle className="flex items-center gap-2"><Target className="h-5 w-5" />Savings Goals</CardTitle>
-                    <CardDescription>Track your progress towards financial goals</CardDescription>
+                <CardHeader className="flex flex-row items-center justify-between">
+                    <div>
+                        <CardTitle className="flex items-center gap-2"><Target className="h-5 w-5" />Savings Goals</CardTitle>
+                        <CardDescription>Track your progress towards financial goals</CardDescription>
+                    </div>
+                    <Button size="sm" variant="outline" className="gap-2" onClick={() => {setEditingGoal(undefined); setIsGoalDialogOpen(true)}}><Plus className="h-4 w-4"/>Add Goal</Button>
                 </CardHeader>
                 <CardContent className="space-y-4">
                     {goals.map(goal => {
                         const progress = goal.targetAmount > 0 ? (goal.currentAmount / goal.targetAmount) * 100 : 0;
+                        const remaining = goal.targetAmount - goal.currentAmount;
                         return (
                             <div key={goal.id} className="p-4 border rounded-lg">
-                                <div className="flex justify-between items-center mb-2">
-                                    <span className="font-semibold flex items-center gap-2"><Target className="h-4 w-4 text-primary"/>{goal.name}</span>
-                                    <span className="text-sm font-semibold">{progress.toFixed(0)}%</span>
+                                <div className="flex justify-between items-start mb-2">
+                                    <div className="flex items-center gap-3">
+                                        <div className="p-2 bg-blue-100 dark:bg-blue-900/50 rounded-lg"><PiggyBank className="h-5 w-5 text-blue-600 dark:text-blue-400"/></div>
+                                        <div>
+                                            <p className="font-semibold flex items-center gap-2">{goal.name}</p>
+                                            <p className="text-xs text-muted-foreground">Target: ₹{formatIndianNumber(goal.targetAmount)}</p>
+                                        </div>
+                                    </div>
+                                    <DropdownMenu>
+                                        <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-8 w-8"><MoreVertical className="h-4 w-4"/></Button></DropdownMenuTrigger>
+                                        <DropdownMenuContent align="end">
+                                            <DropdownMenuItem onClick={() => {setEditingGoal(goal); setIsGoalDialogOpen(true);}}><Edit className="h-4 w-4 mr-2"/>Edit Goal</DropdownMenuItem>
+                                            <DropdownMenuItem className="text-destructive" onClick={() => setItemToDelete({id: goal.id, type: 'goal'})}><Trash2 className="h-4 w-4 mr-2"/>Delete Goal</DropdownMenuItem>
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
                                 </div>
-                                <Progress value={progress} className="h-2" />
-                                <div className="flex justify-between text-xs text-muted-foreground mt-1">
-                                    <span>₹{formatIndianNumber(goal.currentAmount)} of ₹{formatIndianNumber(goal.targetAmount)}</span>
+                                <div className="space-y-2">
+                                     <div className="flex justify-between items-center text-sm">
+                                        <span className="font-medium">Progress</span>
+                                        <span className="text-muted-foreground">{progress.toFixed(1)}%</span>
+                                    </div>
+                                    <Progress value={progress} className="h-2" />
+                                    <div className="flex justify-between text-sm">
+                                        <span className="text-muted-foreground">Current</span>
+                                        <span className="font-semibold">₹{formatIndianNumber(goal.currentAmount)}</span>
+                                    </div>
+                                    <div className="flex justify-between text-sm">
+                                        <span className="text-muted-foreground">Remaining</span>
+                                        <span className="font-semibold">₹{formatIndianNumber(remaining)}</span>
+                                    </div>
                                 </div>
+                                <Button className="w-full mt-4" onClick={() => {setGoalToContribute(goal); setIsContributeDialogOpen(true)}}>Add Funds</Button>
                             </div>
                         )
                     })}
@@ -462,5 +490,7 @@ export function BudgetTrackerPage() {
     </div>
   );
 }
+
+    
 
     
